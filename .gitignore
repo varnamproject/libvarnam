@@ -1,0 +1,12 @@
+*~
+CMakeCache.txt
+CMakeFiles/
+Makefile
+*.cmake
+src/varnam
+*.a
+src/tests/#CMakeLists.txt#
+src/tests/tests
+build/
+*.vst
+*.so
