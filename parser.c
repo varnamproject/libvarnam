@@ -21,6 +21,7 @@
 #include "trie.h"
 #include "sexpr/sexp.h"
 #include "parser.h"
+#include "varnam-result-codes.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -191,7 +192,7 @@ static int install_symbol(struct symbol *sym)
     else {
         return VARNAM_ERROR;
     }
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 static struct symbol *make_symbol(const char *name, 
@@ -224,7 +225,7 @@ static int argcount_ok(struct execution_context *context,
                  "'%s' expects %d arguments but found %d", function_name, expected, actual);
         return VARNAM_ERROR;
     }
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 static struct token *create_token(const char *pattern, 
@@ -257,7 +258,7 @@ static int pattern_valid(struct execution_context *context,
                  "Empty patterns are not allowed in function '%s", function_name);
         return VARNAM_ERROR;
    }
-   return VARNAM_OK;
+   return VARNAM_SUCCESS;
 }
 
 static int value_valid(struct execution_context *context, 
@@ -270,12 +271,12 @@ static int value_valid(struct execution_context *context,
                  "Empty values are not allowed in function '%s", function_name);
         return VARNAM_ERROR;
    }
-   return VARNAM_OK;
+   return VARNAM_SUCCESS;
 }
 
 static int symbol_length_ok(struct execution_context *context, const char *sym)
 {
-    if(sym == NULL) return VARNAM_OK;
+    if(sym == NULL) return VARNAM_SUCCESS;
 
     if(strlen(sym) >= PARSER_SYMBOL_MAX) {
         snprintf(context->error_message,
@@ -283,7 +284,7 @@ static int symbol_length_ok(struct execution_context *context, const char *sym)
                  "'%s' exceeds allowed symbol size %d", sym, PARSER_SYMBOL_MAX);
         return VARNAM_ERROR;
     }
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 static const char *builtin_set(struct execution_context *context, unsigned int argcount)
@@ -560,8 +561,8 @@ static int eval_exp_recursive(struct execution_context *context, sexp_t *exp)
     }
 
     result = s->handler(context, exp, s);
-    if(result != VARNAM_OK) {
-        return VARNAM_ERROR;
+    if(result != VARNAM_SUCCESS) {
+        return result;
     }
 
    /**
@@ -569,7 +570,7 @@ static int eval_exp_recursive(struct execution_context *context, sexp_t *exp)
     * make sense to keep it there
     **/
     pop_exp( context );
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
                          
 static int eval_function(struct execution_context *context, 
@@ -662,7 +663,7 @@ static int eval_function(struct execution_context *context,
              **/
             push_arg(context, result);
         }
-        return VARNAM_OK;
+        return VARNAM_SUCCESS;
     }
     else {
         return VARNAM_ERROR;
@@ -693,7 +694,7 @@ static void eval_exp(struct parser_result *res, sexp_t *exp)
     context.result = res->result;
 
     status = eval_exp_recursive(&context, exp);
-    if(status != VARNAM_OK) {
+    if(status != VARNAM_SUCCESS) {
         err = (struct parser_error *) xmalloc(sizeof (struct parser_error));
         assert(err);
 
@@ -747,15 +748,15 @@ struct parser_result *parser_parse()
     return result;
 }
 
-unsigned int parser_init(const char *filename)
+int parser_init(const char *filename)
 {
     struct symbol *set, *vo, *co, *cc, *nu, *sy, *ot;
     int ls;
 
     ls = lex_init(filename);
-    if(ls != VARNAM_OK) {
+    if(ls != VARNAM_SUCCESS) {
         varnam_error("%s\n", lex_message());
-        return VARNAM_ERROR;
+        return ls;
     }
 
     memset(&st[0], 0, sizeof(st));
@@ -798,7 +799,7 @@ unsigned int parser_init(const char *filename)
     ot->handler = &eval_function;
     install_symbol(ot);
 
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 void parser_destroy(struct parser_result *pr)

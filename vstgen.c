@@ -19,6 +19,7 @@
 #include "trie.h"
 #include "util.h"
 #include "parser.h"
+#include "varnam-result-codes.h"
 #include "foreign/sqlite3.h"
 
 static const char *token_type_tostring(enum token_type type)
@@ -53,7 +54,7 @@ static int callback(struct trie* t, unsigned int depth, void *userdata)
     int rc;
     char sql[500];
 
-    if(t->root) return VARNAM_OK;
+    if(t->root) return VARNAM_SUCCESS;
 
     assert(userdata);
     assert(t->value);
@@ -72,7 +73,7 @@ static int callback(struct trie* t, unsigned int depth, void *userdata)
     }
 
     varnam_info(":: (%d/%d) Processing : %s", ++current, totalitems, t->label);
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 extern int varnam_generate_symbols(const char *output_file_path, struct trie *result, char **error_message)
@@ -133,5 +134,5 @@ extern int varnam_generate_symbols(const char *output_file_path, struct trie *re
     varnam_info(":: Symbols generated");
  
     sqlite3_close( db );
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }

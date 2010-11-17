@@ -1,4 +1,4 @@
-/* error.h
+/* varnam-result-codes.h
  *
  * Copyright (C) Navaneeth.K.N
  *
@@ -17,11 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 
-#ifndef ERROR_H_INCLUDED_103446
-#define ERROR_H_INCLUDED_103446
+#ifndef VARANAM_RESULT_CODES_INCLUDED_103446
+#define VARANAM_RESULT_CODES_INCLUDED_103446
 
-struct error_details {
-    
-};
+#define VARNAM_SUCCESS      0
+#define VARNAM_MISUSE       1
+#define VARNAM_ERROR        2
+#define VARNAM_MEMORY_ERROR 3
 
 #endif

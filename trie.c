@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "util.h"
 #include "trie.h"
+#include "varnam-result-codes.h"
 
 static struct trie *trie_new(const char *label, void *value)
 {
@@ -200,17 +201,19 @@ struct trie *trie_add_child(struct trie *parent, const char *label, void *value)
 
 static int iterate_trie_recursive(struct trie *t, itfunction function, unsigned int depth, void *userdata)
 {    
+    int rc;
     while(t != NULL)
     {
-        if(function(t, depth, userdata) != VARNAM_OK) {
+        if(function(t, depth, userdata) != VARNAM_SUCCESS) {
             return VARNAM_ERROR;
         }
-        if(iterate_trie_recursive(t->child, function, depth + 1, userdata) != VARNAM_OK) {
-            return VARNAM_ERROR;
+        rc = iterate_trie_recursive(t->child, function, depth + 1, userdata); 
+        if(rc != VARNAM_SUCCESS) {
+            return rc;
         }
         t = t->next;
     }
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 int trie_iterate(struct trie *t, itfunction function, void *userdata)

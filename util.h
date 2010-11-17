@@ -25,9 +25,6 @@
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
-#define VARNAM_OK 1
-#define VARNAM_ERROR 0
-
 void varnam_info(const char *format, ...);
 void varnam_error(const char *format, ...);
 

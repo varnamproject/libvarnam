@@ -29,6 +29,7 @@ list (APPEND VARNAM_SOURCES
   parser.c
   vstgen.c
   tl.c
+  varnam.c
   )
 
 # Build foreign functions

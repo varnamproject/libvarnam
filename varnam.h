@@ -1,6 +1,6 @@
-/* module.h
+/* varnam.h
  *
- * Copyright (C) 2010 Navaneeth.K.N
+ * Copyright (C) Navaneeth.K.N
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 
-#ifndef MODULE_H_INCLUDED_081242
-#define MODULE_H_INCLUDED_081242
+#ifndef VARNAM_H_INCLUDED_091620
+#define VARNAM_H_INCLUDED_091620
 
-int compile_scheme_file(int argc, char **argv);
-int transliterate_input(int argc, char **argv);
+#include "foreign/sqlite3.h"
+#include "util.h"
+#include <stdlib.h>
+
+struct varnam_internal {
+    sqlite3 *db;
+};
+
+typedef struct varnam {
+    char *symbols_file;
+    struct varnam_internal *internal;
+} varnam;
+
+int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
+
+int varnam_compile(varnam *handle, const char *scheme_file, const char *output_directory);
+
+int varnam_transliterate(varnam *handle, const char *input, struct strbuf *output);
 
 #endif

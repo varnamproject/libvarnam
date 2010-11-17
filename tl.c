@@ -19,6 +19,8 @@
 #include "util.h"
 #include "parser.h"
 #include "foreign/sqlite3.h"
+#include "varnam.h"
+#include "varnam-result-codes.h"
 #include <string.h>
 
 const char tl_usage[] = 
@@ -77,7 +79,7 @@ static int can_find_solution(sqlite3 *db, struct token *last, const char *lookup
         rc = sqlite3_step( stmt );
         if( rc == SQLITE_ROW ) {
             if( sqlite3_column_int( stmt, 0 ) > 0 ) {
-                result = VARNAM_OK;
+                result = VARNAM_SUCCESS;
             }
         }
     }
@@ -129,57 +131,20 @@ static int tokenize(sqlite3 *db,
     if( strlen( remaining ) > 0 )
         return tokenize( db, remaining, string );
 
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
-struct strbuf *transliterate(const char *scheme_file, const char *input) 
+int varnam_transliterate(varnam *handle, const char *input, struct strbuf *output)
 {
     sqlite3 *db;
     int rc;
-    struct strbuf *string;
+    
+    if(handle == NULL || input == NULL || output == NULL)
+        return VARNAM_MISUSE;
 
-    rc = sqlite3_open( scheme_file, &db );
-    if( rc ) {
-        varnam_error("Can't open %s: %s\n", scheme_file, sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return VARNAM_ERROR;
-    }
+    db = handle->internal->db;
+    rc = tokenize( db, input, output );    
 
-    string = strbuf_init( 20 );    
-    if( tokenize( db, input, string ) != VARNAM_OK ) {
-        strbuf_destroy( string );
-        string = NULL;
-    }
-
-    sqlite3_close( db );
-    return string;
+    return rc;
 }
 
-int transliterate_input(int argc, char **argv)
-{
-    char *scheme_file;
-    char *input;
-    struct strbuf *output;
-
-    if(argc == 0) {
-        varnam_info( "transliterate: invalid usage" );
-        varnam_info( tl_usage );
-        return 1;
-    }
-    else if(argc == 1) {
-        varnam_info( "transliterate: no input text found" );
-        varnam_info( tl_usage );
-        return 1;
-    }
-
-    scheme_file = argv[0];
-    input = argv[1];
-    output = transliterate( scheme_file, input );
-    if( output == NULL ) {
-        varnam_error( "transliteration failed! ");
-        return 1;
-    }
-    varnam_info("%s", output->buffer);
-    strbuf_destroy(output);
-    return 0;
-}

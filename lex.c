@@ -22,6 +22,7 @@
 #include "util.h"
 #include "sexpr/sexp.h"
 #include "lex.h"
+#include "varnam-result-codes.h"
 
 #define PAGE_SIZE 4096
 #define READ_ONLY_MODE "r"
@@ -180,7 +181,7 @@ static int handle_null_expression()
         return VARNAM_ERROR;
     }
 
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 lex_statuscodes lex_status()
@@ -209,7 +210,7 @@ int lex_init(const char *filename)
         change_status(LEX_ERRORED, "error opening input file");
         return VARNAM_ERROR;
     }
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
 /* 

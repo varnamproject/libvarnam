@@ -19,10 +19,11 @@
 
 #include <string.h>
 #include "util.h"
-#include "module.h"
 #include "sexpr/sexp.h"
 #include "parser.h"
 #include "trie.h"
+#include "varnam.h"
+#include "varnam-result-codes.h"
 
 const char compile_usage[] = 
     "compile: varnam compile [--help] <scheme-file> [output_directory]\n";
@@ -79,19 +80,18 @@ static void handle_error(struct parser_result *pr)
     varnam_error(":: %d errors. Compilation aborted.", error_count);
 }
 
-static int compile(struct compile_parameters *params)
+static int compile_scheme_file(varnam *handle, const char *scheme_file, const char *output_directory)
 {
     char output_file_path[MAX_PATH_LENGTH], *error_message = NULL;
     struct parser_result *pr = NULL;
     int status;
 
-    struct path_info *pinfo = splitpath(params->scheme_file);
-    const char *directory = params->output_directory ? params->output_directory :  pinfo->directory;
+    struct path_info *pinfo = splitpath(scheme_file);
+    const char *directory = output_directory ? output_directory :  pinfo->directory;
     const char *extension = ".vst";
     
     if(pinfo->filename == 0 || strcmp(pinfo->filename, "") == 0) {
         varnam_error("compile: invalid scheme file specified. aborting.");
-        varnam_info(compile_usage);
         return VARNAM_ERROR;
     }
 
@@ -99,17 +99,11 @@ static int compile(struct compile_parameters *params)
     strcat(output_file_path, pinfo->filename);
     strcat(output_file_path, extension);
     
-    varnam_info(":: Varnam Scheme File Compiler");
-    varnam_info(":: Copyright (C) Navaneeth.K.N");
-    varnam_info("::");
-    varnam_info(":: Compiling scheme file :  %s", params->scheme_file);
-    varnam_info(":: Output will be written to : %s", output_file_path);
-    varnam_info("::");
-
-    if(parser_init(params->scheme_file) != VARNAM_OK) {
-        varnam_error(":: Compilation failed for '%s'", params->scheme_file);
+    status = parser_init(scheme_file);
+    if(status != VARNAM_SUCCESS) {
+        varnam_error(":: Compilation failed for '%s'", scheme_file);
         xfree( pinfo );
-        return VARNAM_ERROR;
+        return status;
     }
 
     pr = parser_parse();
@@ -121,39 +115,29 @@ static int compile(struct compile_parameters *params)
     }
 
     status = varnam_generate_symbols(output_file_path, pr->result, &error_message);
-    if(status != VARNAM_OK) {
-        varnam_error(":: Compilation failed for %s", params->scheme_file);
+    if(status != VARNAM_SUCCESS) {
+        varnam_error(":: Compilation failed for %s", scheme_file);
         xfree( pinfo );
         parser_destroy( pr );
-        return VARNAM_ERROR;
+        return status;
     }
 
     varnam_info("::");
-    varnam_info(":: Successfully compiled '%s'", params->scheme_file);
+    varnam_info(":: Successfully compiled '%s'", scheme_file);
     varnam_info(":: Created %s", output_file_path);
 
     xfree( pinfo );
     parser_destroy( pr );
 
-    return VARNAM_OK;
+    return VARNAM_SUCCESS;
 }
 
-int compile_scheme_file(int argc, char **argv)
+int varnam_compile(varnam *handle, const char *scheme_file, const char *output_directory)
 {
-    struct compile_parameters params;
-    if(argc == 0) {
-        varnam_error(":: compile: expected scheme file but found none.\n%s", compile_usage);
-        return 1;
-    }
-    else if(strcmp(argv[0], "--help") == 0) {
-        varnam_info(compile_usage);
-        return 1;
-    }
-    
-    params.scheme_file = argv[0];
-    params.output_directory = 0;
-    if(argc >= 2) {
-        params.output_directory = argv[1];
-    }
-    return compile(&params) == VARNAM_OK ? 0 : 1;
+    if(handle == NULL || scheme_file == NULL) 
+        return VARNAM_MISUSE;
+
+    return compile_scheme_file(handle, scheme_file, output_directory);
 }
+
+

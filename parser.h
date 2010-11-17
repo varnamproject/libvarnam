@@ -59,7 +59,7 @@ struct parser_result {
     struct trie *result;
 };
 
-unsigned int parser_init(const char *filename);
+int parser_init(const char *filename);
 struct parser_result *parser_parse();
 void parser_destroy(struct parser_result *result);
 
