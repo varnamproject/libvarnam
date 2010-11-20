@@ -17,16 +17,17 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "varnam.h"
-#include "util.h"
-#include "varnam-result-codes.h"
 #include <string.h>
+
+#include "varnam-types.h"
+#include "varnam-util.h"
+#include "varnam-result-codes.h"
 
 int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg)
 {
     int rc;
     varnam *c;
-    struct varnam_internal *vp;
+    struct varnam_internal *vi;
 
     if(symbols_file == NULL || file_length <= 0)
         return VARNAM_MISUSE;
@@ -35,16 +36,20 @@ int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, c
     if(!c) 
         return VARNAM_MEMORY_ERROR;
 
-    vp = (struct varnam_internal *) xmalloc(sizeof (struct varnam_internal *));
-    if(!vp)
+    vi = (struct varnam_internal *) xmalloc(sizeof (struct varnam_internal));
+    if(!vi)
         return VARNAM_MEMORY_ERROR;
 
-    c->internal = vp;
+    vi->message = (char *) xmalloc(sizeof (char) * VARNAM_LIB_TEMP_BUFFER_SIZE);
+    if(!vi->message)
+        return VARNAM_MEMORY_ERROR;
 
-    rc = sqlite3_open(symbols_file, &vp->db);
+    c->internal = vi;
+
+    rc = sqlite3_open(symbols_file, &vi->db);
     if( rc ) {
-        varnam_error("Can't open %s: %s\n", symbols_file, sqlite3_errmsg(vp->db));
-        sqlite3_close(vp->db);
+        asprintf(msg, "Can't open %s: %s\n", symbols_file, sqlite3_errmsg(vi->db));
+        sqlite3_close(vi->db);
         return VARNAM_ERROR;
     }
 

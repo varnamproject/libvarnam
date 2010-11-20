@@ -16,15 +16,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
-#include "util.h"
-#include "parser.h"
-#include "foreign/sqlite3.h"
-#include "varnam.h"
-#include "varnam-result-codes.h"
 #include <string.h>
+#include <assert.h>
 
-const char tl_usage[] = 
-    "transliterate: varnam tl <scheme-file> <input-text>\n";
+#include "varnam-util.h"
+#include "foreign/sqlite3.h"
+#include "varnam-types.h"
+#include "varnam-result-codes.h"
 
 static struct token *get_token(sqlite3 *db, const char *lookup)
 {
@@ -49,8 +47,8 @@ static struct token *get_token(sqlite3 *db, const char *lookup)
 
             tok = (struct token *) xmalloc(sizeof (struct token));
             assert( tok );
-            strncpy( tok->pattern, pattern, PARSER_SYMBOL_MAX);
-            strncpy( tok->value1, value1, PARSER_SYMBOL_MAX);
+            strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
+            strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
             tok->children = has_children;
         }
     }
@@ -63,7 +61,7 @@ static int can_find_solution(sqlite3 *db, struct token *last, const char *lookup
 {
     char sql[500];
     sqlite3_stmt *stmt;
-    int rc; int result = VARNAM_ERROR;
+    int rc; int result = 0;
 
     assert( lookup );
 
@@ -79,7 +77,7 @@ static int can_find_solution(sqlite3 *db, struct token *last, const char *lookup
         rc = sqlite3_step( stmt );
         if( rc == SQLITE_ROW ) {
             if( sqlite3_column_int( stmt, 0 ) > 0 ) {
-                result = VARNAM_SUCCESS;
+                result = 1;
             }
         }
     }
@@ -111,7 +109,7 @@ static int tokenize(sqlite3 *db,
             matchpos = counter;
             if( last->children <= 0 ) break;
         }
-        else if( can_find_solution( db, last, lookup->buffer ) == VARNAM_ERROR ) { 
+        else if( !can_find_solution( db, last, lookup->buffer )) { 
             break;
         }
         ++text;

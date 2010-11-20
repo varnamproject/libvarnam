@@ -1,4 +1,4 @@
-/* lex.h - a lexical tokenizer
+/* varnam-types.h
  *
  * Copyright (C) Navaneeth.K.N
  *
@@ -16,26 +16,39 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
-#ifndef LEX_H_INCLUDED_080329
-#define LEX_H_INCLUDED_080329
+#ifndef VARNAMLIB_H_INCLUDED_103830
+#define VARNAMLIB_H_INCLUDED_103830
 
-#include "sexpr/sexp.h"
+#include "foreign/sqlite3.h"
 
-typedef enum {
+#define VARNAM_SYMBOL_MAX           30
+#define VARNAM_LIB_TEMP_BUFFER_SIZE 100
 
-    LEX_OK,
-    LEX_EOF,
-    LEX_DONE,
-    LEX_ERRORED
+struct varnam_internal {
+    sqlite3 *db;
+    char *message;
+};
 
-} lex_statuscodes;
+typedef struct varnam {
+    char *symbols_file;
+    struct varnam_internal *internal;
+} varnam;
 
-int lex_init(const char *filename);
-sexp_t *lex_nextexp();
-void lex_destroy_expression(sexp_t *expression);
-void lex_destroy();
-lex_statuscodes lex_status();
-const char* lex_message();
-const char* lex_partial_expression();
+enum token_type {
+    VARNAM_TOKEN_VOWEL,
+    VARNAM_TOKEN_CONSONANT,
+    VARNAM_TOKEN_CONSONANT_CLUSTER,
+    VARNAM_TOKEN_NUMBER,
+    VARNAM_TOKEN_SYMBOL,
+    VARNAM_TOKEN_OTHER
+};
+
+struct token {
+    enum token_type type;
+    char pattern[VARNAM_SYMBOL_MAX];
+    char value1[VARNAM_SYMBOL_MAX];
+    char value2[VARNAM_SYMBOL_MAX];
+    int children;
+};
 
 #endif

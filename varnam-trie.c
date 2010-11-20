@@ -20,8 +20,10 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "util.h"
-#include "trie.h"
+#include <assert.h>
+
+#include "varnam-util.h"
+#include "varnam-trie.h"
 #include "varnam-result-codes.h"
 
 static struct trie *trie_new(const char *label, void *value)

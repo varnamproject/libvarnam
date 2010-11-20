@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 #include <stdlib.h>
-#include "util.h"
+#include <assert.h>
+
+#include "varnam-util.h"
 
 static int grow_buffer(struct strbuf *string)
 {

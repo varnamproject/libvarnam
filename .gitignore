@@ -10,3 +10,4 @@ src/tests/tests
 build/
 *.vst
 *.so
+*.so.*

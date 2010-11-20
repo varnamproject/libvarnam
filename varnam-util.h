@@ -20,34 +20,10 @@
 #ifndef UTIL_H_INCLUDED_085039
 #define UTIL_H_INCLUDED_085039
 
-#include <assert.h>
 #include "foreign/snprintf.h"
-
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-
-void varnam_info(const char *format, ...);
-void varnam_error(const char *format, ...);
-
-struct path_info {
-    char *directory;
-    char *filename;
-    char *extension;
-};
 
 char *substr(char *dst, unsigned int start, unsigned int length, const char *src);
 int startswith(const char *string1, const char *string2);
-
-/* Allocate memory block that can hold path_info followed by actual path. 
- * allocating 3 locations extra to protect shifting of bytes for preserving 
- * '/' in the directory path and '.' in the extension.
- *
- * Returns a path_info structure.
-*/
-struct path_info* splitpath(const char *full_path);
-
-/*
- * methods to operate on dynamically growing string buffers. implementation in strbuf.c
- */
 
 struct strbuf {
     char *buffer;            /* null terminated buffer */

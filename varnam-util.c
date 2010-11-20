@@ -1,6 +1,6 @@
-/* varnam.h
+/* util.c
  *
- * Copyright (C) Navaneeth.K.N
+ * Copyright (C) 2010 Navaneeth.K.N
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,16 +17,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 
-#ifndef VARNAM_H_INCLUDED_091620
-#define VARNAM_H_INCLUDED_091620
-
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 #include <stdlib.h>
 
-#include "util.h"
+#include "varnam-util.h"
 #include "varnam-types.h"
+#include "foreign/snprintf.h"
 
-extern int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
+char *substr(char *dst, unsigned int start, unsigned int length, const char *src)
+{
+   sprintf(dst, "%.*s", length, src + start);
+   return dst;
+}
 
-extern int varnam_transliterate(varnam *handle, const char *input, struct strbuf *output);
+/* return true if string1 starts with string2 */
+int startswith(const char *string1, const char *string2)
+{
+    for(; ; string1++, string2++) {
+        if(!*string2) {
+            break;
+        }
+        else if(*string1 != *string2) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-#endif
+void *xmalloc(size_t size)
+{
+    void *ret = malloc(size);
+    return ret;
+}
+
+void xfree (void *ptr)
+{
+    if(ptr)
+        free(ptr);
+}
