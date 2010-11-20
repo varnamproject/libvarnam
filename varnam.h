@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 
-#include "util.h"
+#include "varnam-util.h"
 #include "varnam-types.h"
 
 extern int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
