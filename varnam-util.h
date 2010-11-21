@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 
-#ifndef UTIL_H_INCLUDED_085039
-#define UTIL_H_INCLUDED_085039
+#ifndef VARNAM_LIB_UTIL_H_INCLUDED_095439
+#define VARNAM_LIB_UTIL_H_INCLUDED_095439
 
-#include "foreign/snprintf.h"
+#include "snprintf.h"
 
 char *substr(char *dst, unsigned int start, unsigned int length, const char *src);
 int startswith(const char *string1, const char *string2);

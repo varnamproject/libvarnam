@@ -37,7 +37,9 @@ list (APPEND VARNAM_INCLUDE_FILES
   varnam-result-codes.h  
   varnam-trie.h  
   varnam-types.h  
-  varnam-util.h 
+  varnam-util.h
+  snprintf.h 
+  sqlite3.h
   )
 
 # Build foreign functions

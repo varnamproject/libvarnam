@@ -43,9 +43,7 @@ int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, c
     vi->message = (char *) xmalloc(sizeof (char) * VARNAM_LIB_TEMP_BUFFER_SIZE);
     if(!vi->message)
         return VARNAM_MEMORY_ERROR;
-
-    c->internal = vi;
-
+   
     rc = sqlite3_open(symbols_file, &vi->db);
     if( rc ) {
         asprintf(msg, "Can't open %s: %s\n", symbols_file, sqlite3_errmsg(vi->db));
@@ -58,7 +56,8 @@ int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, c
         return VARNAM_MEMORY_ERROR;
 
     strncpy(c->symbols_file, symbols_file, file_length + 1);
-    handle = &c;
+    c->internal = vi;
+    *handle = c;   
     return VARNAM_SUCCESS;
 }
 

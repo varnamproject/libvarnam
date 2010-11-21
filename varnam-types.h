@@ -19,7 +19,7 @@
 #ifndef VARNAMLIB_H_INCLUDED_103830
 #define VARNAMLIB_H_INCLUDED_103830
 
-#include "foreign/sqlite3.h"
+#include "sqlite3.h"
 
 #define VARNAM_SYMBOL_MAX           30
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100

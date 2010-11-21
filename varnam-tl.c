@@ -19,7 +19,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "foreign/sqlite3.h"
+#include "sqlite3.h"
 #include "varnam-util.h"
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
@@ -139,6 +139,8 @@ int varnam_transliterate(varnam *handle, const char *input, struct strbuf *outpu
     
     if(handle == NULL || input == NULL || output == NULL)
         return VARNAM_MISUSE;
+
+    assert(handle->internal);
 
     db = handle->internal->db;
     rc = tokenize( db, input, output );    
