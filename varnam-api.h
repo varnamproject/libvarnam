@@ -1,4 +1,5 @@
-/* varnam-types.h
+
+/* varnam.h
  *
  * Copyright (C) Navaneeth.K.N
  *
@@ -16,39 +17,16 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
-#ifndef VARNAMLIB_H_INCLUDED_103830
-#define VARNAMLIB_H_INCLUDED_103830
 
-#include "foreign/sqlite3.h"
+#ifndef VARNAM_API_H_INCLUDED_093510
+#define VARNAM_API_H_INCLUDED_093510
 
-#define VARNAM_SYMBOL_MAX           30
-#define VARNAM_LIB_TEMP_BUFFER_SIZE 100
+#include <stdlib.h>
+#include "varnam-types.h"
+#include "varnam-util.h"
 
-struct varnam_internal {
-    sqlite3 *db;
-    char *message;
-};
+VARNAM_EXPORT extern int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
 
-typedef struct varnam {
-    char *symbols_file;
-    struct varnam_internal *internal;
-} varnam;
-
-enum token_type {
-    VARNAM_TOKEN_VOWEL,
-    VARNAM_TOKEN_CONSONANT,
-    VARNAM_TOKEN_CONSONANT_CLUSTER,
-    VARNAM_TOKEN_NUMBER,
-    VARNAM_TOKEN_SYMBOL,
-    VARNAM_TOKEN_OTHER
-};
-
-struct token {
-    enum token_type type;
-    char pattern[VARNAM_SYMBOL_MAX];
-    char value1[VARNAM_SYMBOL_MAX];
-    char value2[VARNAM_SYMBOL_MAX];
-    int children;
-};
+VARNAM_EXPORT extern int varnam_transliterate(varnam *handle, const char *input, struct strbuf *output);
 
 #endif

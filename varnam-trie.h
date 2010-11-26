@@ -31,26 +31,26 @@ struct trie {
 };
 
 /* Creates a new trie and return the root node */
-struct trie *trie_create();
+VARNAM_EXPORT struct trie *trie_create();
 
 /* Creates a new trie structure and add it to the children list of parent. */
 /* Newly created trie will be returned. This should be freed using "free_trie" function.  */
-struct trie *trie_add_child(struct trie *parent, const char *label, void  *value);
+VARNAM_EXPORT struct trie *trie_add_child(struct trie *parent, const char *label, void  *value);
 
 typedef int (*itfunction)(struct trie* t, unsigned int depth, void *userdata);
-int trie_iterate(struct trie *t, itfunction function, void *userdata);
+VARNAM_EXPORT int trie_iterate(struct trie *t, itfunction function, void *userdata);
 
 /* iterates children and returns the count */
-unsigned int trie_children_count(struct trie *root);
+VARNAM_EXPORT unsigned int trie_children_count(struct trie *root);
 
 /* free the memory allocated for the supplied trie and  */
 /* returns the number of elements freed */
 typedef void (*freefunction)(void *userdata);
-unsigned int trie_free(struct trie *root, freefunction callback);
+VARNAM_EXPORT unsigned int trie_free(struct trie *root, freefunction callback);
 
 /* looks for the supplied label in the trie. returns the value
  * associated if found. else returns NULL
  */
-void *trie_lookup(struct trie *root, const char *label);
+VARNAM_EXPORT void *trie_lookup(struct trie *root, const char *label);
 
 #endif

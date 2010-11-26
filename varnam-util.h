@@ -20,10 +20,50 @@
 #ifndef VARNAM_LIB_UTIL_H_INCLUDED_095439
 #define VARNAM_LIB_UTIL_H_INCLUDED_095439
 
-#include "snprintf.h"
+#include <stddef.h>
+#include <stdarg.h> 
 
-char *substr(char *dst, unsigned int start, unsigned int length, const char *src);
-int startswith(const char *string1, const char *string2);
+/* Cmake will define varnam_EXPORTS on Windows when it
+configures to build a shared library. If you are going to use
+another build system on windows or create the visual studio
+projects by hand you need to define varnam_EXPORTS when
+building a DLL on windows.
+*/
+
+#if defined (_WIN32) 
+  #if defined(varnam_EXPORTS)
+    #define  VARNAM_EXPORT __declspec(dllexport)
+  #else
+    #define  VARNAM_EXPORT __declspec(dllimport)
+  #endif /* varnam_EXPORTS */
+#else /* defined (_WIN32) */
+ #define VARNAM_EXPORT
+#endif
+
+#define PORTABLE_SNPRINTF_VERSION_MAJOR 2
+#define PORTABLE_SNPRINTF_VERSION_MINOR 2
+
+#ifdef HAVE_SNPRINTF
+#include <stdio.h>
+#else
+VARNAM_EXPORT extern int snprintf(char *, size_t, const char *, /*args*/ ...);
+VARNAM_EXPORT extern int vsnprintf(char *, size_t, const char *, va_list);
+#endif
+
+#if defined(HAVE_SNPRINTF) && defined(PREFER_PORTABLE_SNPRINTF)
+VARNAM_EXPORT extern int portable_snprintf(char *str, size_t str_m, const char *fmt, /*args*/ ...);
+VARNAM_EXPORT extern int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
+#define snprintf  portable_snprintf
+#define vsnprintf portable_vsnprintf
+#endif
+
+VARNAM_EXPORT extern int asprintf  (char **ptr, const char *fmt, /*args*/ ...);
+VARNAM_EXPORT extern int vasprintf (char **ptr, const char *fmt, va_list ap);
+VARNAM_EXPORT extern int asnprintf (char **ptr, size_t str_m, const char *fmt, /*args*/ ...);
+VARNAM_EXPORT extern int vasnprintf(char **ptr, size_t str_m, const char *fmt, va_list ap);
+
+VARNAM_EXPORT char *substr(char *dst, unsigned int start, unsigned int length, const char *src);
+VARNAM_EXPORT int startswith(const char *string1, const char *string2);
 
 struct strbuf {
     char *buffer;            /* null terminated buffer */
@@ -31,16 +71,16 @@ struct strbuf {
     size_t allocated;        /* total memory allocated */
 };
 
-struct strbuf *strbuf_init(size_t initial_buf_size);
-int strbuf_addc(struct strbuf *string, char c);
-int strbuf_add(struct strbuf *string, const char *c);
-int strbuf_addln(struct strbuf *string, const char *c);
-void strbuf_destroy(struct strbuf *string);
-void strbuf_clear(struct strbuf *string);
-int strbuf_is_blank_string(struct strbuf *string);
+VARNAM_EXPORT struct strbuf *strbuf_init(size_t initial_buf_size);
+VARNAM_EXPORT int strbuf_addc(struct strbuf *string, char c);
+VARNAM_EXPORT int strbuf_add(struct strbuf *string, const char *c);
+VARNAM_EXPORT int strbuf_addln(struct strbuf *string, const char *c);
+VARNAM_EXPORT void strbuf_destroy(struct strbuf *string);
+VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
+VARNAM_EXPORT int strbuf_is_blank_string(struct strbuf *string);
 
-void *xmalloc(size_t size);
-void xfree (void *ptr);
+VARNAM_EXPORT void *xmalloc(size_t size);
+VARNAM_EXPORT void xfree (void *ptr);
 
 /* Constants */
 

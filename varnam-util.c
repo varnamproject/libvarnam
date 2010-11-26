@@ -24,7 +24,6 @@
 
 #include "varnam-util.h"
 #include "varnam-types.h"
-#include "snprintf.h"
 
 char *substr(char *dst, unsigned int start, unsigned int length, const char *src)
 {

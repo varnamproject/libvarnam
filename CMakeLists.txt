@@ -20,7 +20,7 @@ IF(MSVC)
         add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
 ENDIF()
 
-add_definitions(-DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF)
+add_definitions(-DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF -DNEED_ASPRINTF)
     
 # Append the source files here
 list (APPEND VARNAM_SOURCES
@@ -38,8 +38,6 @@ list (APPEND VARNAM_INCLUDE_FILES
   varnam-trie.h  
   varnam-types.h  
   varnam-util.h
-  snprintf.h 
-  sqlite3.h
   )
 
 # Build foreign functions
@@ -54,6 +52,7 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
 
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION lib)
 INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION include/lib${VARNAM_LIBRARY_NAME})
+INSTALL ( FILES foreign/sqlite3.h DESTINATION include/lib${VARNAM_LIBRARY_NAME}/foreign)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
         # sqlite requires pthread and dl

@@ -25,9 +25,6 @@
 #include "varnam-util.h"
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
-
-extern int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
-
-extern int varnam_transliterate(varnam *handle, const char *input, struct strbuf *output);
+#include "varnam-api.h"
 
 #endif

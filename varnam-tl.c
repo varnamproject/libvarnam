@@ -19,7 +19,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "sqlite3.h"
+#include "varnam-api.h"
+#include "foreign/sqlite3.h"
 #include "varnam-util.h"
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
