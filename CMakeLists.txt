@@ -34,6 +34,7 @@ list (APPEND VARNAM_SOURCES
 # Append the header files here. this will get copied to include directory
 list (APPEND VARNAM_INCLUDE_FILES
   varnam.h  
+  varnam-api.h  
   varnam-result-codes.h  
   varnam-trie.h  
   varnam-types.h  
@@ -50,9 +51,9 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              VERSION ${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH} 
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
-INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION lib)
-INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION include/lib${VARNAM_LIBRARY_NAME})
-INSTALL ( FILES foreign/sqlite3.h DESTINATION include/lib${VARNAM_LIBRARY_NAME}/foreign)
+INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME})
+INSTALL ( FILES foreign/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/foreign)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
         # sqlite requires pthread and dl
