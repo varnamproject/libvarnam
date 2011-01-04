@@ -62,13 +62,33 @@ VARNAM_EXPORT extern int vasprintf (char **ptr, const char *fmt, va_list ap);
 VARNAM_EXPORT extern int asnprintf (char **ptr, size_t str_m, const char *fmt, /*args*/ ...);
 VARNAM_EXPORT extern int vasnprintf(char **ptr, size_t str_m, const char *fmt, va_list ap);
 
-VARNAM_EXPORT char *substr(char *dst, unsigned int start, unsigned int length, const char *src);
+/**
+ * this macro can skip the multibyte sequences on a UTF8 encoded string.
+ * input will be pointed to the next head byte of the UTF8 string
+ * input should be unsigned char* to get it working correctly
+ **/
+
+#define SKIP_MULTI_BYTE_SEQUENCE(input) {              \
+    if( (*(input++)) >= 0xc0 ) {                       \
+    while( (*input & 0xc0) == 0x80 ){ input++; }       \
+  }                                                    \
+}
+
+/**
+* substr(output,str,start,length) writes length characters of str beginning with start to substring.
+* start is is 1-indexed and string should be valid UTF8.
+**/
+VARNAM_EXPORT void substr(char *substring, 
+                          const char *string,
+                          unsigned int start, 
+                          unsigned int len);
+
 VARNAM_EXPORT int startswith(const char *string1, const char *string2);
 
 struct strbuf {
-    char *buffer;            /* null terminated buffer */
-    size_t length;           /* length of the string excluding null terminator */
-    size_t allocated;        /* total memory allocated */
+    char *buffer;          /* null terminated buffer */
+    size_t length;         /* length of the string in bytes excluding null terminator */
+    size_t allocated;      /* total memory allocated */
 };
 
 VARNAM_EXPORT struct strbuf *strbuf_init(size_t initial_buf_size);
@@ -76,6 +96,7 @@ VARNAM_EXPORT int strbuf_addc(struct strbuf *string, char c);
 VARNAM_EXPORT int strbuf_add(struct strbuf *string, const char *c);
 VARNAM_EXPORT int strbuf_addln(struct strbuf *string, const char *c);
 VARNAM_EXPORT void strbuf_destroy(struct strbuf *string);
+VARNAM_EXPORT char* strbuf_detach(struct strbuf *string);
 VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
 VARNAM_EXPORT int strbuf_is_blank_string(struct strbuf *string);
 

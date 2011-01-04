@@ -28,6 +28,7 @@ list (APPEND VARNAM_SOURCES
   varnam-trie.c
   varnam-strbuf.c
   varnam-tl.c
+  varnam-symbol-table.c
   varnam.c
   )
 
@@ -39,6 +40,7 @@ list (APPEND VARNAM_INCLUDE_FILES
   varnam-trie.h  
   varnam-types.h  
   varnam-util.h
+  varnam-symbol-table.h
   )
 
 # Build foreign functions

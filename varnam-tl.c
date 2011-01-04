@@ -24,70 +24,10 @@
 #include "varnam-util.h"
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
+#include "varnam-symbol-table.h"
 
-static struct token *get_token(sqlite3 *db, const char *lookup)
-{
-    struct token *tok = NULL;
-    char sql[500]; const char *pattern, *value1;
-    sqlite3_stmt *stmt;
-    int rc; 
-    int has_children;
 
-    assert( db ); assert( lookup );
-
-    snprintf( sql, 500, "select * from symbols where pattern = '%s';", lookup );
-    rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
-    if( rc == SQLITE_OK ) 
-    {
-        rc = sqlite3_step( stmt );
-        if( rc == SQLITE_ROW ) 
-        {
-            pattern = (const char *) sqlite3_column_text( stmt, 1 );
-            value1 = (const char *) sqlite3_column_text( stmt, 2 );
-            has_children = sqlite3_column_int( stmt, 4 );
-
-            tok = (struct token *) xmalloc(sizeof (struct token));
-            assert( tok );
-            strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
-            strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
-            tok->children = has_children;
-        }
-    }
-
-    sqlite3_finalize( stmt );
-    return tok;
-}
-
-static int can_find_solution(sqlite3 *db, struct token *last, const char *lookup)
-{
-    char sql[500];
-    sqlite3_stmt *stmt;
-    int rc; int result = 0;
-
-    assert( lookup );
-
-    if( last == NULL ) {
-        snprintf( sql, 500, "select count(pattern) as cnt from symbols where pattern like '%s%%';", lookup );
-    }
-    else {
-        snprintf( sql, 500, "select count(pattern) as cnt from symbols where pattern = '%s' and pattern like '%s%%';", last->pattern, lookup );
-    }
-
-    rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
-    if( rc == SQLITE_OK ) {
-        rc = sqlite3_step( stmt );
-        if( rc == SQLITE_ROW ) {
-            if( sqlite3_column_int( stmt, 0 ) > 0 ) {
-                result = 1;
-            }
-        }
-    }
-
-    sqlite3_finalize( stmt );
-    return result;
-}
-
-static int tokenize(sqlite3 *db, 
+static int tokenize(varnam *handle, 
                     const char *input, 
                     struct strbuf *string)
 {
@@ -104,13 +44,13 @@ static int tokenize(sqlite3 *db,
         strbuf_addc( lookup, *text );
         ++counter;
 
-        temp = get_token( db, lookup->buffer );
+        temp = get_token( handle, lookup->buffer );
         if( temp ) {
             last = temp;
             matchpos = counter;
             if( last->children <= 0 ) break;
         }
-        else if( !can_find_solution( db, last, lookup->buffer )) { 
+        else if( !can_find_token( handle, last, lookup->buffer )) { 
             break;
         }
         ++text;
@@ -128,23 +68,27 @@ static int tokenize(sqlite3 *db,
     strbuf_destroy( lookup );
 
     if( strlen( remaining ) > 0 )
-        return tokenize( db, remaining, string );
+        return tokenize( handle, remaining, string );
 
     return VARNAM_SUCCESS;
 }
 
-int varnam_transliterate(varnam *handle, const char *input, struct strbuf *output)
+int varnam_transliterate(varnam *handle, 
+                         const char *input, 
+                         char **output)
 {
-    sqlite3 *db;
     int rc;
+    struct strbuf *result;
     
     if(handle == NULL || input == NULL || output == NULL)
         return VARNAM_MISUSE;
 
-    assert(handle->internal);
-
-    db = handle->internal->db;
-    rc = tokenize( db, input, output );    
+    result = strbuf_init(20);
+    if(!result) {
+        return VARNAM_MEMORY_ERROR;
+    }
+    rc = tokenize( handle, input, result );
+    *output = strbuf_detach(result);
 
     return rc;
 }

@@ -25,10 +25,40 @@
 #include "varnam-util.h"
 #include "varnam-types.h"
 
-char *substr(char *dst, unsigned int start, unsigned int length, const char *src)
+/**
+* substr(str,start,length,output) writes length characters of str beginning with start to substring.
+* start is is 1-indexed and string should be valid UTF8.
+**/
+void substr(char *substring,
+            const char *string, 
+            unsigned int start, 
+            unsigned int len)
 {
-   sprintf(dst, "%.*s", length, src + start);
-   return dst;
+    unsigned int bytes, i;
+    const unsigned char *str2, *input;
+    unsigned char *sub;
+
+    if(start <= 0) return;
+    if(len <= 0) return;
+
+    input = (const unsigned char*) string;
+    sub = (unsigned char*) substring;
+    --start;
+
+    while( *input && start ) {
+        SKIP_MULTI_BYTE_SEQUENCE(input);
+        --start;
+    }
+
+    for(str2 = input; *str2 && len; len--) {
+        SKIP_MULTI_BYTE_SEQUENCE(str2);
+    }
+
+    bytes = (unsigned int) (str2 - input);
+    for(i = 0; i < bytes; i++) {
+        *sub++ = *input++;
+    }
+    *sub = '\0';
 }
 
 /* return true if string1 starts with string2 */

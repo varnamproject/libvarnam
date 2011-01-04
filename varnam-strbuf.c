@@ -132,3 +132,12 @@ int strbuf_is_blank_string(struct strbuf *string)
 
     return 1;
 }
+
+char* strbuf_detach(struct strbuf *string)
+{
+    char *buffer;
+    assert(string);
+    buffer = string->buffer;
+    xfree(string);
+    return buffer;
+}

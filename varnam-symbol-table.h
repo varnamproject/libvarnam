@@ -1,5 +1,4 @@
-
-/* varnam.h
+/* varnam-symbol-table.h
  *
  * Copyright (C) Navaneeth.K.N
  *
@@ -18,15 +17,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 
-#ifndef VARNAM_API_H_INCLUDED_093510
-#define VARNAM_API_H_INCLUDED_093510
+#ifndef VARNAM_SYMBOL_TABLE_H_INCLUDED_120215
+#define VARNAM_SYMBOL_TABLE_H_INCLUDED_120215
 
-#include <stdlib.h>
 #include "varnam-types.h"
-#include "varnam-util.h"
 
-VARNAM_EXPORT extern int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
+/*
+** This function will try to get a token for the lookup text provided. 
+** search will be done directly on the symbol table.
+** A valid instance of token is returned upon successful execution. 
+** NULL value indicates a failure to get the token
+*/
+struct token *get_token(varnam *handle, const char *lookup);
 
-VARNAM_EXPORT extern int varnam_transliterate(varnam *handle, const char *input, char **result);
+/*
+** Does a search in the symbol table and retrns a boolean value indicating
+** the possibility of finding a token for the lookup text and the last token found.
+*/
+int can_find_token(varnam *handle, struct token *last, const char *lookup);
 
 #endif

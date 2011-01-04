@@ -146,7 +146,7 @@ static struct trie *find_parent(struct trie *root, const char *label)
     /**/
     while(*lbl != '\0') 
     {
-        substr(buffer, 0, charcount++, label);
+        substr(buffer, label, 1, charcount++);
         temp = find_match(item, buffer);
         if(temp) {
             item = temp;
@@ -277,7 +277,7 @@ static struct trie *lookup(struct trie *root, const char *label)
     /**/
     while(*lbl != '\0') 
     {
-        substr(buffer, 0, charcount++, label);
+        substr(buffer, label, 1, charcount++);
         temp = find_match(item, buffer);
         if(temp) {
             item = temp;

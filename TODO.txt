@@ -1,2 +1,3 @@
 * memory deallocation routine
+* utf8 support for functions
 * Remove unnecessary exports once client code removes it's usages.
