@@ -61,6 +61,26 @@ void substr(char *substring,
     *sub = '\0';
 }
 
+/**
+ * calculates length of the UTF8 encoded string.
+ * length will be the total number of characters and not the bytes
+ **/
+int utf8_length(const char *string)
+{
+    const unsigned char *ustring;
+    int len;
+
+    len = 0;
+    ustring = (const unsigned char*) string;
+
+    while( *ustring ) {
+        ++len;
+        SKIP_MULTI_BYTE_SEQUENCE(ustring);
+    }
+
+    return len;
+}
+
 /* return true if string1 starts with string2 */
 int startswith(const char *string1, const char *string2)
 {

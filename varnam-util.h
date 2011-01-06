@@ -85,6 +85,12 @@ VARNAM_EXPORT void substr(char *substring,
 
 VARNAM_EXPORT int startswith(const char *string1, const char *string2);
 
+/**
+ * calculates length of the UTF8 encoded string.
+ * length will be the total number of characters and not the bytes
+ **/
+VARNAM_EXPORT int utf8_length(const char *string);
+
 struct strbuf {
     char *buffer;          /* null terminated buffer */
     size_t length;         /* length of the string in bytes excluding null terminator */
