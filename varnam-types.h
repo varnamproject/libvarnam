@@ -24,6 +24,9 @@
 #define VARNAM_SYMBOL_MAX           30
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
 
+/* allowed runtime functions */
+#define VARNAM_RULE_FN_INITIALS "if_initials"
+
 struct varnam_internal {
     sqlite3 *db;
     char *message;
@@ -50,6 +53,16 @@ struct token {
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];
     int children;
+};
+
+struct varnam_rule {
+    char pattern[VARNAM_SYMBOL_MAX];
+    char function[VARNAM_SYMBOL_MAX];
+    char arg1[VARNAM_SYMBOL_MAX];
+    char arg2[VARNAM_SYMBOL_MAX];
+    char render_as[VARNAM_SYMBOL_MAX];
+    int negate;
+    struct varnam_rule *next;
 };
 
 #endif
