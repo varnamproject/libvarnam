@@ -26,7 +26,7 @@
 struct token *get_token(varnam *handle, const char *lookup)
 {
     struct token *tok = NULL;
-    char sql[500]; const char *pattern, *value1;
+    char sql[500]; const char *pattern, *value1, *value2, *type;
     sqlite3_stmt *stmt; sqlite3 *db;
     int rc; 
     int has_children;
@@ -42,14 +42,18 @@ struct token *get_token(varnam *handle, const char *lookup)
         rc = sqlite3_step( stmt );
         if( rc == SQLITE_ROW ) 
         {
+            type = (const char*) sqlite3_column_text( stmt, 0 );
             pattern = (const char*) sqlite3_column_text( stmt, 1 );
             value1 = (const char*) sqlite3_column_text( stmt, 2 );
+            value2 = (const char*) sqlite3_column_text( stmt, 3 );
             has_children = sqlite3_column_int( stmt, 4 );
 
             tok = (struct token *) xmalloc(sizeof (struct token));
             assert( tok );
+            strncpy( tok->type, type, VARNAM_TOKEN_TYPE_MAX);
             strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
             strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
+            strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
             tok->children = has_children;
         }
     }
@@ -58,7 +62,9 @@ struct token *get_token(varnam *handle, const char *lookup)
     return tok;
 }
 
-int can_find_token(varnam *handle, struct token *last, const char *lookup)
+int can_find_token(varnam *handle, 
+                   struct token *last, 
+                   const char *lookup)
 {
     char sql[500];
     sqlite3_stmt *stmt;
@@ -91,3 +97,35 @@ int can_find_token(varnam *handle, struct token *last, const char *lookup)
     return result;
 }
 
+void fill_general_values(varnam *handle, 
+                         char *output, 
+                         const char *name)
+{
+    char sql[500];
+    const char *result;
+    sqlite3_stmt *stmt;
+    sqlite3 *db;
+    int rc; 
+
+    assert( name );
+    assert( handle );
+
+    db = handle->internal->db;
+
+    snprintf(sql, 500, "select value from general where key = ?1;");
+
+    rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
+    if( rc == SQLITE_OK ) {
+        sqlite3_bind_text(stmt, 1, name, (int) strlen(name), NULL);
+        rc = sqlite3_step( stmt );
+        if( rc == SQLITE_ROW ) 
+        {
+            result = (const char*) sqlite3_column_text(stmt, 0);
+            if(result) {
+                strncpy(output, result, VARNAM_SYMBOL_MAX);
+            }
+        }
+    }
+
+    sqlite3_finalize( stmt );
+}

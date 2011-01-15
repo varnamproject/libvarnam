@@ -89,7 +89,7 @@ VARNAM_EXPORT int startswith(const char *string1, const char *string2);
  * calculates length of the UTF8 encoded string.
  * length will be the total number of characters and not the bytes
  **/
-VARNAM_EXPORT int utf8_length(const char *string);
+VARNAM_EXPORT unsigned int utf8_length(const char *string);
 
 struct strbuf {
     char *buffer;          /* null terminated buffer */
@@ -105,6 +105,8 @@ VARNAM_EXPORT void strbuf_destroy(struct strbuf *string);
 VARNAM_EXPORT char* strbuf_detach(struct strbuf *string);
 VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
 VARNAM_EXPORT int strbuf_is_blank_string(struct strbuf *string);
+VARNAM_EXPORT int strbuf_endswith(struct strbuf *string, const char *str);
+VARNAM_EXPORT void strbuf_remove_from_last(struct strbuf *string, const char *toremove);
 
 VARNAM_EXPORT void *xmalloc(size_t size);
 VARNAM_EXPORT void xfree (void *ptr);

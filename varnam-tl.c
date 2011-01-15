@@ -26,6 +26,31 @@
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
 
+static void resolve_token(varnam *handle,
+                          struct token *match,
+                          struct strbuf *string)
+{   
+    const char *virama = NULL;
+
+    assert(handle);
+    assert(match);
+    assert(string);
+
+    if(handle->internal->virama[0] == '\0') {
+        fill_general_values(handle, handle->internal->virama, "virama");
+    }
+
+    virama = handle->internal->virama;
+
+    if(strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0 && strbuf_endswith(string, virama)) {
+        /* removing the virama and adding dependent vowel value */
+        strbuf_remove_from_last(string, virama);
+        strbuf_add(string, match->value2);
+    }
+    else {
+        strbuf_add(string, match->value1);
+    }
+}
 
 static int tokenize(varnam *handle, 
                     const char *input, 
@@ -56,8 +81,9 @@ static int tokenize(varnam *handle,
         ++text;
     }
 
-    if( last != NULL ) {
-        strbuf_add( string, last->value1 );
+    if( last != NULL ) 
+    {
+        resolve_token(handle, last, string);
         remaining = input + matchpos;
     }
     else {

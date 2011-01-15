@@ -22,14 +22,25 @@
 #include "foreign/sqlite3.h"
 
 #define VARNAM_SYMBOL_MAX           30
+#define VARNAM_TOKEN_TYPE_MAX       5
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
 
 /* allowed runtime functions */
 #define VARNAM_RULE_FN_INITIALS "if_initials"
 
+/* available type of tokens */
+#define VARNAM_TOKEN_VOWEL                "vo"
+#define VARNAM_TOKEN_CONSONANT            "co"
+#define VARNAM_TOKEN_DEAD_CONSONANT       "dco"
+#define VARNAM_TOKEN_CONSONANT_CLUSTER    "cc"
+#define VARNAM_TOKEN_NUMBER               "nu"  
+#define VARNAM_TOKEN_SYMBOL               "sy"
+#define VARNAM_TOKEN_OTHER                "ot"
+
 struct varnam_internal {
     sqlite3 *db;
     char *message;
+    char virama[VARNAM_SYMBOL_MAX];
 };
 
 typedef struct varnam {
@@ -37,18 +48,8 @@ typedef struct varnam {
     struct varnam_internal *internal;
 } varnam;
 
-enum token_type {
-    VARNAM_TOKEN_VOWEL,
-    VARNAM_TOKEN_CONSONANT,
-    VARNAM_TOKEN_DEAD_CONSONANT,
-    VARNAM_TOKEN_CONSONANT_CLUSTER,
-    VARNAM_TOKEN_NUMBER,
-    VARNAM_TOKEN_SYMBOL,
-    VARNAM_TOKEN_OTHER
-};
-
 struct token {
-    enum token_type type;
+    char type[VARNAM_TOKEN_TYPE_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];

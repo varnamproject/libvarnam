@@ -1,3 +1,8 @@
+* add tests
+* parameterized sql statements
 * memory deallocation routine
-* utf8 support for functions
+* proper error handling
+* caching of structures and reducing the number of calls to malloc/free
+* documentation for functions
+* standardize the table names & use macros where literals are used
 * Remove unnecessary exports once client code removes it's usages.

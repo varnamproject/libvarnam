@@ -5,9 +5,11 @@ Makefile
 *.cmake
 src/varnam
 *.a
-src/tests/#CMakeLists.txt#
-src/tests/tests
+tests/#CMakeLists.txt#
+tests/runner
 build/
 *.vst
 *.so
 *.so.*
+install_manifest.txt
+Testing/

@@ -2,6 +2,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 project(varnam)
+message ("Generating project ${PROJECT_NAME}")
 
 set(VARNAM_LIBRARY_NAME "varnam")
 set(FOREIGN_LIBRARY_NAME "foreign-functions")
@@ -9,6 +10,8 @@ set(FOREIGN_LIBRARY_NAME "foreign-functions")
 set(VARNAM_VERSION_MAJOR 1)
 set(VARNAM_VERSION_MINOR 0)
 set(VARNAM_VERSION_PATCH 1)
+
+enable_testing()
 
 IF(CMAKE_COMPILER_IS_GNUCC)
         set(CMAKE_C_FLAGS "-g -Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings")
@@ -45,6 +48,9 @@ list (APPEND VARNAM_INCLUDE_FILES
 
 # Build foreign functions
 add_subdirectory(foreign)
+
+# Build tests
+add_subdirectory(tests)
         
 # Create a shared library libvarnam     
 add_library (${VARNAM_LIBRARY_NAME} SHARED ${VARNAM_SOURCES})

@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "varnam-util.h"
 
@@ -131,6 +132,34 @@ int strbuf_is_blank_string(struct strbuf *string)
     }
 
     return 1;
+}
+
+int strbuf_endswith(struct strbuf *string, const char *str)
+{
+    unsigned int str_length, buffer_length;
+    char substring[10];
+    if(!str) return 0;
+
+    buffer_length = utf8_length(string->buffer);
+    str_length = utf8_length(str);
+
+    substr(substring, string->buffer, (buffer_length - str_length) + 1, str_length);
+    return (strcmp(substring, str) == 0 ? 1 : 0);
+}
+
+void strbuf_remove_from_last(struct strbuf *string, const char *toremove)
+{
+    unsigned int str_length, buffer_length;
+    char substring[10];
+
+    if(!toremove) return;
+
+    buffer_length = utf8_length(string->buffer);
+    str_length = utf8_length(toremove);
+
+    substr(substring, string->buffer, 1, buffer_length - str_length);
+    strbuf_clear(string);
+    strbuf_add(string, substring);
 }
 
 char* strbuf_detach(struct strbuf *string)
