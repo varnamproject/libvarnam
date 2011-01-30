@@ -23,11 +23,35 @@ actual characters in the supported languages */
 #include <string.h>
 #include "../varnam.h"
 
+static int rendering_vowels(varnam *handle)
+{
+    int rc;
+    char *output;
+
+    rc = varnam_transliterate(handle, "oof", &output);
+    printf("%s\n", output);
+    if(strcmp(output, "v-oof~") == 0) 
+        return 0;
+    return 1;
+}
+
+static int rendering_dependent_vowels(varnam *handle)
+{
+    int rc;
+    char *output;
+
+    rc = varnam_transliterate(handle, "foo", &output);
+    printf("%s\n", output);
+    if(strcmp(output, "fdv-oo") == 0) 
+        return 0;
+    return 1;
+}
+
 int basic_transliteration(int argc, char **argv)
 {
     varnam *handle;
     int rc;
-    char *msg; char *output;
+    char *msg;
 
     if(argc == 0) {
         printf("no scheme file specified\n");
@@ -37,12 +61,20 @@ int basic_transliteration(int argc, char **argv)
     rc = varnam_init(argv[0], strlen(argv[0]), &handle, &msg);
     if(rc != VARNAM_SUCCESS) {
         printf("initialization failed - %s\n", msg);
+        return 1;
     }
 
-    rc = varnam_transliterate(handle, "foo", &output);
-    printf("%s\n", output);
-    if(strcmp(output, "fdv-oo") == 0) 
-        return 0;
+    rc = rendering_vowels(handle);
+    if(rc != VARNAM_SUCCESS) {
+        printf("rendering dependent vowels is not proper - \n");
+        return 1;
+    }
 
-    return 1;
+    rc = rendering_dependent_vowels(handle);
+    if(rc != VARNAM_SUCCESS) {
+        printf("rendering dependent vowels is not proper - \n");
+        return 1;
+    }
+
+    return 0;
 }

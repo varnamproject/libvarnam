@@ -1,4 +1,6 @@
-* add tests
+* map chillaksharangal
+* map consonant + ra - either rule or on the mapping file
+* rule for rendering "am" correctly. So "kam" can render as it is in keraleeyam rather than providing "kaM"
 * parameterized sql statements
 * memory deallocation routine
 * proper error handling

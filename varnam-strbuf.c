@@ -137,7 +137,7 @@ int strbuf_is_blank_string(struct strbuf *string)
 int strbuf_endswith(struct strbuf *string, const char *str)
 {
     unsigned int str_length, buffer_length;
-    char substring[10];
+    char substring[100];
     if(!str) return 0;
 
     buffer_length = utf8_length(string->buffer);
@@ -150,7 +150,7 @@ int strbuf_endswith(struct strbuf *string, const char *str)
 void strbuf_remove_from_last(struct strbuf *string, const char *toremove)
 {
     unsigned int str_length, buffer_length;
-    char substring[10];
+    char substring[100];
 
     if(!toremove) return;
 

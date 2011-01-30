@@ -26,11 +26,32 @@
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
 
-static void resolve_token(varnam *handle,
-                          struct token *match,
-                          struct strbuf *string)
+struct varnam_token_rendering*
+get_additional_rendering_rule(varnam *handle)
+{
+    return NULL;
+    struct varnam_token_rendering *tr;
+    int i;
+
+    if(handle->internal->renderers == NULL) return NULL;
+
+    for(i = 0; i < ARRAY_SIZE(handle->internal->renderers); i++)
+    {
+        tr = &(handle->internal->renderers[i]);
+        if(strcmp(tr->scheme_identifier, handle->internal->scheme_identifier) == 0)
+            return tr;
+    }
+    return NULL;
+}
+
+static void 
+resolve_token(varnam *handle,
+              struct token *match,
+              struct strbuf *string)
 {   
     const char *virama = NULL;
+    struct varnam_token_rendering *rule;
+    int rc;
 
     assert(handle);
     assert(match);
@@ -40,21 +61,36 @@ static void resolve_token(varnam *handle,
         fill_general_values(handle, handle->internal->virama, "virama");
     }
 
+    if(handle->internal->scheme_identifier[0] == '\0') {
+        fill_general_values(handle, handle->internal->scheme_identifier, "scheme_identifier");
+    }
+
     virama = handle->internal->virama;
+
+    rule = get_additional_rendering_rule(handle);
+    if(rule != NULL) {
+        rc = rule->render(handle, match, string);
+        if(rc == VARNAM_SUCCESS) {
+            return;
+        }
+    }
 
     if(strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0 && strbuf_endswith(string, virama)) {
         /* removing the virama and adding dependent vowel value */
         strbuf_remove_from_last(string, virama);
-        strbuf_add(string, match->value2);
+        if(match->value2[0] != '\0') {
+            strbuf_add(string, match->value2);
+        }
     }
     else {
         strbuf_add(string, match->value1);
     }
 }
 
-static int tokenize(varnam *handle, 
-                    const char *input, 
-                    struct strbuf *string)
+static int 
+tokenize(varnam *handle, 
+         const char *input, 
+         struct strbuf *string)
 {
     const char *text,  *remaining;
     struct token *last = NULL, *temp = NULL;

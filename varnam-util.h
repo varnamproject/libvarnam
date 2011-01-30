@@ -23,6 +23,8 @@
 #include <stddef.h>
 #include <stdarg.h> 
 
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
 /* Cmake will define varnam_EXPORTS on Windows when it
 configures to build a shared library. If you are going to use
 another build system on windows or create the visual studio

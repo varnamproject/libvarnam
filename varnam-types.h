@@ -27,20 +27,28 @@
 
 /* allowed runtime functions */
 #define VARNAM_RULE_FN_INITIALS "if_initials"
+#define VARNAM_RULE_FN_BEGINS_WITH "begins_with"
 
 /* available type of tokens */
-#define VARNAM_TOKEN_VOWEL                "vo"
-#define VARNAM_TOKEN_CONSONANT            "co"
-#define VARNAM_TOKEN_DEAD_CONSONANT       "dco"
-#define VARNAM_TOKEN_CONSONANT_CLUSTER    "cc"
-#define VARNAM_TOKEN_NUMBER               "nu"  
-#define VARNAM_TOKEN_SYMBOL               "sy"
-#define VARNAM_TOKEN_OTHER                "ot"
+#define VARNAM_TOKEN_VOWEL                     "vo"
+#define VARNAM_TOKEN_CONSONANT                 "co"
+#define VARNAM_TOKEN_DEAD_CONSONANT            "dco"
+#define VARNAM_TOKEN_CONSONANT_CLUSTER         "cc"
+#define VARNAM_TOKEN_DEAD_CONSONANT_CLUSTER    "dcc"
+#define VARNAM_TOKEN_NUMBER                    "nu"  
+#define VARNAM_TOKEN_SYMBOL                    "sy"
+#define VARNAM_TOKEN_OTHER                     "ot"
+
+struct varnam_rule;
+struct varnam_token_rendering;
+struct strbuf;
 
 struct varnam_internal {
     sqlite3 *db;
     char *message;
+    struct varnam_token_rendering *renderers;
     char virama[VARNAM_SYMBOL_MAX];
+    char scheme_identifier[VARNAM_SYMBOL_MAX];
 };
 
 typedef struct varnam {
@@ -57,6 +65,7 @@ struct token {
 };
 
 struct varnam_rule {
+    char scheme_name[VARNAM_SYMBOL_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char function[VARNAM_SYMBOL_MAX];
     char arg1[VARNAM_SYMBOL_MAX];
@@ -64,6 +73,11 @@ struct varnam_rule {
     char render_as[VARNAM_SYMBOL_MAX];
     int negate;
     struct varnam_rule *next;
+};
+
+struct varnam_token_rendering {
+    const char *scheme_identifier;
+    int (*render)(varnam *handle, struct token *match,  struct strbuf *output);
 };
 
 #endif

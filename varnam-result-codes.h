@@ -24,5 +24,6 @@
 #define VARNAM_MISUSE       1
 #define VARNAM_ERROR        2
 #define VARNAM_MEMORY_ERROR 3
+#define VARNAM_PARTIAL_RENDERING 4
 
 #endif

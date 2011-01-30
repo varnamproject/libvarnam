@@ -23,6 +23,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "varnam-types.h"
 #include "varnam-util.h"
 #include "varnam-result-codes.h"
+#include "rendering/renderers.h"
+
+static struct varnam_token_rendering renderers[] = {
+        { "ml-unicode", ml_unicode_renderer }
+};
+
+static struct varnam_internal*
+initialize_internal() 
+{
+    struct varnam_internal *vi;
+    vi = (struct varnam_internal *) xmalloc(sizeof (struct varnam_internal));
+    if(vi) {
+        vi->virama[0] = '\0';
+        vi->scheme_identifier[0] = '\0';
+    }
+    return vi;
+}
 
 int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg)
 {
@@ -37,7 +54,7 @@ int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, c
     if(!c) 
         return VARNAM_MEMORY_ERROR;
 
-    vi = (struct varnam_internal *) xmalloc(sizeof (struct varnam_internal));
+    vi = initialize_internal();
     if(!vi)
         return VARNAM_MEMORY_ERROR;
 
@@ -57,8 +74,10 @@ int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, c
         return VARNAM_MEMORY_ERROR;
 
     strncpy(c->symbols_file, symbols_file, file_length + 1);
+    vi->renderers = renderers;
     c->internal = vi;
-    *handle = c;   
+    
+    *handle = c;
     return VARNAM_SUCCESS;
 }
 
