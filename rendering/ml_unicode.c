@@ -17,11 +17,24 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <string.h>
+
 #include "renderers.h"
+#include "../varnam-util.h"
 #include "../varnam-types.h"
 #include "../varnam-result-codes.h"
 
-int ml_unicode_renderer(varnam *handle, struct token *match, struct strbuf *output)
+
+int 
+ml_unicode_renderer(varnam *handle, 
+                    struct token *match, 
+                    struct strbuf *output)
 {
+    if(strcmp(match->pattern, "r") == 0 || strcmp(match->pattern, "R") == 0) {
+        if(!strbuf_endswith(output, handle->internal->virama)) {
+            strbuf_add(output, "ര്‍");
+            return VARNAM_SUCCESS;
+        }
+    }
     return VARNAM_PARTIAL_RENDERING;
 }

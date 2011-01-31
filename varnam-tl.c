@@ -29,13 +29,12 @@
 struct varnam_token_rendering*
 get_additional_rendering_rule(varnam *handle)
 {
-    return NULL;
     struct varnam_token_rendering *tr;
     int i;
 
     if(handle->internal->renderers == NULL) return NULL;
 
-    for(i = 0; i < ARRAY_SIZE(handle->internal->renderers); i++)
+    for(i = 0; i < 1; i++)
     {
         tr = &(handle->internal->renderers[i]);
         if(strcmp(tr->scheme_identifier, handle->internal->scheme_identifier) == 0)

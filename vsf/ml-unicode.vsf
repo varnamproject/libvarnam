@@ -24,8 +24,6 @@
 (vo "O" "ഓ" " ോ ")
 (vo "au" "ഔ" " ൌ")
 (vo "ou" "ഔ" " ൌ")
-(vo "aM" "അം" "ം")
-(vo "aH" "അഃ" "ഃ")
 
 ;; consonants
 
@@ -43,25 +41,23 @@
 (co "JHa" "ഝ")
 (co "nja" "ഞ")
 
-(co "Ta" "ട")
+(co "ta" "ട")
 (co "Tha" "ഠ")
 (co "TTa" "ഠ")
 (co "Da" "ഡ")
 (co "Dha" "ഢ")
-;; put Na chill
 
 (co "tha" "ത")
-(co "thh" "ഥ")
+(co "thha" "ഥ")
 (co "da" "ദ")
 (co "dha" "ധ")
-;; put na chill
 
 (co "pa" "പ")
 (co "pha" "ഫ")
 (co "fa" "ഫ")
+(co "Fa" "ഫ")
 (co "ba" "ബ")
 (co "bha" "ഭ")
-(co "ma" "മ")
 
 (co "ya" "യ")
 (co "va" "വ") (co "wa" "വ")
@@ -73,13 +69,80 @@
 
 (cc "xa" "ക്സ")
 (cc "xa" "ക്ഷ") (cc "ksha" "ക്ഷ")
-(cc "ta" "റ്റ")
+
+(cc "Ta" "റ്റ")
 (cc "nka" "ങ്ക")
 (cc "ncha" "ഞ്ച")
 (cc "ntha" "ന്ത")
 (cc "nta" "ന്റ")
 (cc "nda" "ന്ദ")
 (cc "tta" "ട്ട")
-(cc "TH" "ത്ത")
-(cc "tth" "ത്ത")
+(cc "THa" "ത്ത")
+(cc "ttha" "ത്ത")
 (cc "mma" "മ്മ")
+(cc "lla" "ല്ല")
+(cc "LLa" "ള്ള")
+(cc "nna" "ന്ന")
+(cc "NNa" "ണ്ണ")
+(cc "Ba" "ബ്ബ")
+(cc "Ca" "ക്ക")
+(cc "Ga" "ഗ്ഗ")
+(cc "Ja" "ജ്ജ")
+(cc "Ka" "ക്ക")
+(cc "Ma" "മ്മ")
+(cc "Pa" "പ്പ")
+(cc "Va" "വ്വ")
+(cc "Wa" "വ്വ")
+(cc "Xa" "ക്ഷ")
+(cc "Ya" "യ്യ")
+(cc "mpa" "മ്പ")
+(cc "mba" "മ്പ")
+
+(ot "~" virama)
+(ot "H" "ഃ")
+(ot "m" "ം")
+
+(ot "n" "ന്‍")
+(ot "N" "ണ്‍")
+(ot "l" "ല്‍")
+(ot "L" "ള്‍")
+
+(co "r~" (format "%s%s" "ര" virama) "true")
+(co "R~" (format "%s%s" "റ" virama) "true")
+(co "n~" (format "%s%s" "ന" virama) "true")
+(co "N~" (format "%s%s" "ണ" virama) "true")
+(co "l~" (format "%s%s" "ല" virama) "true")
+(co "L~" (format "%s%s" "ള" virama) "true")
+(co "m~" (format "%s%s" "മ" virama) "true")
+
+(co "rva" "ര്വ")
+(co "rwa" "ര്വ")
+(co "rya" "ര്യ")
+
+(co "nva" "ന്വ")
+(co "nwa" "ന്വ")
+(co "nya" "ന്യ")
+
+(co "Nva" "ണ്വ")
+(co "Nwa" "ണ്വ")
+(co "Nya" "ണ്യ")
+
+(co "lva" "ല്വ")
+(co "lwa" "ല്വ")
+(co "lya" "ല്യ")
+
+(co "Lva" "ള്വ")
+(co "Lwa" "ള്വ")
+(co "Lya" "ള്യ")
+
+(set "always-use-dead-consonants" nil)
+(loop vowels 
+  (co (format "%s%s" "r" current-pattern) (format "%s%s" "ര" current-value2))
+  (co (format "%s%s" "R" current-pattern) (format "%s%s" "റ" current-value2))
+  (co (format "%s%s" "n" current-pattern) (format "%s%s" "ന" current-value2))
+  (co (format "%s%s" "N" current-pattern) (format "%s%s" "ണ" current-value2))
+  (co (format "%s%s" "l" current-pattern) (format "%s%s" "ല" current-value2))
+  (co (format "%s%s" "L" current-pattern) (format "%s%s" "ള" current-value2))
+  (co (format "%s%s" "m" current-pattern) (format "%s%s" "മ" current-value2))
+)
+(set "always-use-dead-consonants" t)

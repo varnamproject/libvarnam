@@ -1,6 +1,7 @@
+* looks like tl is not tokenizing the longest possible match. try mapping naa and not mapping na. typing naa is not giving value for pattern naa
 * map chillaksharangal
 * map consonant + ra - either rule or on the mapping file
-* rule for rendering "am" correctly. So "kam" can render as it is in keraleeyam rather than providing "kaM"
+* segfaulting when transliterating long text
 * parameterized sql statements
 * memory deallocation routine
 * proper error handling
