@@ -138,6 +138,7 @@ int strbuf_endswith(struct strbuf *string, const char *str)
 {
     unsigned int str_length, buffer_length;
     char substring[100];
+
     if(!str) return 0;
 
     buffer_length = utf8_length(string->buffer);
@@ -149,17 +150,20 @@ int strbuf_endswith(struct strbuf *string, const char *str)
 
 void strbuf_remove_from_last(struct strbuf *string, const char *toremove)
 {
-    unsigned int str_length, buffer_length;
-    char substring[100];
+    size_t to_remove_len, newlen;
+    const char *buf;
 
     if(!toremove) return;
+    to_remove_len = strlen(toremove);
 
-    buffer_length = utf8_length(string->buffer);
-    str_length = utf8_length(toremove);
+    if(string->length < to_remove_len) return;
+    newlen = (string->length - to_remove_len);
 
-    substr(substring, string->buffer, 1, buffer_length - str_length);
-    strbuf_clear(string);
-    strbuf_add(string, substring);
+    buf = string->buffer + newlen;
+    if(strcmp(buf, toremove) == 0) {
+        string->buffer[newlen] = '\0';
+        string->length = newlen;
+    }
 }
 
 char* strbuf_detach(struct strbuf *string)

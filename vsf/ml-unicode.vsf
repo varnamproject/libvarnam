@@ -20,10 +20,10 @@
 (vo "E" "ഏ" "േ")
 (vo "ai" "ഐ" "ൈ")
 (vo "ei" "ഐ" "ൈ")
-(vo "o" "ഒ" " ൊ")
-(vo "O" "ഓ" " ോ ")
-(vo "au" "ഔ" " ൌ")
-(vo "ou" "ഔ" " ൌ")
+(vo "o" "ഒ" "ൊ")
+(vo "O" "ഓ" "ോ")
+(vo "au" "ഔ" "ൌ")
+(vo "ou" "ഔ" "ൌ")
 
 ;; consonants
 
@@ -35,7 +35,7 @@
 (co "nga" "ങ")
 
 (co "cha" "ച")
-(co "Cha" "ഛ") (co "CHa" "ഛ")
+(co "CHa" "ഛ")
 (co "ja" "ജ")
 (co "jha" "ഝ")
 (co "JHa" "ഝ")
@@ -97,6 +97,10 @@
 (cc "Ya" "യ്യ")
 (cc "mpa" "മ്പ")
 (cc "mba" "മ്പ")
+(cc "scha" "സ്ക")
+(cc "Cha" "ച്ച")
+(cc "cch" "ച്ച")
+(cc "chh" "ച്ച")
 
 (ot "~" virama)
 (ot "H" "ഃ")
@@ -106,6 +110,7 @@
 (ot "N" "ണ്‍")
 (ot "l" "ല്‍")
 (ot "L" "ള്‍")
+(ot "R" "ര്‍")
 
 (co "r~" (format "%s%s" "ര" virama) "true")
 (co "R~" (format "%s%s" "റ" virama) "true")

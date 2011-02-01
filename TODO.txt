@@ -1,11 +1,8 @@
-* looks like tl is not tokenizing the longest possible match. try mapping naa and not mapping na. typing naa is not giving value for pattern naa
-* map chillaksharangal
-* map consonant + ra - either rule or on the mapping file
-* segfaulting when transliterating long text
+* memory management and deallocation routine
 * parameterized sql statements
-* memory deallocation routine
 * proper error handling
 * caching of structures and reducing the number of calls to malloc/free
 * documentation for functions
 * standardize the table names & use macros where literals are used
+* rewrite strbuf_endswith function
 * Remove unnecessary exports once client code removes it's usages.

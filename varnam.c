@@ -37,6 +37,7 @@ initialize_internal()
     if(vi) {
         vi->virama[0] = '\0';
         vi->scheme_identifier[0] = '\0';
+        vi->last_token = NULL;
     }
     return vi;
 }

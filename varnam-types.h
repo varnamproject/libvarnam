@@ -42,6 +42,7 @@
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
+struct token;
 
 struct varnam_internal {
     sqlite3 *db;
@@ -49,6 +50,7 @@ struct varnam_internal {
     struct varnam_token_rendering *renderers;
     char virama[VARNAM_SYMBOL_MAX];
     char scheme_identifier[VARNAM_SYMBOL_MAX];
+    struct token *last_token;
 };
 
 typedef struct varnam {

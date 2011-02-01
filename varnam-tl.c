@@ -119,11 +119,14 @@ tokenize(varnam *handle,
     if( last != NULL ) 
     {
         resolve_token(handle, last, string);
+        handle->internal->last_token = last;
         remaining = input + matchpos;
     }
     else {
-        strbuf_addc( string, lookup->buffer[0] );
+        if(lookup->buffer[0] != '_')
+            strbuf_addc( string, lookup->buffer[0] );
         remaining = input + 1;
+        handle->internal->last_token = NULL;
     }
 
     strbuf_destroy( lookup );
@@ -144,6 +147,7 @@ int varnam_transliterate(varnam *handle,
     if(handle == NULL || input == NULL || output == NULL)
         return VARNAM_MISUSE;
 
+    handle->internal->last_token = NULL;
     result = strbuf_init(20);
     if(!result) {
         return VARNAM_MEMORY_ERROR;
