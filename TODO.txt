@@ -2,6 +2,7 @@
 * parameterized sql statements
 * proper error handling
 * caching of structures and reducing the number of calls to malloc/free
+* option which will avoid rendering of language specific numbers
 * documentation for functions
 * standardize the table names & use macros where literals are used
 * rewrite strbuf_endswith function
