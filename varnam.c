@@ -37,7 +37,11 @@ initialize_internal()
     if(vi) {
         vi->virama[0] = '\0';
         vi->scheme_identifier[0] = '\0';
+        vi->last_token_available = 0;
         vi->last_token = NULL;
+        vi->current_token = NULL;
+        vi->output = strbuf_init(100);
+        vi->lookup = strbuf_init(10);
     }
     return vi;
 }
@@ -79,6 +83,31 @@ int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, c
     c->internal = vi;
     
     *handle = c;
+    return VARNAM_SUCCESS;
+}
+
+int 
+varnam_destroy(varnam *handle)
+{
+    struct varnam_internal *vi;
+    int rc;
+
+    if(handle == NULL) return VARNAM_SUCCESS;
+
+    vi = handle->internal;
+
+    xfree(vi->message);
+    strbuf_destroy(vi->output);
+    strbuf_destroy(vi->lookup);
+    xfree(vi->last_token);
+    xfree(vi->current_token);
+    rc = sqlite3_close(handle->internal->db);
+    if (rc != SQLITE_OK) {
+        return VARNAM_ERROR;
+    }
+    xfree(handle->internal);
+    xfree(handle->symbols_file);
+    xfree(handle);
     return VARNAM_SUCCESS;
 }
 

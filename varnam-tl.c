@@ -86,17 +86,43 @@ resolve_token(varnam *handle,
     }
 }
 
+static void
+set_last_token(varnam *handle, struct token *tok)
+{
+    struct varnam_internal *vi;
+    vi = handle->internal;
+
+    if(tok == NULL) {
+        vi->last_token_available = 0;
+        return;
+    }
+
+    if(vi->last_token == NULL) {
+        vi->last_token = (struct token *) xmalloc(sizeof (struct token));
+        assert(vi->last_token);
+    }
+
+    strncpy (vi->last_token->type, tok->type, VARNAM_TOKEN_TYPE_MAX);
+    strncpy (vi->last_token->pattern, tok->pattern, VARNAM_SYMBOL_MAX);
+    strncpy (vi->last_token->value1, tok->value1, VARNAM_SYMBOL_MAX);
+    strncpy (vi->last_token->value2, tok->value2, VARNAM_SYMBOL_MAX);
+    vi->last_token->children = tok->children;
+    vi->last_token_available = 1;
+}
+
 static int 
 tokenize(varnam *handle, 
          const char *input, 
          struct strbuf *string)
 {
     const char *text,  *remaining;
-    struct token *last = NULL, *temp = NULL;
     int matchpos = 0, counter = 0;
-   
+    struct varnam_internal *vi;       
     struct strbuf *lookup;
-    lookup = strbuf_init( 100 );
+    struct token *temp = NULL, *last = NULL;
+
+    vi = handle->internal;
+    lookup = vi->lookup;
 
     text = input;
     while( *text != '\0' ) 
@@ -104,8 +130,8 @@ tokenize(varnam *handle,
         strbuf_addc( lookup, *text );
         ++counter;
 
-        temp = get_token( handle, lookup->buffer );
-        if( temp ) {
+        temp = find_token( handle, lookup->buffer );
+        if (temp) {
             last = temp;
             matchpos = counter;
             if( last->children <= 0 ) break;
@@ -116,44 +142,48 @@ tokenize(varnam *handle,
         ++text;
     }
 
-    if( last != NULL ) 
+    if (last) 
     {
         resolve_token(handle, last, string);
-        handle->internal->last_token = last;
         remaining = input + matchpos;
+        set_last_token (handle, last);
     }
     else {
         if(lookup->buffer[0] != '_')
             strbuf_addc( string, lookup->buffer[0] );
         remaining = input + 1;
-        handle->internal->last_token = NULL;
+        set_last_token (handle, NULL);
     }
 
-    strbuf_destroy( lookup );
-
+    strbuf_clear (lookup);
     if( strlen( remaining ) > 0 )
         return tokenize( handle, remaining, string );
 
     return VARNAM_SUCCESS;
 }
 
-int varnam_transliterate(varnam *handle, 
+static void 
+cleanup(varnam *handle)
+{
+    strbuf_clear(handle->internal->output);
+    handle->internal->last_token_available = 0;
+}
+
+int 
+varnam_transliterate(varnam *handle, 
                          const char *input, 
                          char **output)
 {
     int rc;
     struct strbuf *result;
     
-    if(handle == NULL || input == NULL || output == NULL)
+    if(handle == NULL || input == NULL)
         return VARNAM_MISUSE;
 
-    handle->internal->last_token = NULL;
-    result = strbuf_init(20);
-    if(!result) {
-        return VARNAM_MEMORY_ERROR;
-    }
+    cleanup(handle);
+    result = handle->internal->output;
     rc = tokenize( handle, input, result );
-    *output = strbuf_detach(result);
+    *output = result->buffer;
 
     return rc;
 }

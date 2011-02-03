@@ -73,3 +73,4 @@ IF(MSVC)
         target_link_libraries(${VARNAM_LIBRARY_NAME} ${FOREIGN_LIBRARY_NAME})
 ENDIF()
 
+add_custom_target(vstfiles varnam-cli compile vsf/ml-unicode.vsf)

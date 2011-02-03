@@ -1,4 +1,5 @@
-/* 01-transliteration.c
+
+/* 02-ml.c
  *
  * Copyright (C) Navaneeth.K.N
  *
@@ -23,56 +24,63 @@ actual characters in the supported languages */
 #include <string.h>
 #include "../varnam.h"
 
-static int rendering_vowels(varnam *handle)
-{
-    int rc;
-    char *output;
+#define LINE_MAX 1000
 
-    rc = varnam_transliterate(handle, "oof", &output);
-    printf("%s\n", output);
-    if(strcmp(output, "v-oof~") == 0) 
-        return 0;
-    return 1;
-}
-
-static int rendering_dependent_vowels(varnam *handle)
-{
-    int rc;
-    char *output;
-
-    rc = varnam_transliterate(handle, "foo", &output);
-    printf("%s\n", output);
-    if(strcmp(output, "fdv-oo") == 0) 
-        return 0;
-    return 1;
-}
-
-int basic_transliteration(int argc, char **argv)
+int ml_unicode_transliteration(int argc, char **argv)
 {
     varnam *handle;
     int rc;
     char *msg;
+    char *output;
+    FILE *fp;   
+    char line[LINE_MAX];
+    char *part1, *part2;
 
     if(argc == 0) {
         printf("no scheme file specified\n");
         return 1;
     }
+    else if(argc == 1) {
+        printf("no input file specified\n");
+        return 1;
+    }
     printf("%s\n", argv[0]);
+    printf("%s\n", argv[1]);
+
     rc = varnam_init(argv[0], strlen(argv[0]), &handle, &msg);
     if(rc != VARNAM_SUCCESS) {
         printf("initialization failed - %s\n", msg);
         return 1;
     }
 
-    rc = rendering_vowels(handle);
-    if(rc != VARNAM_SUCCESS) {
-        printf("rendering dependent vowels is not proper - \n");
+    /* reads input from the supplied file and matches it with the expected string */
+    fp = fopen(argv[1], "r");
+    if(fp == NULL) {
+        printf("can't open input file\n");
         return 1;
     }
 
-    rc = rendering_dependent_vowels(handle);
+    while(fgets(line, LINE_MAX, fp) != NULL) 
+    {
+        part1 = strtok(line, " ");
+        part2 = strtok(NULL, "\n");
+                   
+        rc = varnam_transliterate(handle, part1, &output);
+        if(rc != VARNAM_SUCCESS) {
+            printf("transliteration of %s failed  - \n", part1);
+            return 1;
+        }            
+
+        if(strcmp(output, part2) != 0) {
+            printf("transliterating %s - expected %s, but was %s\n", part1, part2, output);
+            return 1;
+        }        
+    }
+
+    fclose(fp);
+    rc = varnam_destroy(handle);
     if(rc != VARNAM_SUCCESS) {
-        printf("rendering dependent vowels is not proper - \n");
+        printf("destruction failed\n");
         return 1;
     }
 

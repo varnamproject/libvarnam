@@ -24,4 +24,9 @@
  **/
 extern int basic_transliteration(int argc, char **argv);
 
+/**
+ * this tests the transliteration for malayalam
+ **/
+extern int ml_unicode_transliteration(int argc, char **argv);
+
 #endif

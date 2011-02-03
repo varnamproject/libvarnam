@@ -31,21 +31,21 @@ ml_unicode_renderer(varnam *handle,
                     struct strbuf *output)
 {
     if(strcmp(match->pattern, "r") == 0 || strcmp(match->pattern, "R") == 0) {
-        if(handle->internal->last_token != NULL && !strbuf_endswith(output, handle->internal->virama)) {
+        if(handle->internal->last_token_available && !strbuf_endswith(output, handle->internal->virama)) {
             strbuf_add(output, "ര്‍");
             return VARNAM_SUCCESS;
         }
     }
 
     if(strcmp(match->pattern, "nj") == 0) {
-        if(handle->internal->last_token != NULL) {
+        if(handle->internal->last_token_available) {
             strbuf_add(output, "ഞ്ഞ്");
             return VARNAM_SUCCESS;
         }
     }
 
     if(strcmp(match->pattern, "ng") == 0) {
-        if(handle->internal->last_token != NULL) {
+        if(handle->internal->last_token_available) {
             strbuf_add(output, "ങ്ങ്");
             return VARNAM_SUCCESS;
         }

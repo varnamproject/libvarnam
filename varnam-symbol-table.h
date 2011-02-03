@@ -25,10 +25,10 @@
 /**
 * This function will try to get a token for the lookup text provided. 
 * search will be done directly on the symbol table.
-* A valid instance of token is returned upon successful execution. 
+* A valid instance of token will returned upon success. 
 * NULL value indicates a failure to get the token
 **/
-struct token *get_token(varnam *handle, const char *lookup);
+struct token *find_token(varnam *handle, const char *lookup);
 
 /**
 * Does a search in the symbol table and retrns a boolean value indicating

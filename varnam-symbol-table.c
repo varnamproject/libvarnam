@@ -23,23 +23,28 @@
 #include "varnam-util.h"
 #include "varnam-types.h"
 
-struct token *get_token(varnam *handle, const char *lookup)
+struct token* 
+find_token(varnam *handle, 
+           const char *lookup)
 {
+    struct varnam_internal *internal;
     struct token *tok = NULL;
     char sql[500]; const char *pattern, *value1, *value2, *type;
     sqlite3_stmt *stmt; sqlite3 *db;
-    int rc; 
+    int rc;
     int has_children;
     
     assert( handle ); assert( lookup );
 
-    db = handle->internal->db;
+    internal = handle->internal;
+    db = internal->db;
 
-    snprintf( sql, 500, "select * from symbols where pattern = '%s';", lookup );
+    snprintf( sql, 500, "select * from symbols where pattern = ?1;");
     rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
     if( rc == SQLITE_OK ) 
     {
-        rc = sqlite3_step( stmt );
+        sqlite3_bind_text (stmt, 1, lookup, (int) strlen(lookup), NULL);
+        rc = sqlite3_step (stmt);
         if( rc == SQLITE_ROW ) 
         {
             type = (const char*) sqlite3_column_text( stmt, 0 );
@@ -48,8 +53,12 @@ struct token *get_token(varnam *handle, const char *lookup)
             value2 = (const char*) sqlite3_column_text( stmt, 3 );
             has_children = sqlite3_column_int( stmt, 4 );
 
-            tok = (struct token *) xmalloc(sizeof (struct token));
-            assert( tok );
+            if(internal->current_token == NULL) {
+                internal->current_token = (struct token *) xmalloc(sizeof (struct token));
+                assert( internal->current_token );
+            }
+
+            tok = internal->current_token;
             strncpy( tok->type, type, VARNAM_TOKEN_TYPE_MAX);
             strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
             strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
