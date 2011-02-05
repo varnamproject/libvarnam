@@ -42,7 +42,7 @@
 (co "JHa" "ഝ")
 (co "nja" "ഞ")
 
-(co "ta" "ട")
+(co "Ta" "ട")
 (co "Tha" "ഠ")
 (co "TTa" "ഠ")
 (co "Da" "ഡ")
@@ -83,13 +83,14 @@
 (cc "xa" "ക്സ")
 (cc "xa" "ക്ഷ") (cc "ksha" "ക്ഷ")
 
-(cc "Ta" "റ്റ")
+(cc "ta" "റ്റ")
 (cc "nka" "ങ്ക")
 (cc "ncha" "ഞ്ച")
 (cc "ntha" "ന്ത")
 ;(cc "nta" "ന്റ")
 (cc "nta" "ന്റ")
 (cc "Nta" "ണ്ട")
+(cc "nTa" "ണ്ട")
 (cc "nda" "ന്ദ")
 (cc "tta" "ട്ട")
 (cc "THa" "ത്ത")
@@ -114,8 +115,12 @@
 (cc "mba" "മ്പ")
 (cc "scha" "സ്ക")
 (cc "Cha" "ച്ച")
-(cc "cch" "ച്ച")
-(cc "chh" "ച്ച")
+(cc "ccha" "ച്ച")
+(cc "chha" "ച്ച")
+(cc "ndha" "ന്ധ")
+(cc "jnja" "ജ്ഞ")
+(cc "nma" "ന്മ")
+(cc "Nma" "ണ്മ")
 
 (ot "/" "ഽ")
 (ot "~" virama)
@@ -155,6 +160,10 @@
 (co "Lva" "ള്വ")
 (co "Lwa" "ള്വ")
 (co "Lya" "ള്യ")
+
+(co "mva" "മ്വ")
+(co "mwa" "മ്വ")
+(co "mya" "മ്യ")
 
 (set "always-use-dead-consonants" nil)
 (loop vowels 

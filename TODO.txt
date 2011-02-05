@@ -1,3 +1,4 @@
+* map st to സ്റ്റ്  and sT to സ്ട് as usage for st is more
 * parameterized sql statements
 * proper error handling
 * option which will avoid rendering of language specific numbers
