@@ -74,11 +74,20 @@ resolve_token(varnam *handle,
         }
     }
 
-    if(strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0 && strbuf_endswith(string, virama)) {
-        /* removing the virama and adding dependent vowel value */
-        strbuf_remove_from_last(string, virama);
-        if(match->value2[0] != '\0') {
+    if(strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0) 
+    {
+        if(strbuf_endswith(string, virama)) {
+            /* removing the virama and adding dependent vowel value */
+            strbuf_remove_from_last(string, virama);
+            if(match->value2[0] != '\0') {
+                strbuf_add(string, match->value2);
+            }
+        }
+        else if(handle->internal->last_token_available) {
             strbuf_add(string, match->value2);
+        }
+        else {
+            strbuf_add(string, match->value1);
         }
     }
     else {
