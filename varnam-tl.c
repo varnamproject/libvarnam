@@ -26,6 +26,7 @@
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
 
+
 struct varnam_token_rendering*
 get_additional_rendering_rule(varnam *handle)
 {
@@ -51,6 +52,7 @@ resolve_token(varnam *handle,
     const char *virama = NULL;
     struct varnam_token_rendering *rule;
     int rc;
+    char zwnj[] = {'\xe2', '\x80', '\x8c', '\0'};
 
     assert(handle);
     assert(match);
@@ -72,6 +74,20 @@ resolve_token(varnam *handle,
         if(rc == VARNAM_SUCCESS) {
             return;
         }
+    }
+
+    if(strcmp(match->value1, handle->internal->virama) == 0) {
+        /* we are resolving a virama. If the output ends with a virama already, add a 
+           ZWNJ to it, so that following character will not be combined.
+           if output not ends with virama, add a virama and ZWNJ */
+        if(strbuf_endswith (string, virama)) {
+            strbuf_add (string, zwnj);
+        }
+        else {            
+            strbuf_add (string, virama);
+            strbuf_add (string, zwnj);
+        }
+        return;
     }
 
     if(strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0) 
