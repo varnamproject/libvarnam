@@ -37,16 +37,16 @@ ml_unicode_renderer(varnam *handle,
         }
     }
 
-    if(strcmp(match->pattern, "nj") == 0) {
+    if(strcmp(match->tag, "nj") == 0) {
         if(handle->internal->last_token_available) {
-            strbuf_add(output, "ഞ്ഞ്");
+            strbuf_add(output, match->value2);
             return VARNAM_SUCCESS;
         }
     }
 
-    if(strcmp(match->pattern, "ng") == 0) {
+    if(strcmp(match->tag, "ng") == 0) {
         if(handle->internal->last_token_available) {
-            strbuf_add(output, "ങ്ങ്");
+            strbuf_add(output, match->value2);
             return VARNAM_SUCCESS;
         }
     }

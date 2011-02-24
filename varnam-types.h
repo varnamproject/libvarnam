@@ -23,6 +23,7 @@
 
 #define VARNAM_SYMBOL_MAX           30
 #define VARNAM_TOKEN_TYPE_MAX       5
+#define VARNAM_TOKEN_TAG_MAX        15
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
 
 /* allowed runtime functions */
@@ -33,8 +34,7 @@
 #define VARNAM_TOKEN_VOWEL                     "vo"
 #define VARNAM_TOKEN_CONSONANT                 "co"
 #define VARNAM_TOKEN_DEAD_CONSONANT            "dco"
-#define VARNAM_TOKEN_CONSONANT_CLUSTER         "cc"
-#define VARNAM_TOKEN_DEAD_CONSONANT_CLUSTER    "dcc"
+#define VARNAM_TOKEN_CONSONANT_VOWEL           "cv"
 #define VARNAM_TOKEN_NUMBER                    "nu"  
 #define VARNAM_TOKEN_SYMBOL                    "sy"
 #define VARNAM_TOKEN_OTHER                     "ot"
@@ -67,6 +67,7 @@ typedef struct varnam {
 
 struct token {
     char type[VARNAM_TOKEN_TYPE_MAX];
+    char tag[VARNAM_TOKEN_TAG_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];

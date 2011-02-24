@@ -29,7 +29,8 @@ find_token(varnam *handle,
 {
     struct varnam_internal *internal;
     struct token *tok = NULL;
-    char sql[500]; const char *pattern, *value1, *value2, *type;
+    char sql[500]; 
+    const char *pattern, *value1, *value2, *type, *tag;
     sqlite3_stmt *stmt; sqlite3 *db;
     int rc;
     int has_children;
@@ -39,7 +40,7 @@ find_token(varnam *handle,
     internal = handle->internal;
     db = internal->db;
 
-    snprintf( sql, 500, "select * from symbols where pattern = ?1;");
+    snprintf( sql, 500, "select type, pattern, value1, value2, children, tag from symbols where pattern = ?1;");
     rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
     if( rc == SQLITE_OK ) 
     {
@@ -52,6 +53,7 @@ find_token(varnam *handle,
             value1 = (const char*) sqlite3_column_text( stmt, 2 );
             value2 = (const char*) sqlite3_column_text( stmt, 3 );
             has_children = sqlite3_column_int( stmt, 4 );
+            tag = (const char*) sqlite3_column_text( stmt, 5 );
 
             if(internal->current_token == NULL) {
                 internal->current_token = (struct token *) xmalloc(sizeof (struct token));
@@ -63,6 +65,7 @@ find_token(varnam *handle,
             strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
             strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
             strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
+            strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
             tok->children = has_children;
         }
     }
