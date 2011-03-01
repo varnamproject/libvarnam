@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "rendering/renderers.h"
 
 static struct varnam_token_rendering renderers[] = {
-        { "ml-unicode", ml_unicode_renderer }
+    { "ml-unicode", ml_unicode_renderer, ml_unicode_rtl_renderer }
 };
 
 static struct varnam_internal*
@@ -38,9 +38,12 @@ initialize_internal()
         vi->virama[0] = '\0';
         vi->scheme_identifier[0] = '\0';
         vi->last_token_available = 0;
+        vi->last_rtl_token_available = 0;
         vi->last_token = NULL;
         vi->current_token = NULL;
+        vi->current_rtl_token = NULL;
         vi->output = strbuf_init(100);
+        vi->rtl_output = strbuf_init(100);
         vi->lookup = strbuf_init(10);
     }
     return vi;
@@ -98,9 +101,12 @@ varnam_destroy(varnam *handle)
 
     xfree(vi->message);
     strbuf_destroy(vi->output);
+    strbuf_destroy(vi->rtl_output);
     strbuf_destroy(vi->lookup);
     xfree(vi->last_token);
     xfree(vi->current_token);
+    xfree(vi->last_rtl_token);
+    xfree(vi->current_rtl_token);
     rc = sqlite3_close(handle->internal->db);
     if (rc != SQLITE_OK) {
         return VARNAM_ERROR;

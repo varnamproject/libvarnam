@@ -134,7 +134,7 @@ static struct trie *find_match(struct trie *parent, const char *lookup)
 static struct trie *find_parent(struct trie *root, const char *label)
 {
     struct trie *item = NULL, *temp = NULL;
-    unsigned int charcount = 1;
+    int charcount = 1;
     char buffer[MAX_PATTERN_LENGTH];
     const char *lbl;
 
@@ -265,7 +265,7 @@ unsigned int trie_children_count(struct trie *root)
 static struct trie *lookup(struct trie *root, const char *label)
 {
     struct trie *item = NULL, *temp = NULL;
-    unsigned int charcount = 1;
+    int charcount = 1;
     char buffer[MAX_PATTERN_LENGTH];
     const char *lbl;
 

@@ -53,11 +53,17 @@ struct varnam_internal {
     char scheme_identifier[VARNAM_SYMBOL_MAX];
 
     struct strbuf *output;
+    struct strbuf *rtl_output;
     struct strbuf *lookup;
 
     struct token *current_token;
+    struct token *current_rtl_token;
+
     struct token *last_token;
+    struct token *last_rtl_token;
+
     int last_token_available;
+    int last_rtl_token_available;
 };
 
 typedef struct varnam {
@@ -88,6 +94,7 @@ struct varnam_rule {
 struct varnam_token_rendering {
     const char *scheme_identifier;
     int (*render)(varnam *handle, struct token *match,  struct strbuf *output);
+    int (*render_rtl)(varnam *handle, struct token *match,  struct strbuf *output);
 };
 
 #endif

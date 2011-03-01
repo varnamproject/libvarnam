@@ -29,6 +29,8 @@ VARNAM_EXPORT extern int varnam_init(const char *symbols_file, size_t file_lengt
 
 VARNAM_EXPORT extern int varnam_transliterate(varnam *handle, const char *input, char **result);
 
+VARNAM_EXPORT extern int varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
+
 VARNAM_EXPORT extern int varnam_destroy(varnam *handle);
 
 #endif

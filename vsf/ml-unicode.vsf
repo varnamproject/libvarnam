@@ -3,19 +3,21 @@
 (set "scheme-identifier" "ml-unicode")
 (set "always-use-dead-consonants" t)
 
+(set "ZWNJ" (utf8encode "0x200c"))
 ;; vowels
 
 (vo "a" "അ")
 (vo "aa" "ആ" "ാ")
 (vo "A" "ആ" "ാ")
 (vo "i""ഇ" "ി")
+(vo "ee" "ഈ" "ീ")
 (vo "ii" "ഈ" "ീ")
 (vo "I" "ഈ" "ീ")
-(vo "ee" "ഈ" "ീ")
 (vo "u" "ഉ" "ു")
 (vo "uu" "ഊ" "ൂ")
 (vo "oo" "ഊ" "ൂ")
 (vo "U" "ഊ" "ൂ")
+(vo "r" "ഋ" "ൃ")
 (vo "e" "എ" "െ")
 (vo "E" "ഏ" "േ")
 (vo "ai" "ഐ" "ൈ")
@@ -119,14 +121,16 @@
 
 (ot "/" "ഽ")
 (ot "~" virama)
-(ot "H" "ഃ")
-(ot "m" "ം")
 
+(ot "H" "ഃ")
+
+(tag "chil"
+(ot "m" "ം")
 (ot "n" "ന്‍")
 (ot "N" "ണ്‍")
 (ot "l" "ല്‍")
 (ot "L" "ള്‍")
-(ot "R" "ര്‍")
+(ot "R" "ര്‍"))
 
 (co "rva" "ര്വ")
 (co "rwa" "ര്വ")
@@ -154,8 +158,6 @@
 
 (generate-cv)
 
-(vo "r" "ഋ" "ൃ")
-
 (co "r~" (format "%s%s" "ര" virama))
 (co "R~" (format "%s%s" "റ" virama))
 (co "n~" (format "%s%s" "ന" virama))
@@ -177,4 +179,19 @@
   (cv (format "%s%s" "mr" current-pattern) (format "%s%s" "മ്ര" current-value2))
   (ot (format "%s%s" "ngm" current-pattern) (format "%s%s" "ങ്മ" current-value2))
 )
+
+(loop dead-consonants
+  (set "dcp" (format "%s%s" current-pattern "r"))
+  (set "dcv" (format "%s%s" current-value1 "ര"))
+  (co (format "%s%s" dcp "v") (format "%s%s%s%s" dcv virama "വ" virama))
+  (co (format "%s%s" dcp "w") (format "%s%s%s%s" dcv virama "വ" virama))
+  (co (format "%s%s" dcp "y") (format "%s%s%s%s" dcv virama "യ" virama))  
+  (loop vowels
+     (co (format "%s%s" dcp current-pattern) (format "%s%s" dcv current-value2))
+     (co (format "%s%s%s" dcp "v" current-pattern) (format "%s%s%s%s" dcv virama "വ" current-value2))  
+     (co (format "%s%s%s" dcp "w" current-pattern) (format "%s%s%s%s" dcv virama "വ" current-value2))  
+     (co (format "%s%s%s" dcp "y" current-pattern) (format "%s%s%s%s" dcv virama "യ" current-value2))  
+  )  
+)
+
 (set "always-use-dead-consonants" t)

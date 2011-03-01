@@ -31,6 +31,14 @@
 struct token *find_token(varnam *handle, const char *lookup);
 
 /**
+* This function will try to get a token for the lookup text provided. 
+* search will be done directly on the symbol table on value1 and value2 fields.
+* A valid instance of token will returned upon success. 
+* NULL value indicates a failure to get the token
+**/
+struct token *find_rtl_token(varnam *handle, const char *lookup);
+
+/**
 * Does a search in the symbol table and retrns a boolean value indicating
 * the possibility of finding a token for the lookup text and the last token found.
 **/

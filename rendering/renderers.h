@@ -23,5 +23,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define RENDERING_RENDERERS_H_INCLUDED_105305
 
 int ml_unicode_renderer(varnam*, struct token*, struct strbuf*);
+int ml_unicode_rtl_renderer(varnam*, struct token*, struct strbuf*);
 
 #endif

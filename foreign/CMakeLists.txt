@@ -18,10 +18,11 @@ IF(MSVC)
         add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
 ENDIF()
 
+add_definitions(-DSQLITE_CASE_SENSITIVE_LIKE)
+
 list (APPEND FOREIGN_SOURCES
   snprintf.c
   sqlite3.c
   )
 
 add_library (${FOREIGN_LIBRARY_NAME} STATIC ${FOREIGN_SOURCES})
-

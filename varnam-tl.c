@@ -35,6 +35,10 @@ get_additional_rendering_rule(varnam *handle)
 
     if(handle->internal->renderers == NULL) return NULL;
 
+    if(handle->internal->scheme_identifier[0] == '\0') {
+        fill_general_values(handle, handle->internal->scheme_identifier, "scheme_identifier");
+    }
+
     for(i = 0; i < 1; i++)
     {
         tr = &(handle->internal->renderers[i]);
@@ -60,10 +64,6 @@ resolve_token(varnam *handle,
 
     if(handle->internal->virama[0] == '\0') {
         fill_general_values(handle, handle->internal->virama, "virama");
-    }
-
-    if(handle->internal->scheme_identifier[0] == '\0') {
-        fill_general_values(handle, handle->internal->scheme_identifier, "scheme_identifier");
     }
 
     virama = handle->internal->virama;
@@ -135,6 +135,32 @@ set_last_token(varnam *handle, struct token *tok)
     vi->last_token_available = 1;
 }
 
+
+static void
+set_last_rtl_token(varnam *handle, struct token *tok)
+{
+    struct varnam_internal *vi;
+    vi = handle->internal;
+
+    if(tok == NULL) {
+        vi->last_rtl_token_available = 0;
+        return;
+    }
+
+    if(vi->last_rtl_token == NULL) {
+        vi->last_rtl_token = (struct token *) xmalloc(sizeof (struct token));
+        assert(vi->last_rtl_token);
+    }
+
+    strncpy (vi->last_rtl_token->type, tok->type, VARNAM_TOKEN_TYPE_MAX);
+    strncpy (vi->last_rtl_token->pattern, tok->pattern, VARNAM_SYMBOL_MAX);
+    strncpy (vi->last_rtl_token->value1, tok->value1, VARNAM_SYMBOL_MAX);
+    strncpy (vi->last_rtl_token->value2, tok->value2, VARNAM_SYMBOL_MAX);
+    vi->last_rtl_token->children = tok->children;
+    vi->last_rtl_token_available = 1;
+}
+
+
 static int 
 tokenize(varnam *handle, 
          const char *input, 
@@ -191,7 +217,9 @@ static void
 cleanup(varnam *handle)
 {
     strbuf_clear(handle->internal->output);
+    strbuf_clear(handle->internal->rtl_output);
     handle->internal->last_token_available = 0;
+    handle->internal->last_rtl_token_available = 0;
 }
 
 int 
@@ -208,6 +236,106 @@ varnam_transliterate(varnam *handle,
     cleanup(handle);
     result = handle->internal->output;
     rc = tokenize( handle, input, result );
+    *output = result->buffer;
+
+    return rc;
+}
+
+static void 
+resolve_rtl_token(varnam *handle,
+                  const char *lookup,
+                  struct token *match,
+                  struct strbuf *string)
+{   
+    struct varnam_token_rendering *rule;
+    int rc;
+
+    assert(handle);
+    assert(match);
+    assert(string);
+
+    rule = get_additional_rendering_rule (handle);
+    if (rule != NULL) {
+        rc = rule->render_rtl (handle, match, string);
+        if(rc == VARNAM_SUCCESS) {
+            return;
+        }
+    }
+
+    if (strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0) 
+    {
+        if (strcmp (match->value1, lookup) == 0 && handle->internal->last_rtl_token_available) {
+            /* vowel is standing in it's full form in between a word. need to prefix _
+               to avoid unnecessary conjunctions */
+            strbuf_add(string, "_");
+        }
+    }
+
+    strbuf_add (string, match->pattern);
+}
+
+
+static int 
+tokenize_indic_text(varnam *handle,
+                    const char *input,
+                    struct strbuf *string)
+{
+    const char *remaining;
+    int counter = 0, input_len = 0;
+    size_t matchpos = 0;
+    struct varnam_internal *vi;       
+    char lookup[100], match[100];
+    struct token *temp = NULL, *last = NULL;
+
+    vi = handle->internal;
+
+    input_len = utf8_length (input);
+    while (counter < input_len) 
+    {
+        substr (lookup, input, 1, ++counter);
+        temp = find_rtl_token (handle, lookup);
+        if (temp) {
+            last = temp;
+            matchpos = strlen (lookup);
+            strncpy(match, lookup, 100);
+        }
+        else { 
+            break;
+        }
+    }
+
+    if (last) 
+    {
+        resolve_rtl_token (handle, match, last, string);
+        remaining = input + matchpos;
+        set_last_rtl_token (handle, last);
+    }
+    else {
+        strbuf_add (string, lookup);
+        remaining = input + 1;
+        set_last_rtl_token (handle, NULL);
+    }
+
+    if (strlen (remaining) > 0)
+        return tokenize_indic_text (handle, remaining, string);
+
+    return VARNAM_SUCCESS;
+}
+                    
+int 
+varnam_reverse_transliterate(varnam *handle,
+                             const char *input,
+                             char **output)
+{
+    int rc;
+    struct strbuf *result;
+    
+    if(handle == NULL || input == NULL)
+        return VARNAM_MISUSE;
+
+    cleanup (handle);
+    result = handle->internal->rtl_output;
+    rc = tokenize_indic_text (handle, input, result);
     *output = result->buffer;
 
     return rc;

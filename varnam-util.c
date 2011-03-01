@@ -31,8 +31,8 @@
 **/
 void substr(char *substring,
             const char *string, 
-            unsigned int start, 
-            unsigned int len)
+            int start, 
+            int len)
 {
     unsigned int bytes, i;
     const unsigned char *str2, *input;
@@ -65,10 +65,10 @@ void substr(char *substring,
  * calculates length of the UTF8 encoded string.
  * length will be the total number of characters and not the bytes
  **/
-unsigned int utf8_length(const char *string)
+int utf8_length(const char *string)
 {
     const unsigned char *ustring;
-    unsigned int len;
+    int len;
 
     len = 0;
     ustring = (const unsigned char*) string;

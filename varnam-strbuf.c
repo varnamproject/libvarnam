@@ -136,7 +136,7 @@ int strbuf_is_blank_string(struct strbuf *string)
 
 int strbuf_endswith(struct strbuf *string, const char *str)
 {
-    unsigned int str_length, buffer_length;
+    int str_length, buffer_length;
     char substring[100];
 
     if(!str) return 0;

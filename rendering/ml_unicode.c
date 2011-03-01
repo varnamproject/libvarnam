@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../varnam-result-codes.h"
 
 
+#define CHIL_TAG "chil"
+
 int 
 ml_unicode_renderer(varnam *handle, 
                     struct token *match, 
@@ -49,6 +51,20 @@ ml_unicode_renderer(varnam *handle,
             strbuf_add(output, match->value2);
             return VARNAM_SUCCESS;
         }
+    }
+   
+    return VARNAM_PARTIAL_RENDERING;
+}
+
+int 
+ml_unicode_rtl_renderer(varnam *handle, 
+                        struct token *match, 
+                        struct strbuf *output)
+{
+    if (strcmp(match->tag, CHIL_TAG) == 0) {
+        strbuf_add (output, match->pattern);
+        strbuf_add (output, "_");
+        return VARNAM_SUCCESS;
     }
    
     return VARNAM_PARTIAL_RENDERING;
