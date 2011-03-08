@@ -29,4 +29,9 @@ extern int basic_transliteration(int argc, char **argv);
  **/
 extern int ml_unicode_transliteration(int argc, char **argv);
 
+/**
+ * this tests the reverse transliteration for malayalam
+ **/
+extern int ml_unicode_reverse_transliteration(int argc, char **argv);
+
 #endif

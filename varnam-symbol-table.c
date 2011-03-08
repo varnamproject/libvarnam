@@ -154,6 +154,35 @@ int can_find_token(varnam *handle,
     return result;
 }
 
+int can_find_rtl_token(varnam *handle, 
+                       struct token *last, 
+                       const char *lookup)
+{
+    char sql[500];
+    sqlite3_stmt *stmt;
+    sqlite3 *db;
+    int rc; int result = 0;
+
+    assert( lookup );
+    assert( handle );
+
+    db = handle->internal->db;
+
+    snprintf( sql, 500, "select count(pattern) as cnt from symbols where value1 like '%s%%' or value2 like '%s%%';", lookup, lookup );
+    rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
+    if( rc == SQLITE_OK ) {
+        rc = sqlite3_step( stmt );
+        if( rc == SQLITE_ROW ) {
+            if( sqlite3_column_int( stmt, 0 ) > 0 ) {
+                result = 1;
+            }
+        }
+    }
+
+    sqlite3_finalize( stmt );
+    return result;
+}
+
 void fill_general_values(varnam *handle, 
                          char *output, 
                          const char *name)

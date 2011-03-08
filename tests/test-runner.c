@@ -27,7 +27,8 @@ struct tests_t {
 
 static struct tests_t tests[] = {
     { "basic-transliteration", basic_transliteration },
-    { "ml-unicode", ml_unicode_transliteration }
+    { "ml-unicode", ml_unicode_transliteration },
+    { "ml-unicode-reverse", ml_unicode_reverse_transliteration }
 };
 
 #define NO_OF_TESTS (sizeof(tests)/sizeof(tests[0]))

@@ -1,3 +1,5 @@
+* choose the preferred token if available when reverse transliterating. Need to implement the change in compiler also. Fix the test after that
+* reverse transliteration adding unwanted _ at the end if word ends with chil. Need to remove the reduntant _
 * map st to സ്റ്റ്  and sT to സ്ട് as usage for st is more
 * parameterized sql statements
 * proper error handling

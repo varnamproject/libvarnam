@@ -40,11 +40,19 @@ struct token *find_rtl_token(varnam *handle, const char *lookup);
 
 /**
 * Does a search in the symbol table and retrns a boolean value indicating
-* the possibility of finding a token for the lookup text and the last token found.
+* the possibility of finding a token for the lookup text.
 **/
 int can_find_token(varnam *handle, 
                    struct token *last, 
                    const char *lookup);
+
+/**
+* Does a search in the symbol table and retrns a boolean value indicating
+* the possibility of finding a rtl token for the lookup text.
+**/
+int can_find_rtl_token(varnam *handle, 
+                       struct token *last, 
+                       const char *lookup);
 
 /**
  * fetches the value for the supplied name and writes that to the output

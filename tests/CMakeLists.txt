@@ -18,4 +18,5 @@ target_link_libraries(runner ${VARNAM_LIBRARY_NAME})
 
 add_test(transliteration ${test_executable_name} basic-transliteration td-01.vst)
 add_test(ml-unicode ${test_executable_name} ml-unicode ../vsf/ml-unicode.vst ml-unicode-input.txt)
+add_test(ml-unicode-reverse ${test_executable_name} ml-unicode-reverse ../vsf/ml-unicode.vst ml-unicode-reverse-input.txt)
     

@@ -288,6 +288,7 @@ tokenize_indic_text(varnam *handle,
     struct token *temp = NULL, *last = NULL;
 
     vi = handle->internal;
+    match[0] = '\0';
 
     input_len = utf8_length (input);
     while (counter < input_len) 
@@ -299,7 +300,7 @@ tokenize_indic_text(varnam *handle,
             matchpos = strlen (lookup);
             strncpy(match, lookup, 100);
         }
-        else { 
+        else if( !can_find_rtl_token( handle, last, lookup )) { 
             break;
         }
     }
