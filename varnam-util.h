@@ -48,8 +48,8 @@ building a DLL on windows.
 #ifdef HAVE_SNPRINTF
 #include <stdio.h>
 #else
-VARNAM_EXPORT extern int snprintf(char *, size_t, const char *, /*args*/ ...);
-VARNAM_EXPORT extern int vsnprintf(char *, size_t, const char *, va_list);
+extern int snprintf(char *, size_t, const char *, /*args*/ ...);
+extern int vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
 #if defined(HAVE_SNPRINTF) && defined(PREFER_PORTABLE_SNPRINTF)
