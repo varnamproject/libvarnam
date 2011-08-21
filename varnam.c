@@ -40,6 +40,7 @@ initialize_internal()
         vi->last_token_available = 0;
         vi->last_rtl_token_available = 0;
         vi->last_token = NULL;
+        vi->last_rtl_token = NULL;
         vi->current_token = NULL;
         vi->current_rtl_token = NULL;
         vi->output = strbuf_init(100);
