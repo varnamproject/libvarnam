@@ -118,6 +118,7 @@
 (co "jnja" "ജ്ഞ")
 (co "nma" "ന്മ")
 (co "Nma" "ണ്മ")
+(co "nJa" "ഞ്ജ")
 
 (ot "/" "ഽ")
 (ot "~" virama)
