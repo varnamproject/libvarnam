@@ -2,7 +2,9 @@
 ;; test data for the first test. Compile this file using varnam-cli
 
 (set "virama" "~")
-(set "scheme-identifier" "ml-unicode")
+(set "scheme-identifier" "ml")
+(set "scheme-author" "navaneeth")
+(set "scheme-display-name" "language name")
 
 (vo "o" "v-o" "dv-o")
 (vo "oo" "v-oo" "dv-oo")

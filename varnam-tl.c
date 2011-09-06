@@ -26,7 +26,6 @@
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
 
-
 struct varnam_token_rendering*
 get_additional_rendering_rule(varnam *handle)
 {
@@ -283,11 +282,11 @@ tokenize_indic_text(varnam *handle,
     const char *remaining;
     int counter = 0, input_len = 0;
     size_t matchpos = 0;
-    struct varnam_internal *vi;       
+    /* struct varnam_internal *vi;        */
     char lookup[100], match[100];
     struct token *temp = NULL, *last = NULL;
 
-    vi = handle->internal;
+    /* vi = handle->internal; */
     match[0] = '\0';
 
     input_len = utf8_length (input);

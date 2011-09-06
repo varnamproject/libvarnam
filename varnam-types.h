@@ -44,13 +44,16 @@ struct varnam_token_rendering;
 struct strbuf;
 struct token;
 
-struct varnam_internal {
+struct varnam_internal 
+{
     sqlite3 *db;
     char *message;
     struct varnam_token_rendering *renderers;
 
     char virama[VARNAM_SYMBOL_MAX];
     char scheme_identifier[VARNAM_SYMBOL_MAX];
+    char scheme_display_name[VARNAM_SYMBOL_MAX];
+    char scheme_author[VARNAM_SYMBOL_MAX];
 
     struct strbuf *output;
     struct strbuf *rtl_output;

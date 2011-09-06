@@ -25,10 +25,9 @@ actual characters in the supported languages */
 
 static int rendering_vowels(varnam *handle)
 {
-    int rc;
     char *output;
 
-    rc = varnam_transliterate(handle, "oof", &output);
+    varnam_transliterate(handle, "oof", &output);
     printf("%s\n", output);
     if(strcmp(output, "v-oof~") == 0) 
         return 0;
@@ -37,14 +36,40 @@ static int rendering_vowels(varnam *handle)
 
 static int rendering_dependent_vowels(varnam *handle)
 {
-    int rc;
     char *output;
 
-    rc = varnam_transliterate(handle, "foo", &output);
+    varnam_transliterate(handle, "foo", &output);
     printf("%s\n", output);
     if(strcmp(output, "fdv-oo") == 0) 
         return 0;
     return 1;
+}
+
+static int scheme_details(varnam *handle)
+{
+    const char *author = varnam_scheme_author (handle);
+    const char *identifier = varnam_scheme_identifier (handle);
+    const char *display_name = varnam_scheme_display_name (handle);
+
+    if(strcmp(author, "navaneeth") != 0) 
+    {
+        printf("author : expected %s but was %s\n", "navaneeth", author);
+        return 1;
+    }
+
+    if(strcmp(identifier, "ml") != 0) 
+    {
+        printf("scheme_identifier : expected %s but was %s\n", "ml", identifier);
+        return 1;
+    }
+
+    if(strcmp(display_name, "language name") != 0) 
+    {
+        printf("scheme_display_name : expected %s but was %s\n", "language name", display_name);
+        return 1;
+    }
+
+    return 0;
 }
 
 int basic_transliteration(int argc, char **argv)
@@ -63,6 +88,12 @@ int basic_transliteration(int argc, char **argv)
         printf("initialization failed - %s\n", msg);
         return 1;
     }
+
+    rc = scheme_details (handle);
+    if(rc != VARNAM_SUCCESS) {
+        printf("reading scheme details failed - \n");
+        return 1;
+    }    
 
     rc = rendering_vowels(handle);
     if(rc != VARNAM_SUCCESS) {

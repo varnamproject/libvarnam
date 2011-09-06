@@ -31,6 +31,12 @@ VARNAM_EXPORT extern int varnam_transliterate(varnam *handle, const char *input,
 
 VARNAM_EXPORT extern int varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
 
+VARNAM_EXPORT const char* varnam_scheme_identifier(varnam *handle);
+
+VARNAM_EXPORT const char* varnam_scheme_display_name(varnam *handle);
+
+VARNAM_EXPORT const char* varnam_scheme_author(varnam *handle);
+
 VARNAM_EXPORT extern int varnam_destroy(varnam *handle);
 
 #endif

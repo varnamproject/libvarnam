@@ -1,6 +1,8 @@
 
 (set "virama" "്")
 (set "scheme-identifier" "ml-unicode")
+(set "scheme-display-name" "Malayalam")
+(set "scheme-author" "Navaneeth KN")
 (set "always-use-dead-consonants" t)
 
 (set "ZWNJ" (utf8encode "0x200c"))

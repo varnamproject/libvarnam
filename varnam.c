@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "varnam-types.h"
 #include "varnam-util.h"
 #include "varnam-result-codes.h"
+#include "varnam-symbol-table.h"
 #include "rendering/renderers.h"
 
 static struct varnam_token_rendering renderers[] = {
@@ -37,6 +38,8 @@ initialize_internal()
     if(vi) {
         vi->virama[0] = '\0';
         vi->scheme_identifier[0] = '\0';
+        vi->scheme_display_name[0] = '\0';
+        vi->scheme_author[0] = '\0';
         vi->last_token_available = 0;
         vi->last_rtl_token_available = 0;
         vi->last_token = NULL;
@@ -50,7 +53,8 @@ initialize_internal()
     return vi;
 }
 
-int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg)
+int 
+varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg)
 {
     int rc;
     varnam *c;
@@ -88,6 +92,36 @@ int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, c
     
     *handle = c;
     return VARNAM_SUCCESS;
+}
+
+const char*
+varnam_scheme_identifier(varnam *handle)
+{
+    if(handle->internal->scheme_identifier[0] == '\0') {
+        fill_general_values(handle, handle->internal->scheme_identifier, "scheme_identifier");
+    }
+
+    return handle->internal->scheme_identifier;
+}
+
+const char*
+varnam_scheme_display_name(varnam *handle)
+{
+    if(handle->internal->scheme_display_name[0] == '\0') {
+        fill_general_values(handle, handle->internal->scheme_display_name, "scheme_display_name");
+    }
+
+    return handle->internal->scheme_display_name;
+}
+
+const char*
+varnam_scheme_author(varnam *handle)
+{
+    if(handle->internal->scheme_author[0] == '\0') {
+        fill_general_values(handle, handle->internal->scheme_author, "scheme_author");
+    }
+
+    return handle->internal->scheme_author;
 }
 
 int 
