@@ -7,4 +7,4 @@
 * documentation for functions
 * standardize the table names & use macros where literals are used
 * rewrite strbuf_endswith function
-* Remove unnecessary exports once client code removes it's usages.
+* Remove unnecessary exports once client code removes it's usages. - mainly snprintf etc
