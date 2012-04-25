@@ -25,7 +25,8 @@
 #include "varnam-types.h"
 #include "varnam-util.h"
 
-VARNAM_EXPORT extern int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
+VARNAM_EXPORT extern int 
+varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
 
 /* VARNAM_EXPORT extern int varnam_create_token(varnam *handle,  */
 /*                                              const char *pattern,  */
@@ -35,16 +36,25 @@ VARNAM_EXPORT extern int varnam_init(const char *symbols_file, size_t file_lengt
 /*                                              int match_type, */
 /*                                              int buffered); */
 
-VARNAM_EXPORT extern int varnam_transliterate(varnam *handle, const char *input, char **result);
+VARNAM_EXPORT extern int 
+varnam_transliterate(varnam *handle, const char *input, char **result);
 
-VARNAM_EXPORT extern int varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
+VARNAM_EXPORT extern int 
+varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
 
-VARNAM_EXPORT const char* varnam_scheme_identifier(varnam *handle);
+VARNAM_EXPORT extern const char* 
+varnam_scheme_identifier(varnam *handle);
 
-VARNAM_EXPORT const char* varnam_scheme_display_name(varnam *handle);
+VARNAM_EXPORT extern const char* 
+varnam_scheme_display_name(varnam *handle);
 
-VARNAM_EXPORT const char* varnam_scheme_author(varnam *handle);
+VARNAM_EXPORT extern const char* 
+varnam_scheme_author(varnam *handle);
 
-VARNAM_EXPORT extern int varnam_destroy(varnam *handle);
+VARNAM_EXPORT extern const char* 
+varnam_last_error(varnam *handle);
+
+VARNAM_EXPORT extern int 
+varnam_destroy(varnam *handle);
 
 #endif

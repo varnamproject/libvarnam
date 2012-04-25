@@ -23,6 +23,8 @@
 #include <stddef.h>
 #include <stdarg.h> 
 
+#include "varnam-types.h"
+
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
 /* Cmake will define varnam_EXPORTS on Windows when it
@@ -112,6 +114,8 @@ VARNAM_EXPORT void strbuf_remove_from_last(struct strbuf *string, const char *to
 
 VARNAM_EXPORT void *xmalloc(size_t size);
 VARNAM_EXPORT void xfree (void *ptr);
+
+void set_last_error(varnam *handle, const char *msg);
 
 /* Constants */
 

@@ -48,6 +48,7 @@ initialize_internal()
         vi->current_rtl_token = NULL;
         vi->output = strbuf_init(100);
         vi->rtl_output = strbuf_init(100);
+        vi->last_error = strbuf_init(50);
         vi->lookup = strbuf_init(10);
     }
     return vi;
@@ -104,6 +105,9 @@ varnam_init(const char *symbols_file,
 const char*
 varnam_scheme_identifier(varnam *handle)
 {
+    if (handle == NULL)
+        return NULL;
+
     if(handle->internal->scheme_identifier[0] == '\0') {
         fill_general_values(handle, handle->internal->scheme_identifier, "scheme_identifier");
     }
@@ -114,6 +118,9 @@ varnam_scheme_identifier(varnam *handle)
 const char*
 varnam_scheme_display_name(varnam *handle)
 {
+    if (handle == NULL)
+        return NULL;
+
     if(handle->internal->scheme_display_name[0] == '\0') {
         fill_general_values(handle, handle->internal->scheme_display_name, "scheme_display_name");
     }
@@ -124,11 +131,23 @@ varnam_scheme_display_name(varnam *handle)
 const char*
 varnam_scheme_author(varnam *handle)
 {
+    if (handle == NULL)
+        return NULL;
+
     if(handle->internal->scheme_author[0] == '\0') {
         fill_general_values(handle, handle->internal->scheme_author, "scheme_author");
     }
 
     return handle->internal->scheme_author;
+}
+
+const char*
+varnam_last_error(varnam *handle)
+{
+    if (handle == NULL)
+        return NULL;
+
+    return handle->internal->last_error->buffer;
 }
 
 int 
@@ -137,7 +156,8 @@ varnam_destroy(varnam *handle)
     struct varnam_internal *vi;
     int rc;
 
-    if(handle == NULL) return VARNAM_SUCCESS;
+    if (handle == NULL)
+        return VARNAM_EMPTY_ARGS;
 
     vi = handle->internal;
 
@@ -145,6 +165,7 @@ varnam_destroy(varnam *handle)
     strbuf_destroy(vi->output);
     strbuf_destroy(vi->rtl_output);
     strbuf_destroy(vi->lookup);
+    strbuf_destroy(vi->last_error);
     xfree(vi->last_token);
     xfree(vi->current_token);
     xfree(vi->last_rtl_token);

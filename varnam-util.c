@@ -29,10 +29,8 @@
 * substr(str,start,length,output) writes length characters of str beginning with start to substring.
 * start is is 1-indexed and string should be valid UTF8.
 **/
-void substr(char *substring,
-            const char *string, 
-            int start, 
-            int len)
+void 
+substr(char *substring, const char *string, int start, int len)
 {
     unsigned int bytes, i;
     const unsigned char *str2, *input;
@@ -65,7 +63,8 @@ void substr(char *substring,
  * calculates length of the UTF8 encoded string.
  * length will be the total number of characters and not the bytes
  **/
-int utf8_length(const char *string)
+int 
+utf8_length(const char *string)
 {
     const unsigned char *ustring;
     int len;
@@ -82,7 +81,8 @@ int utf8_length(const char *string)
 }
 
 /* return true if string1 starts with string2 */
-int startswith(const char *string1, const char *string2)
+int 
+startswith(const char *string1, const char *string2)
 {
     for(; ; string1++, string2++) {
         if(!*string2) {
@@ -95,14 +95,27 @@ int startswith(const char *string1, const char *string2)
     return 1;
 }
 
-void *xmalloc(size_t size)
+void*
+xmalloc(size_t size)
 {
     void *ret = malloc(size);
     return ret;
 }
 
-void xfree (void *ptr)
+void 
+xfree (void *ptr)
 {
     if(ptr)
         free(ptr);
+}
+
+void 
+set_last_error(varnam *handle, const char *msg)
+{
+    struct strbuf *last_error;
+
+    last_error = handle->internal->last_error;
+
+    strbuf_clear (last_error);
+    strbuf_add (last_error, msg);
 }

@@ -58,6 +58,7 @@ struct varnam_internal
     struct strbuf *output;
     struct strbuf *rtl_output;
     struct strbuf *lookup;
+    struct strbuf *last_error;
 
     struct token *current_token;
     struct token *current_rtl_token;
