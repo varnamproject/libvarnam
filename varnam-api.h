@@ -26,7 +26,7 @@
 #include "varnam-util.h"
 
 VARNAM_EXPORT extern int 
-varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
+varnam_init(const char *symbols_file, varnam **handle, char **msg);
 
 /* VARNAM_EXPORT extern int varnam_create_token(varnam *handle,  */
 /*                                              const char *pattern,  */

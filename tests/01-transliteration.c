@@ -83,7 +83,7 @@ int basic_transliteration(int argc, char **argv)
         return 1;
     }
     printf("%s\n", argv[0]);
-    rc = varnam_init(argv[0], strlen(argv[0]), &handle, &msg);
+    rc = varnam_init(argv[0], &handle, &msg);
     if(rc != VARNAM_SUCCESS) {
         printf("initialization failed - %s\n", msg);
         return 1;

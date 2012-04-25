@@ -28,7 +28,7 @@ int normal_init(char **argv)
     char *msg;
     varnam *handle;
 
-    rc = varnam_init(argv[0], strlen(argv[0]), &handle, &msg);
+    rc = varnam_init(argv[0], &handle, &msg);
     if(rc != VARNAM_SUCCESS) {
         printf("initialization failed - %s\n", msg);
         return 1;
@@ -44,7 +44,7 @@ int initialize_on_writeprotected_location()
     varnam *handle;
 
     const char *filename = "/etc/varnam-test.vst";
-    rc = varnam_init(filename, strlen(filename), &handle, &msg);
+    rc = varnam_init(filename, &handle, &msg);
 
     if (rc != VARNAM_STORAGE_ERROR)
     {
@@ -62,7 +62,7 @@ int initialize_on_incorrect_location()
     varnam *handle;
 
     const char *filename = "invalid-dir/varnam-test.vst";
-    rc = varnam_init(filename, strlen(filename), &handle, &msg);
+    rc = varnam_init(filename, &handle, &msg);
 
     if (rc != VARNAM_STORAGE_ERROR)
     {
@@ -80,7 +80,7 @@ int initialize_on_already_existing_file()
     varnam *handle;
 
     const char *filename = "00-init.c";
-    rc = varnam_init(filename, strlen(filename), &handle, &msg);
+    rc = varnam_init(filename, &handle, &msg);
 
     if (rc != VARNAM_STORAGE_ERROR)
     {

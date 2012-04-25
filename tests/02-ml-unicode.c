@@ -47,7 +47,7 @@ int ml_unicode_transliteration(int argc, char **argv)
     printf("%s\n", argv[0]);
     printf("%s\n", argv[1]);
 
-    rc = varnam_init(argv[0], strlen(argv[0]), &handle, &msg);
+    rc = varnam_init(argv[0], &handle, &msg);
     if(rc != VARNAM_SUCCESS) {
         printf("initialization failed - %s\n", msg);
         return 1;
@@ -108,7 +108,7 @@ int ml_unicode_reverse_transliteration(int argc, char **argv)
     printf("%s\n", argv[0]);
     printf("%s\n", argv[1]);
 
-    rc = varnam_init(argv[0], strlen(argv[0]), &handle, &msg);
+    rc = varnam_init(argv[0], &handle, &msg);
     if(rc != VARNAM_SUCCESS) {
         printf("initialization failed - %s\n", msg);
         return 1;

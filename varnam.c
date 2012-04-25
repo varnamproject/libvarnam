@@ -55,16 +55,14 @@ initialize_internal()
 }
 
 int 
-varnam_init(const char *symbols_file,
-            size_t file_length, 
-            varnam **handle, 
-            char **msg)
+varnam_init(const char *symbols_file, varnam **handle, char **msg)
 {
     int rc;
     varnam *c;
     struct varnam_internal *vi;
+    size_t filename_length;
 
-    if(symbols_file == NULL || file_length <= 0)
+    if(symbols_file == NULL)
         return VARNAM_MISUSE;
 
     c = (varnam *) xmalloc(sizeof (varnam));
@@ -86,11 +84,12 @@ varnam_init(const char *symbols_file,
         return VARNAM_STORAGE_ERROR;
     }
 
-    c->symbols_file = (char *) xmalloc(file_length + 1);
+    filename_length = strlen(symbols_file);
+    c->symbols_file = (char *) xmalloc(filename_length + 1);
     if(!c->symbols_file)
         return VARNAM_MEMORY_ERROR;
 
-    strncpy(c->symbols_file, symbols_file, file_length + 1);
+    strncpy(c->symbols_file, symbols_file, filename_length + 1);
     vi->renderers = renderers;
     c->internal = vi;
 
