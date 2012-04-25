@@ -1,4 +1,4 @@
-/* tl.c - implementation of transliterator
+/* tl.c - implementation of transliterator and reverese transliterator
  *
  * Copyright (C) 2010 Navaneeth.K.N
  *

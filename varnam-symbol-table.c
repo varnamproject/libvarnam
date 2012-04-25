@@ -22,10 +22,10 @@
 #include "varnam-symbol-table.h"
 #include "varnam-util.h"
 #include "varnam-types.h"
+#include "varnam-result-codes.h"
 
 struct token* 
-find_token(varnam *handle, 
-           const char *lookup)
+find_token(varnam *handle, const char *lookup)
 {
     struct varnam_internal *internal;
     struct token *tok = NULL;
@@ -75,8 +75,7 @@ find_token(varnam *handle,
 }
 
 struct token* 
-find_rtl_token(varnam *handle, 
-               const char *lookup)
+find_rtl_token(varnam *handle, const char *lookup)
 {
     struct varnam_internal *internal;
     struct token *tok = NULL;
@@ -125,9 +124,8 @@ find_rtl_token(varnam *handle,
     return tok;
 }
 
-int can_find_token(varnam *handle, 
-                   struct token *last, 
-                   const char *lookup)
+int 
+can_find_token(varnam *handle, struct token *last, const char *lookup)
 {
     char sql[500];
     sqlite3_stmt *stmt;
@@ -154,9 +152,8 @@ int can_find_token(varnam *handle,
     return result;
 }
 
-int can_find_rtl_token(varnam *handle, 
-                       struct token *last, 
-                       const char *lookup)
+int 
+can_find_rtl_token(varnam *handle, struct token *last, const char *lookup)
 {
     char sql[500];
     sqlite3_stmt *stmt;
@@ -183,9 +180,8 @@ int can_find_rtl_token(varnam *handle,
     return result;
 }
 
-void fill_general_values(varnam *handle, 
-                         char *output, 
-                         const char *name)
+void 
+fill_general_values(varnam *handle, char *output, const char *name)
 {
     char sql[500];
     const char *result;
@@ -214,4 +210,31 @@ void fill_general_values(varnam *handle,
     }
 
     sqlite3_finalize( stmt );
+}
+
+int
+ensure_schema_exist(varnam *handle, char **msg)
+{
+    const char *sql = 
+        "create table if not exists general (key TEXT, value TEXT);"
+        "create table if not exists symbols (type TEXT, pattern TEXT, value1 TEXT, value2 TEXT, children INTEGER, tag TEXT);"
+        "create index if not exists index_general on general (key);"
+        "create index if not exists index_pattern on symbols (pattern);"
+        "create index if not exists index_value1  on symbols (value1);"
+        "create index if not exists index_value2  on symbols (value2);";
+ 
+   char *zErrMsg = 0;
+   int rc;
+
+    assert(handle);
+    assert(handle->internal->db);
+
+    rc = sqlite3_exec(handle->internal->db, sql, NULL, 0, &zErrMsg);
+    if( rc != SQLITE_OK ){
+        asprintf(msg, "Failed to initialize output file : %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return VARNAM_STORAGE_ERROR;
+    }
+
+    return VARNAM_SUCCESS;
 }

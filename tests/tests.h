@@ -20,6 +20,11 @@
 #define TESTS_H_INCLUDED_125727
 
 /**
+ * this tests the initialization of varnam library
+ **/
+extern int test_varnam_init(int argc, char **argv);
+
+/**
  * this tests the basic transliteration process
  **/
 extern int basic_transliteration(int argc, char **argv);

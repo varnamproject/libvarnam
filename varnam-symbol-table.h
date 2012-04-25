@@ -28,7 +28,8 @@
 * A valid instance of token will returned upon success. 
 * NULL value indicates a failure to get the token
 **/
-struct token *find_token(varnam *handle, const char *lookup);
+struct token*
+find_token(varnam *handle, const char *lookup);
 
 /**
 * This function will try to get a token for the lookup text provided. 
@@ -36,29 +37,33 @@ struct token *find_token(varnam *handle, const char *lookup);
 * A valid instance of token will returned upon success. 
 * NULL value indicates a failure to get the token
 **/
-struct token *find_rtl_token(varnam *handle, const char *lookup);
+struct token*
+find_rtl_token(varnam *handle, const char *lookup);
 
 /**
 * Does a search in the symbol table and retrns a boolean value indicating
 * the possibility of finding a token for the lookup text.
 **/
-int can_find_token(varnam *handle, 
-                   struct token *last, 
-                   const char *lookup);
+int 
+can_find_token(varnam *handle, struct token *last, const char *lookup);
 
 /**
 * Does a search in the symbol table and retrns a boolean value indicating
 * the possibility of finding a rtl token for the lookup text.
 **/
-int can_find_rtl_token(varnam *handle, 
-                       struct token *last, 
-                       const char *lookup);
+int 
+can_find_rtl_token(varnam *handle, struct token *last, const char *lookup);
 
 /**
  * fetches the value for the supplied name and writes that to the output
  **/
-void fill_general_values(varnam *handle, 
-                         char *output, 
-                         const char *name);
+void 
+fill_general_values(varnam *handle, char *output, const char *name);
+
+/**
+ * checks the schema availability. this function will create it when necessary
+ **/
+int
+ensure_schema_exist(varnam *handle, char **msg);
 
 #endif

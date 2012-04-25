@@ -27,6 +27,14 @@
 
 VARNAM_EXPORT extern int varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg);
 
+/* VARNAM_EXPORT extern int varnam_create_token(varnam *handle,  */
+/*                                              const char *pattern,  */
+/*                                              const char *value1, */
+/*                                              const char *value2, */
+/*                                              int token_type, */
+/*                                              int match_type, */
+/*                                              int buffered); */
+
 VARNAM_EXPORT extern int varnam_transliterate(varnam *handle, const char *input, char **result);
 
 VARNAM_EXPORT extern int varnam_reverse_transliterate(varnam *handle, const char *input, char **result);

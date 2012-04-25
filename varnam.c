@@ -54,7 +54,10 @@ initialize_internal()
 }
 
 int 
-varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char **msg)
+varnam_init(const char *symbols_file,
+            size_t file_length, 
+            varnam **handle, 
+            char **msg)
 {
     int rc;
     varnam *c;
@@ -79,7 +82,7 @@ varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char 
     if( rc ) {
         asprintf(msg, "Can't open %s: %s\n", symbols_file, sqlite3_errmsg(vi->db));
         sqlite3_close(vi->db);
-        return VARNAM_ERROR;
+        return VARNAM_STORAGE_ERROR;
     }
 
     c->symbols_file = (char *) xmalloc(file_length + 1);
@@ -89,6 +92,10 @@ varnam_init(const char *symbols_file, size_t file_length, varnam **handle, char 
     strncpy(c->symbols_file, symbols_file, file_length + 1);
     vi->renderers = renderers;
     c->internal = vi;
+
+    rc = ensure_schema_exist(c, msg);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
     
     *handle = c;
     return VARNAM_SUCCESS;
