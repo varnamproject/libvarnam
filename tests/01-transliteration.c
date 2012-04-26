@@ -72,6 +72,11 @@ static int scheme_details(varnam *handle)
     return 0;
 }
 
+static void log_fun(const char* msg)
+{
+    printf("%s\n", msg);
+}
+
 int basic_transliteration(int argc, char **argv)
 {
     varnam *handle;
@@ -88,6 +93,9 @@ int basic_transliteration(int argc, char **argv)
         printf("initialization failed - %s\n", msg);
         return 1;
     }
+
+    rc = varnam_enable_logging(handle, VARNAM_LOG_DEBUG, &log_fun);
+    printf("Return code is %d", rc);
 
     rc = scheme_details (handle);
     if(rc != VARNAM_SUCCESS) {

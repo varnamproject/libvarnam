@@ -27,6 +27,19 @@
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
+/* logging helpers */
+#define debug_log(msg) {                                                                                   \
+    if (handle->internal->log_level == VARNAM_LOG_DEBUG && handle->internal->log_callback != NULL) {       \
+        handle->internal->log_callback(msg);                                                               \
+    }                                                                                                      \
+}                                                                                                          \
+
+#define log(msg) {                                                                                         \
+    if (handle->internal->log_callback != NULL) {                                                          \
+        handle->internal->log_callback(msg);                                                               \
+    }                                                                                                      \
+}                                                                                                          \
+
 /* Cmake will define varnam_EXPORTS on Windows when it
 configures to build a shared library. If you are going to use
 another build system on windows or create the visual studio

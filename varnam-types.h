@@ -26,6 +26,10 @@
 #define VARNAM_TOKEN_TAG_MAX        15
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
 
+/* logging */
+#define VARNAM_LOG_DEFAULT 1
+#define VARNAM_LOG_DEBUG   2
+
 /* allowed runtime functions */
 #define VARNAM_RULE_FN_INITIALS "if_initials"
 #define VARNAM_RULE_FN_BEGINS_WITH "begins_with"
@@ -68,6 +72,9 @@ struct varnam_internal
 
     int last_token_available;
     int last_rtl_token_available;
+
+    int log_level;
+    void (*log_callback)(const char*);
 };
 
 typedef struct varnam {

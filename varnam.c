@@ -50,6 +50,8 @@ initialize_internal()
         vi->rtl_output = strbuf_init(100);
         vi->last_error = strbuf_init(50);
         vi->lookup = strbuf_init(10);
+        vi->log_level = VARNAM_LOG_DEFAULT;
+        vi->log_callback = NULL;
     }
     return vi;
 }
@@ -147,6 +149,24 @@ varnam_last_error(varnam *handle)
         return NULL;
 
     return handle->internal->last_error->buffer;
+}
+
+int 
+varnam_enable_logging(varnam *handle, int log_type, void (*callback)(const char*))
+{
+    if (handle == NULL)
+        return VARNAM_EMPTY_ARGS;
+
+    if (log_type != VARNAM_LOG_DEFAULT && log_type != VARNAM_LOG_DEBUG)
+    {
+        set_last_error (handle, "Incorrect log type. Valid values are VARNAM_LOG_DEFAULT or VARNAM_LOG_DEBUG");
+        return VARNAM_ERROR;
+    }
+
+    handle->internal->log_level = log_type;
+    handle->internal->log_callback = callback;
+
+    return VARNAM_SUCCESS;
 }
 
 int 

@@ -54,6 +54,28 @@ varnam_scheme_author(varnam *handle);
 VARNAM_EXPORT extern const char* 
 varnam_last_error(varnam *handle);
 
+/**
+ * Enable logging.
+ *
+ * handle   - A valid varnam handle instance
+ * log_type - Either VARNAM_LOG_DEFAULT or VARNAM_LOG_DEBUG
+ * callback - Actual function that does the logging
+ *
+ * USAGE 
+ *
+ * varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, func) - Enables default logging
+ * varnam_enable_logging (handle, VARNAM_LOG_DBUG, func)    - Enables debug level logging
+ * varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, NULL) - Disables logging
+ *
+ * Logging is hierarchical. So enabling debug level logging will generate all the log messages
+ * varnam is writing. Default logging level will not produce debug level messages
+ **/
+VARNAM_EXPORT extern int varnam_enable_logging(
+    varnam *handle,
+    int log_type,
+    void (*callback)(const char*)
+);
+
 VARNAM_EXPORT extern int 
 varnam_destroy(varnam *handle);
 
