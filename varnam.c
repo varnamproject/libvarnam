@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <string.h>
+#include <stdarg.h>
 
 #include "varnam-api.h"
 #include "varnam-types.h"
@@ -53,6 +54,9 @@ initialize_internal()
         vi->log_level = VARNAM_LOG_DEFAULT;
         vi->log_callback = NULL;
         vi->vst_buffering = 0;
+
+        /* configuration options */
+        vi->config_use_dead_consonants = 1;
     }
     return vi;
 }
@@ -218,6 +222,31 @@ varnam_flush_buffer(varnam *handle)
         return VARNAM_ARGS_ERROR;
 
     return vst_flush_changes(handle);
+}
+
+int 
+varnam_config(varnam *handle, int type, ...)
+{
+    va_list args;
+    int rc = VARNAM_SUCCESS;
+
+    if (handle == NULL)
+        return VARNAM_ARGS_ERROR;
+
+    va_start (args, type);
+    switch (type)
+    {
+    case VARNAM_CONFIG_USE_DEAD_CONSONANTS:
+        handle->internal->config_use_dead_consonants = va_arg(args, int);
+        break;
+    default:
+        set_last_error (handle, "Invalid configuration key");
+        rc = VARNAM_INVALID_CONFIG;
+    }
+
+    va_end (args);
+
+    return rc;
 }
 
 int 

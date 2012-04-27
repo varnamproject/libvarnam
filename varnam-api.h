@@ -1,4 +1,3 @@
-
 /* varnam.h
  *
  * Copyright (C) Navaneeth.K.N
@@ -27,6 +26,36 @@
 
 VARNAM_EXPORT extern int 
 varnam_init(const char *symbols_file, varnam **handle, char **msg);
+
+/**
+ * Configure varnam library.
+ *
+ * handle - Valid varnam instance
+ * type   - One of VARNAM_CONFIG_XXX
+ * args   - Depends on the specified VARNAM_CONFIG_XXX
+ *
+ * NOTES
+ *
+ * This function won't persist configuration options permanantly. It will reset 
+ * back to the default configuration when varnam_init() is called next time.
+ *
+ * Following configuration options are available.
+ *
+ * VARNAM_CONFIG_USE_DEAD_CONSONANTS
+ *   This will make varnam_create_token() to infer dead consonants and persist that rather
+ *   than storing consonants. This option is set by default when varnam initializes. 
+ *   Eg : varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 0) - Turns this option off
+ *        varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 1) - Turns this option on
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS         - Successfull operation
+ * VARNAM_ARGS_ERROR      - Invalid handle
+ * VARNAM_INVALID_CONFIG  - Invalid configuration option
+ * VARNAM_ERROR           - All other errors
+ **/
+VARNAM_EXPORT extern int 
+varnam_config(varnam *handle, int type, ...);
 
 /**
  * Creates a token
@@ -77,6 +106,12 @@ varnam_scheme_display_name(varnam *handle);
 
 VARNAM_EXPORT extern const char* 
 varnam_scheme_author(varnam *handle);
+
+VARNAM_EXPORT extern int
+varnam_set_metadata(
+    varnam *handle,
+    const char *
+);
 
 VARNAM_EXPORT extern const char* 
 varnam_last_error(varnam *handle);

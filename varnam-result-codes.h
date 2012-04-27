@@ -27,5 +27,6 @@
 #define VARNAM_MEMORY_ERROR               4
 #define VARNAM_PARTIAL_RENDERING          5
 #define VARNAM_STORAGE_ERROR              6
+#define VARNAM_INVALID_CONFIG             7
 
 #endif

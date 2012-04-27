@@ -47,6 +47,9 @@
 #define VARNAM_TOKEN_SYMBOL                    "sy"
 #define VARNAM_TOKEN_OTHER                     "ot"
 
+/* configuration options */
+#define VARNAM_CONFIG_USE_DEAD_CONSONANTS  100
+
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
@@ -81,6 +84,9 @@ struct varnam_internal
     void (*log_callback)(const char*);
 
     int vst_buffering;
+
+    /* configuration options */
+    int config_use_dead_consonants;
 };
 
 typedef struct varnam {

@@ -34,6 +34,20 @@ int normal_init(char **argv)
         return 1;
     }
 
+    if (handle->internal->config_use_dead_consonants != 1)
+    {
+        printf("varnam_init() should have turned on use dead consonant option");
+        return 1;
+    }
+
+    rc = varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 0);
+
+    if (handle->internal->config_use_dead_consonants != 0)
+    {
+        printf("varnam_config() is not changing value of use_dead_consonant option");
+        return 1;
+    }
+
     return VARNAM_SUCCESS;
 }
 
