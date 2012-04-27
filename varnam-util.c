@@ -117,5 +117,6 @@ set_last_error(varnam *handle, const char *msg)
     last_error = handle->internal->last_error;
 
     strbuf_clear (last_error);
-    strbuf_add (last_error, msg);
+    if (msg != NULL)
+        strbuf_add (last_error, msg);
 }

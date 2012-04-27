@@ -29,7 +29,8 @@ static struct tests_t tests[] = {
     { "test-varnam-initialization", test_varnam_init },
     { "basic-transliteration", basic_transliteration },
     { "ml-unicode", ml_unicode_transliteration },
-    { "ml-unicode-reverse", ml_unicode_reverse_transliteration }
+    { "ml-unicode-reverse", ml_unicode_reverse_transliteration },
+    { "test-vst-file-creation", test_vst_file_creation }
 };
 
 #define NO_OF_TESTS (sizeof(tests)/sizeof(tests[0]))

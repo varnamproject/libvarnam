@@ -217,7 +217,7 @@ ensure_schema_exist(varnam *handle, char **msg)
 {
     const char *sql = 
         "create table if not exists general (key TEXT, value TEXT);"
-        "create table if not exists symbols (type TEXT, pattern TEXT, value1 TEXT, value2 TEXT, children INTEGER, tag TEXT);"
+        "create table if not exists symbols (type TEXT, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
         "create index if not exists index_general on general (key);"
         "create index if not exists index_pattern on symbols (pattern);"
         "create index if not exists index_value1  on symbols (value1);"
@@ -236,5 +236,187 @@ ensure_schema_exist(varnam *handle, char **msg)
         return VARNAM_STORAGE_ERROR;
     }
 
+    return VARNAM_SUCCESS;
+}
+
+int
+vst_start_buffering(varnam *handle)
+{
+    char *zErrMsg, *msg;
+    int rc;
+    const char *sql = "BEGIN;";
+
+    assert(handle);
+
+    if (handle->internal->vst_buffering)
+        return VARNAM_SUCCESS;
+
+    rc = sqlite3_exec(handle->internal->db, sql, NULL, 0, &zErrMsg);
+    if( rc != SQLITE_OK )
+    {
+        asprintf(&msg, "Failed to start buffering : %s", zErrMsg);
+        set_last_error (handle, msg);
+
+        sqlite3_free(zErrMsg);
+        xfree (msg);
+
+        return VARNAM_STORAGE_ERROR;
+    }
+    
+    handle->internal->vst_buffering = 1;
+
+    return VARNAM_SUCCESS;
+}
+
+static int 
+already_persisted(
+    varnam *handle,
+    const char *pattern,
+    const char *value1, 
+    int match_type,
+    int *result)
+{
+    int rc;
+    char *msg;
+    sqlite3 *db; sqlite3_stmt *stmt;
+
+    assert (result);
+
+    *result = 0;
+    db = handle->internal->db;
+
+    if (match_type == VARNAM_MATCH_EXACT)
+        rc = sqlite3_prepare_v2( db, "select count(1) from symbols where pattern = trim(?1) and match_type = ?2", -1, &stmt, NULL );
+    else
+        rc = sqlite3_prepare_v2( db, "select count(1) from symbols where pattern = trim(?1) and value1 = trim(?2)", -1, &stmt, NULL );
+
+    if(rc != SQLITE_OK)
+    {
+        asprintf(&msg, "Failed to check already persisted : %s", sqlite3_errmsg(db));
+        set_last_error (handle, msg);
+        xfree (msg);
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_bind_text(stmt, 1, pattern, -1, NULL);
+    if (match_type == VARNAM_MATCH_EXACT)
+        sqlite3_bind_int (stmt, 2, match_type);
+    else
+        sqlite3_bind_text(stmt, 2, value1, -1, NULL);
+
+    rc = sqlite3_step( stmt );
+    if( rc == SQLITE_ROW )
+    {
+        if( sqlite3_column_int( stmt, 0 ) > 0 )
+        {
+            *result = 1;
+        }
+    }
+    else if ( rc == SQLITE_DONE )
+    {
+        *result = 0;
+    }
+    else
+    {
+        asprintf(&msg, "Failed to check already persisted : %s", sqlite3_errmsg(db));
+        set_last_error (handle, msg);
+        xfree (msg);
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_finalize( stmt );
+
+    return VARNAM_SUCCESS;
+}
+
+int 
+vst_persist_token(
+    varnam *handle,
+    const char *pattern,
+    const char *value1,
+    const char *value2,
+    const char *token_type,
+    int match_type)
+{
+    int rc, persisted;
+    char *msg;
+    sqlite3 *db; sqlite3_stmt *stmt;
+    const char *sql = "insert into symbols values (trim(?1), trim(?2), trim(?3), trim(?4), trim(?5), ?6);";
+
+    assert(handle); assert(pattern); assert(value1); assert(token_type);
+
+    rc = already_persisted (handle, pattern, value1, match_type, &persisted);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
+
+    if (persisted)
+    {
+        asprintf(&msg, "%s => %s is already available. Duplicate entries are not allowed", pattern, value1);
+        set_last_error (handle, msg);
+        xfree (msg);
+        return VARNAM_ERROR;
+    }
+    
+    db = handle->internal->db;
+
+    rc = sqlite3_prepare_v2( db, sql, -1, &stmt, NULL );
+    if(rc != SQLITE_OK)
+    {
+        asprintf(&msg, "Failed to initialize statement : %s", sqlite3_errmsg(db));
+        set_last_error (handle, msg);
+        xfree (msg);
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_bind_text(stmt, 1, token_type, -1, NULL);
+    sqlite3_bind_text(stmt, 2, pattern,    -1, NULL);
+    sqlite3_bind_text(stmt, 3, value1,     -1, NULL);
+    sqlite3_bind_text(stmt, 4, value2 == NULL ? "" : value2,     -1, NULL);
+    sqlite3_bind_text(stmt, 5, "",         -1, NULL);
+    sqlite3_bind_int (stmt, 6, match_type);
+
+    rc = sqlite3_step( stmt );    
+    if( rc != SQLITE_DONE ) 
+    {
+        asprintf(&msg, "Failed to persist token : %s", sqlite3_errmsg(db));
+        set_last_error (handle, msg);
+        xfree (msg);
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_finalize( stmt );
+
+    return VARNAM_SUCCESS;
+}
+
+int
+vst_flush_changes(varnam *handle)
+{
+    char *zErrMsg, *msg;
+    int rc;
+    const char *sql = "COMMIT;";
+
+    assert(handle);
+
+    if (!handle->internal->vst_buffering)
+        return VARNAM_SUCCESS;
+
+    rc = sqlite3_exec(handle->internal->db, sql, NULL, 0, &zErrMsg);
+    if( rc != SQLITE_OK )
+    {
+        asprintf(&msg, "Failed to flush changes : %s", zErrMsg);
+        set_last_error (handle, msg);
+
+        sqlite3_free(zErrMsg);
+        xfree (msg);
+
+        return VARNAM_STORAGE_ERROR;
+    }
+
+    handle->internal->vst_buffering = 0;
     return VARNAM_SUCCESS;
 }

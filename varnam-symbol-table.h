@@ -66,4 +66,29 @@ fill_general_values(varnam *handle, char *output, const char *name);
 int
 ensure_schema_exist(varnam *handle, char **msg);
 
+/**
+ * Starts buffering
+ **/
+int
+vst_start_buffering(varnam *handle);
+
+/**
+ * Persist the token
+ **/
+int 
+vst_persist_token(
+    varnam *handle,
+    const char *pattern,
+    const char *value1,
+    const char *value2,
+    const char *token_type,
+    int match_type);
+
+/**
+ * Flushes changes to disk
+ **/
+int
+vst_flush_changes(
+    varnam *handle);
+
 #endif

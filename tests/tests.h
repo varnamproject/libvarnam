@@ -39,4 +39,9 @@ extern int ml_unicode_transliteration(int argc, char **argv);
  **/
 extern int ml_unicode_reverse_transliteration(int argc, char **argv);
 
+/**
+ * tests vst file generation, token creation etc
+ **/
+extern int test_vst_file_creation(int argc, char **argv);
+
 #endif

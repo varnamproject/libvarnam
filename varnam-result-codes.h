@@ -22,8 +22,8 @@
 
 #define VARNAM_SUCCESS                    0
 #define VARNAM_MISUSE                     1
-#define VARNAM_EMPTY_ARGS                 2
-#define VARNAM_ERROR                      3
+#define VARNAM_ERROR                      2
+#define VARNAM_ARGS_ERROR                 3
 #define VARNAM_MEMORY_ERROR               4
 #define VARNAM_PARTIAL_RENDERING          5
 #define VARNAM_STORAGE_ERROR              6

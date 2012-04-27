@@ -52,6 +52,7 @@ initialize_internal()
         vi->lookup = strbuf_init(10);
         vi->log_level = VARNAM_LOG_DEFAULT;
         vi->log_callback = NULL;
+        vi->vst_buffering = 0;
     }
     return vi;
 }
@@ -155,7 +156,7 @@ int
 varnam_enable_logging(varnam *handle, int log_type, void (*callback)(const char*))
 {
     if (handle == NULL)
-        return VARNAM_EMPTY_ARGS;
+        return VARNAM_ARGS_ERROR;
 
     if (log_type != VARNAM_LOG_DEFAULT && log_type != VARNAM_LOG_DEBUG)
     {
@@ -170,13 +171,63 @@ varnam_enable_logging(varnam *handle, int log_type, void (*callback)(const char*
 }
 
 int 
+varnam_create_token(
+    varnam *handle,
+    const char *pattern,
+    const char *value1,
+    const char *value2,
+    const char *token_type,
+    int match_type,
+    int buffered)
+{
+    int rc;
+
+    set_last_error (handle, NULL);
+
+    if (handle == NULL || pattern == NULL || value1 == NULL || token_type == NULL)
+        return VARNAM_ARGS_ERROR;
+
+    if (strlen(pattern) > VARNAM_SYMBOL_MAX ||
+        strlen(value1) > VARNAM_SYMBOL_MAX  ||
+        strlen(value2) > VARNAM_SYMBOL_MAX)
+    {
+        set_last_error (handle, "Length of pattern, value1 or value2 should be less than VARNAM_SYMBOL_MAX");
+        return VARNAM_ARGS_ERROR;
+    }
+
+    if (match_type != VARNAM_MATCH_EXACT && match_type != VARNAM_MATCH_POSSIBILITY)
+    {
+        set_last_error (handle, "match_type should be either VARNAM_MATCH_EXACT or VARNAM_MATCH_POSSIBILITY");
+        return VARNAM_ARGS_ERROR;
+    }
+
+    if (buffered)
+    {
+        rc = vst_start_buffering (handle);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+    }
+
+    return vst_persist_token (handle, pattern, value1, value2, token_type, match_type);
+}
+
+int 
+varnam_flush_buffer(varnam *handle)
+{
+    if (handle == NULL)
+        return VARNAM_ARGS_ERROR;
+
+    return vst_flush_changes(handle);
+}
+
+int 
 varnam_destroy(varnam *handle)
 {
     struct varnam_internal *vi;
     int rc;
 
     if (handle == NULL)
-        return VARNAM_EMPTY_ARGS;
+        return VARNAM_ARGS_ERROR;
 
     vi = handle->internal;
 

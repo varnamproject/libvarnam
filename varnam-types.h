@@ -30,6 +30,10 @@
 #define VARNAM_LOG_DEFAULT 1
 #define VARNAM_LOG_DEBUG   2
 
+/* pattern matching */
+#define VARNAM_MATCH_EXACT       1
+#define VARNAM_MATCH_POSSIBILITY 2
+
 /* allowed runtime functions */
 #define VARNAM_RULE_FN_INITIALS "if_initials"
 #define VARNAM_RULE_FN_BEGINS_WITH "begins_with"
@@ -75,6 +79,8 @@ struct varnam_internal
 
     int log_level;
     void (*log_callback)(const char*);
+
+    int vst_buffering;
 };
 
 typedef struct varnam {
