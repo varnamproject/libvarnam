@@ -174,26 +174,44 @@ varnam_enable_logging(varnam *handle, int log_type, void (*callback)(const char*
     return VARNAM_SUCCESS;
 }
 
+/* Checks if the string has inherent 'a' sound. If yes, we can infer dead consonant from it */
+static int can_generate_dead_consonant(const char *string, size_t len)
+{
+    if(len <= 1)
+        return 0;
+    return string[len - 2] != 'a' && string[len - 1] == 'a';
+}
+
 int 
 varnam_create_token(
     varnam *handle,
     const char *pattern,
     const char *value1,
     const char *value2,
-    const char *token_type,
+    int token_type,
     int match_type,
     int buffered)
 {
     int rc;
+    size_t pattern_len;
+
+    char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX], virama[VARNAM_SYMBOL_MAX];
+    virama[0] = '\0';
+    strncpy (p,  pattern, VARNAM_SYMBOL_MAX);
+    strncpy (v1, value1,  VARNAM_SYMBOL_MAX);
+    if (value2 != NULL)
+        strncpy (v2, value2,  VARNAM_SYMBOL_MAX);
+    else
+        v2[0] = '\0';
 
     set_last_error (handle, NULL);
 
-    if (handle == NULL || pattern == NULL || value1 == NULL || token_type == NULL)
+    if (handle == NULL || pattern == NULL || value1 == NULL)
         return VARNAM_ARGS_ERROR;
 
     if (strlen(pattern) > VARNAM_SYMBOL_MAX ||
         strlen(value1) > VARNAM_SYMBOL_MAX  ||
-        strlen(value2) > VARNAM_SYMBOL_MAX)
+        (value2 != NULL && strlen(value2) > VARNAM_SYMBOL_MAX))
     {
         set_last_error (handle, "Length of pattern, value1 or value2 should be less than VARNAM_SYMBOL_MAX");
         return VARNAM_ARGS_ERROR;
@@ -205,6 +223,40 @@ varnam_create_token(
         return VARNAM_ARGS_ERROR;
     }
 
+    pattern_len = strlen(pattern);
+
+    if (token_type == VARNAM_TOKEN_CONSONANT && 
+        handle->internal->config_use_dead_consonants)
+    {
+        rc = vst_get_virama(handle, virama);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+        else if (virama[0] == '\0')
+        {
+            set_last_error (handle, "Virama needs to be set before auto generating dead consonants");
+            return VARNAM_ERROR;
+        }
+
+        printf("virama is the - %s\n", virama);
+        printf("v1 is the - %s\n", value1);
+
+        /* Checks if it is already a dead consonant */
+        if (utf8_ends_with(value1, virama))
+        {
+            token_type = VARNAM_TOKEN_DEAD_CONSONANT;
+        }
+        else if (can_generate_dead_consonant(pattern, pattern_len))
+        {
+            substr(p, pattern, 1, (int) (pattern_len - 1));
+            snprintf(v1, VARNAM_SYMBOL_MAX, "%s%s", value1, virama);
+
+            if (value2 != NULL)
+                snprintf(v2, VARNAM_SYMBOL_MAX, "%s%s", value2, virama);
+
+            token_type = VARNAM_TOKEN_DEAD_CONSONANT;
+        }
+    }
+
     if (buffered)
     {
         rc = vst_start_buffering (handle);
@@ -212,7 +264,7 @@ varnam_create_token(
             return rc;
     }
 
-    return vst_persist_token (handle, pattern, value1, value2, token_type, match_type);
+    return vst_persist_token (handle, p, v1, v2, token_type, match_type);
 }
 
 int 

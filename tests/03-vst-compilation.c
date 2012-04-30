@@ -47,6 +47,45 @@ int create_without_buffering()
     return 0;
 }
 
+int auto_create_dead_consonants()
+{
+    int rc;
+    char *msg;
+    varnam *handle;
+
+    const char *filename = "output/03-auto_create_dead_co.vst";
+    rc = varnam_init(filename, &handle, &msg);
+
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", msg);        
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "~", "്", NULL, VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "ka", "ക", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "p", "പ്", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    return 0;
+}
+
 int create_with_buffering()
 {
     int rc;
@@ -233,6 +272,10 @@ int test_vst_file_creation(int argc, char **argv)
         return 1;
 
     rc = maxlength_check();
+    if (rc)
+        return 1;
+
+    rc = auto_create_dead_consonants();
     if (rc)
         return 1;
 

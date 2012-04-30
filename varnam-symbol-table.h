@@ -81,7 +81,7 @@ vst_persist_token(
     const char *pattern,
     const char *value1,
     const char *value2,
-    const char *token_type,
+    int token_type,
     int match_type);
 
 /**
@@ -90,5 +90,11 @@ vst_persist_token(
 int
 vst_flush_changes(
     varnam *handle);
+
+/**
+ * Reads VARNAM_TOKEN_VIRAMA and assigns that to output
+ **/
+int
+vst_get_virama(varnam* handle, char* output);
 
 #endif

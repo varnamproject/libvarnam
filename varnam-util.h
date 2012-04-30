@@ -108,6 +108,9 @@ VARNAM_EXPORT int startswith(const char *string1, const char *string2);
  **/
 VARNAM_EXPORT int utf8_length(const char *string);
 
+int
+utf8_ends_with(const char *buffer, const char *tocheck);
+
 struct strbuf {
     char *buffer;          /* null terminated buffer */
     size_t length;         /* length of the string in bytes excluding null terminator */

@@ -89,7 +89,7 @@ resolve_token(varnam *handle,
         return;
     }
 
-    if(strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0) 
+    if(match->type == VARNAM_TOKEN_VOWEL)
     {
         if(strbuf_endswith(string, virama)) {
             /* removing the virama and adding dependent vowel value */
@@ -126,7 +126,7 @@ set_last_token(varnam *handle, struct token *tok)
         assert(vi->last_token);
     }
 
-    strncpy (vi->last_token->type, tok->type, VARNAM_TOKEN_TYPE_MAX);
+    vi->last_token->type = tok->type;
     strncpy (vi->last_token->pattern, tok->pattern, VARNAM_SYMBOL_MAX);
     strncpy (vi->last_token->value1, tok->value1, VARNAM_SYMBOL_MAX);
     strncpy (vi->last_token->value2, tok->value2, VARNAM_SYMBOL_MAX);
@@ -151,7 +151,7 @@ set_last_rtl_token(varnam *handle, struct token *tok)
         assert(vi->last_rtl_token);
     }
 
-    strncpy (vi->last_rtl_token->type, tok->type, VARNAM_TOKEN_TYPE_MAX);
+    vi->last_rtl_token->type = tok->type;
     strncpy (vi->last_rtl_token->pattern, tok->pattern, VARNAM_SYMBOL_MAX);
     strncpy (vi->last_rtl_token->value1, tok->value1, VARNAM_SYMBOL_MAX);
     strncpy (vi->last_rtl_token->value2, tok->value2, VARNAM_SYMBOL_MAX);
@@ -261,7 +261,7 @@ resolve_rtl_token(varnam *handle,
         }
     }
 
-    if (strcmp(match->type, VARNAM_TOKEN_VOWEL) == 0) 
+    if (match->type == VARNAM_TOKEN_VOWEL)
     {
         if (strcmp (match->value1, lookup) == 0 && handle->internal->last_rtl_token_available) {
             /* vowel is standing in it's full form in between a word. need to prefix _

@@ -39,13 +39,16 @@
 #define VARNAM_RULE_FN_BEGINS_WITH "begins_with"
 
 /* available type of tokens */
-#define VARNAM_TOKEN_VOWEL                     "vo"
-#define VARNAM_TOKEN_CONSONANT                 "co"
-#define VARNAM_TOKEN_DEAD_CONSONANT            "dco"
-#define VARNAM_TOKEN_CONSONANT_VOWEL           "cv"
-#define VARNAM_TOKEN_NUMBER                    "nu"  
-#define VARNAM_TOKEN_SYMBOL                    "sy"
-#define VARNAM_TOKEN_OTHER                     "ot"
+#define VARNAM_TOKEN_VOWEL                     1
+#define VARNAM_TOKEN_CONSONANT                 2
+#define VARNAM_TOKEN_DEAD_CONSONANT            3
+#define VARNAM_TOKEN_CONSONANT_VOWEL           4
+#define VARNAM_TOKEN_NUMBER                    5
+#define VARNAM_TOKEN_SYMBOL                    6
+#define VARNAM_TOKEN_ANUSVARA                  7
+#define VARNAM_TOKEN_VISARGA                   8
+#define VARNAM_TOKEN_VIRAMA                    9
+#define VARNAM_TOKEN_OTHER                     10
 
 /* configuration options */
 #define VARNAM_CONFIG_USE_DEAD_CONSONANTS  100
@@ -95,7 +98,7 @@ typedef struct varnam {
 } varnam;
 
 struct token {
-    char type[VARNAM_TOKEN_TYPE_MAX];
+    int type;
     char tag[VARNAM_TOKEN_TAG_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];

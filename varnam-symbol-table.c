@@ -30,10 +30,9 @@ find_token(varnam *handle, const char *lookup)
     struct varnam_internal *internal;
     struct token *tok = NULL;
     char sql[500]; 
-    const char *pattern, *value1, *value2, *type, *tag;
+    const char *pattern, *value1, *value2, *tag;
     sqlite3_stmt *stmt; sqlite3 *db;
-    int rc;
-    int has_children;
+    int rc, type, has_children;
     
     assert( handle ); assert( lookup );
 
@@ -48,7 +47,7 @@ find_token(varnam *handle, const char *lookup)
         rc = sqlite3_step (stmt);
         if( rc == SQLITE_ROW ) 
         {
-            type = (const char*) sqlite3_column_text( stmt, 0 );
+            type = sqlite3_column_int( stmt, 0 );
             pattern = (const char*) sqlite3_column_text( stmt, 1 );
             value1 = (const char*) sqlite3_column_text( stmt, 2 );
             value2 = (const char*) sqlite3_column_text( stmt, 3 );
@@ -61,7 +60,7 @@ find_token(varnam *handle, const char *lookup)
             }
 
             tok = internal->current_token;
-            strncpy( tok->type, type, VARNAM_TOKEN_TYPE_MAX);
+            tok->type = type;
             strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
             strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
             strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
@@ -80,10 +79,9 @@ find_rtl_token(varnam *handle, const char *lookup)
     struct varnam_internal *internal;
     struct token *tok = NULL;
     char sql[500]; 
-    const char *pattern, *value1, *value2, *type, *tag;
+    const char *pattern, *value1, *value2, *tag;
     sqlite3_stmt *stmt; sqlite3 *db;
-    int rc;
-    int has_children;
+    int rc, type, has_children;
     
     assert( handle ); assert( lookup );
 
@@ -98,7 +96,7 @@ find_rtl_token(varnam *handle, const char *lookup)
         rc = sqlite3_step (stmt);
         if( rc == SQLITE_ROW ) 
         {
-            type = (const char*) sqlite3_column_text( stmt, 0 );
+            type = sqlite3_column_int( stmt, 0 );
             pattern = (const char*) sqlite3_column_text( stmt, 1 );
             value1 = (const char*) sqlite3_column_text( stmt, 2 );
             value2 = (const char*) sqlite3_column_text( stmt, 3 );
@@ -111,7 +109,7 @@ find_rtl_token(varnam *handle, const char *lookup)
             }
 
             tok = internal->current_rtl_token;
-            strncpy( tok->type, type, VARNAM_TOKEN_TYPE_MAX);
+            tok->type = type;
             strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
             strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
             strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
@@ -217,7 +215,7 @@ ensure_schema_exist(varnam *handle, char **msg)
 {
     const char *sql = 
         "create table if not exists general (key TEXT, value TEXT);"
-        "create table if not exists symbols (type TEXT, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
+        "create table if not exists symbols (type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
         "create index if not exists index_general on general (key);"
         "create index if not exists index_pattern on symbols (pattern);"
         "create index if not exists index_value1  on symbols (value1);"
@@ -337,13 +335,13 @@ vst_persist_token(
     const char *pattern,
     const char *value1,
     const char *value2,
-    const char *token_type,
+    int token_type,
     int match_type)
 {
     int rc, persisted;
     char *msg;
     sqlite3 *db; sqlite3_stmt *stmt;
-    const char *sql = "insert into symbols values (trim(?1), trim(?2), trim(?3), trim(?4), trim(?5), ?6);";
+    const char *sql = "insert into symbols values (?1, trim(?2), trim(?3), trim(?4), trim(?5), ?6);";
 
     assert(handle); assert(pattern); assert(value1); assert(token_type);
 
@@ -371,14 +369,14 @@ vst_persist_token(
         return VARNAM_ERROR;
     }
 
-    sqlite3_bind_text(stmt, 1, token_type, -1, NULL);
+    sqlite3_bind_int (stmt, 1, token_type);
     sqlite3_bind_text(stmt, 2, pattern,    -1, NULL);
     sqlite3_bind_text(stmt, 3, value1,     -1, NULL);
     sqlite3_bind_text(stmt, 4, value2 == NULL ? "" : value2,     -1, NULL);
     sqlite3_bind_text(stmt, 5, "",         -1, NULL);
     sqlite3_bind_int (stmt, 6, match_type);
 
-    rc = sqlite3_step( stmt );    
+    rc = sqlite3_step( stmt );
     if( rc != SQLITE_DONE ) 
     {
         asprintf(&msg, "Failed to persist token : %s", sqlite3_errmsg(db));
@@ -418,5 +416,54 @@ vst_flush_changes(varnam *handle)
     }
 
     handle->internal->vst_buffering = 0;
+    return VARNAM_SUCCESS;
+}
+
+int
+vst_get_virama(varnam* handle, char *output)
+{
+    int rc;
+    char *msg;
+    sqlite3 *db; sqlite3_stmt *stmt;
+    const char* result;
+
+    db = handle->internal->db;
+
+    rc = sqlite3_prepare_v2( db, "select value1 from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
+    if(rc != SQLITE_OK)
+    {
+        asprintf(&msg, "Failed to get virama : %s", sqlite3_errmsg(db));
+        set_last_error (handle, msg);
+        xfree (msg);
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_bind_int (stmt, 1, VARNAM_TOKEN_VIRAMA);
+    sqlite3_bind_int (stmt, 2, VARNAM_MATCH_EXACT);
+
+    rc = sqlite3_step( stmt );
+    if( rc == SQLITE_ROW )
+    {
+        result = (const char*) sqlite3_column_text(stmt, 0);
+        if(result) {
+            strncpy(output, result, VARNAM_SYMBOL_MAX);
+        }
+    }
+    else if ( rc == SQLITE_DONE )
+    {
+        output[0] = '\0';
+    }
+    else
+    {
+        asprintf(&msg, "Failed to check already persisted : %s", sqlite3_errmsg(db));
+        set_last_error (handle, msg);
+        xfree (msg);
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_finalize( stmt );
+
     return VARNAM_SUCCESS;
 }

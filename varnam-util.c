@@ -80,6 +80,26 @@ utf8_length(const char *string)
     return len;
 }
 
+int
+utf8_ends_with(const char *buffer, const char *tocheck)
+{
+    size_t to_check_len, buffer_len, newlen;
+    const char *buf;
+
+    if(!tocheck) return 0;
+
+    to_check_len = strlen(tocheck);
+    buffer_len = strlen(buffer);
+
+    if(buffer_len < to_check_len) return 0;
+
+    newlen = (buffer_len - to_check_len);
+
+    buf = buffer + newlen;
+
+    return (strcmp(buf, tocheck) == 0);
+}
+
 /* return true if string1 starts with string2 */
 int 
 startswith(const char *string1, const char *string2)
