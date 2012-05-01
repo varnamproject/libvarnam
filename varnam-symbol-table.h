@@ -92,9 +92,21 @@ vst_flush_changes(
     varnam *handle);
 
 /**
+ * Rollback changes
+ **/
+int
+vst_discard_changes(varnam *handle);
+
+/**
  * Reads VARNAM_TOKEN_VIRAMA and assigns that to output
  **/
 int
 vst_get_virama(varnam* handle, char* output);
+
+/**
+ * Loops through all the dead consonants and make vowel combinations for all of them
+ **/
+int
+vst_generate_cv_combinations(varnam* handle);
 
 #endif

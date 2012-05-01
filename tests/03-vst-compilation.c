@@ -62,26 +62,28 @@ int auto_create_dead_consonants()
         return 1;
     }
 
-    rc = varnam_create_token(handle, "~", "്", NULL, VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "~", "്", NULL, VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 1);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "ka", "ക", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "ka", "ക", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 1);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "p", "പ്", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "p", "പ്", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 1);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
         return 1;
     }
+   
+    varnam_flush_buffer(handle);
 
     return 0;
 }

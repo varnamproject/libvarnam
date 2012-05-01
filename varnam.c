@@ -194,15 +194,7 @@ varnam_create_token(
 {
     int rc;
     size_t pattern_len;
-
     char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX], virama[VARNAM_SYMBOL_MAX];
-    virama[0] = '\0';
-    strncpy (p,  pattern, VARNAM_SYMBOL_MAX);
-    strncpy (v1, value1,  VARNAM_SYMBOL_MAX);
-    if (value2 != NULL)
-        strncpy (v2, value2,  VARNAM_SYMBOL_MAX);
-    else
-        v2[0] = '\0';
 
     set_last_error (handle, NULL);
 
@@ -223,6 +215,13 @@ varnam_create_token(
         return VARNAM_ARGS_ERROR;
     }
 
+    if (buffered)
+    {
+        rc = vst_start_buffering (handle);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+    }
+
     pattern_len = strlen(pattern);
 
     if (token_type == VARNAM_TOKEN_CONSONANT && 
@@ -237,10 +236,6 @@ varnam_create_token(
             return VARNAM_ERROR;
         }
 
-        printf("virama is the - %s\n", virama);
-        printf("v1 is the - %s\n", value1);
-
-        /* Checks if it is already a dead consonant */
         if (utf8_ends_with(value1, virama))
         {
             token_type = VARNAM_TOKEN_DEAD_CONSONANT;
@@ -252,20 +247,38 @@ varnam_create_token(
 
             if (value2 != NULL)
                 snprintf(v2, VARNAM_SYMBOL_MAX, "%s%s", value2, virama);
+            else
+                v2[0] = '\0';
 
-            token_type = VARNAM_TOKEN_DEAD_CONSONANT;
+            rc = vst_persist_token (handle, p, v1, v2, VARNAM_TOKEN_DEAD_CONSONANT, match_type);
+            if (rc != VARNAM_SUCCESS)
+            {
+                if (buffered) vst_discard_changes(handle);
+                return rc;
+            }
+
         }
     }
 
-    if (buffered)
+    rc = vst_persist_token (handle, pattern, value1, value2, token_type, match_type);
+    if (rc != VARNAM_SUCCESS)
     {
-        rc = vst_start_buffering (handle);
-        if (rc != VARNAM_SUCCESS)
-            return rc;
+        if (buffered) vst_discard_changes(handle);
     }
 
-    return vst_persist_token (handle, p, v1, v2, token_type, match_type);
+    return rc;
 }
+
+/* int */
+/* varnam_generate_cv_combinations(varnam* handle) */
+/* { */
+/*     if (handle == NULL) */
+/*         return VARNAM_ARGS_ERROR; */
+
+/*     set_last_error (handle, NULL); */
+
+/*     return vst_generate_cv_combinations(handle); */
+/* } */
 
 int 
 varnam_flush_buffer(varnam *handle)
@@ -284,6 +297,8 @@ varnam_config(varnam *handle, int type, ...)
 
     if (handle == NULL)
         return VARNAM_ARGS_ERROR;
+
+    set_last_error (handle, NULL);
 
     va_start (args, type);
     switch (type)

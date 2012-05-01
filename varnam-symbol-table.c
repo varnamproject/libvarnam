@@ -420,6 +420,25 @@ vst_flush_changes(varnam *handle)
 }
 
 int
+vst_discard_changes(varnam *handle)
+{
+    char *zErrMsg;
+
+    assert(handle);
+
+    if (!handle->internal->vst_buffering)
+        return VARNAM_SUCCESS;
+
+    /* vst_discard_changes() is usually called when something wrong happened. 
+     * at this time, most probably last error will have some value. so just executing
+     * rollback without any error check as this function don't want to overwrite the 
+     * last error set by previous functions */
+    sqlite3_exec(handle->internal->db, "ROLLBACK;", NULL, 0, &zErrMsg);
+    handle->internal->vst_buffering = 0;
+    return VARNAM_SUCCESS;
+}
+
+int
 vst_get_virama(varnam* handle, char *output)
 {
     int rc;
@@ -467,3 +486,24 @@ vst_get_virama(varnam* handle, char *output)
 
     return VARNAM_SUCCESS;
 }
+
+/* int */
+/* vst_generate_cv_combinations(varnam* handle) */
+/* { */
+/*     int rc; */
+/*     char *msg; */
+/*     sqlite3 *db; sqlite3_stmt *vowels_stmt, *consonants_stmt; */
+/*     const char* sql = ""; */
+
+/*     db = handle->internal->db; */
+
+/*     rc = sqlite3_prepare_v2( db, "select * from symbols where type = ?1;", -1, &stmt, NULL ); */
+/*     if(rc != SQLITE_OK) */
+/*     { */
+/*         asprintf(&msg, "Failed to get consonants : %s", sqlite3_errmsg(db)); */
+/*         set_last_error (handle, msg); */
+/*         xfree (msg); */
+/*         sqlite3_finalize( stmt ); */
+/*         return VARNAM_ERROR; */
+/*     } */
+/* } */

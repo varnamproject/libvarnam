@@ -92,6 +92,24 @@ VARNAM_EXPORT extern int varnam_create_token(
     int buffered
 );
 
+/**
+ * Auto generate consonant-vowel combinations
+ *
+ * Given vowels "a", "e", "i" and a consonant "k", this function generates
+ * tokens "ka", "ke", "ki"
+ *
+ * handle - Valid varnam instance
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS        - On successful execution
+ * VARNAM_ARGS_ERROR     - Invalid handle
+ * VARNAM_ERROR          - Any other errors. Check varnam_last_error()
+ *
+ **/
+/* int */
+/* varnam_generate_cv_combinations(varnam* handle); */
+
 VARNAM_EXPORT extern int 
 varnam_transliterate(varnam *handle, const char *input, char **result);
 
