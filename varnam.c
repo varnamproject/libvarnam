@@ -57,6 +57,7 @@ initialize_internal()
 
         /* configuration options */
         vi->config_use_dead_consonants = 1;
+        vi->config_ignore_duplicate_tokens = 0;
     }
     return vi;
 }
@@ -305,6 +306,9 @@ varnam_config(varnam *handle, int type, ...)
     {
     case VARNAM_CONFIG_USE_DEAD_CONSONANTS:
         handle->internal->config_use_dead_consonants = va_arg(args, int);
+        break;
+    case VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN:
+        handle->internal->config_ignore_duplicate_tokens = va_arg(args, int);
         break;
     default:
         set_last_error (handle, "Invalid configuration key");

@@ -51,7 +51,8 @@
 #define VARNAM_TOKEN_OTHER                     10
 
 /* configuration options */
-#define VARNAM_CONFIG_USE_DEAD_CONSONANTS  100
+#define VARNAM_CONFIG_USE_DEAD_CONSONANTS      100
+#define VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN   101
 
 struct varnam_rule;
 struct varnam_token_rendering;
@@ -90,6 +91,7 @@ struct varnam_internal
 
     /* configuration options */
     int config_use_dead_consonants;
+    int config_ignore_duplicate_tokens;
 };
 
 typedef struct varnam {

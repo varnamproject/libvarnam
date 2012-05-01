@@ -22,6 +22,11 @@
 #include <string.h>
 #include "../varnam.h"
 
+static void log_fun(const char* msg)
+{
+    printf("%s\n", msg);
+}
+
 int create_without_buffering()
 {
     int rc;
@@ -41,6 +46,57 @@ int create_without_buffering()
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    return 0;
+}
+
+int ignore_duplicates()
+{
+    int rc;
+    char *msg;
+    varnam *handle;
+
+    const char *filename = "output/03-ignore-duplicates.vst";
+    rc = varnam_init(filename, &handle, &msg);
+
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", msg);        
+        return 1;
+    }
+    
+    varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, &log_fun);
+
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    /* Creating again. This should fail */
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    if (rc == VARNAM_SUCCESS)
+    {
+        printf("Duplicate check is not working. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    /* Turning off duplicate failure */
+    rc = varnam_config (handle, VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN, 1);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    /* Creating again. This should ignore the duplicates */
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("Duplicate ignore is not working. %s", varnam_last_error(handle));
         return 1;
     }
 
@@ -278,6 +334,10 @@ int test_vst_file_creation(int argc, char **argv)
         return 1;
 
     rc = auto_create_dead_consonants();
+    if (rc)
+        return 1;
+
+    rc = ignore_duplicates();
     if (rc)
         return 1;
 

@@ -47,6 +47,10 @@ varnam_init(const char *symbols_file, varnam **handle, char **msg);
  *   Eg : varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 0) - Turns this option off
  *        varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 1) - Turns this option on
  *
+ * VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN
+ *   This will make varnam_create_token() to ignore duplicate tokens. Varnam will issue a warning
+ *   log message when duplicates are detected.
+ *
  * RETURN
  *
  * VARNAM_SUCCESS         - Successfull operation

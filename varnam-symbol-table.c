@@ -351,6 +351,14 @@ vst_persist_token(
 
     if (persisted)
     {
+        if (handle->internal->config_ignore_duplicate_tokens)
+        {
+            asprintf(&msg, "%s => %s is already available. Ignoring duplicate tokens", pattern, value1);
+            log (msg);
+            xfree (msg);
+            return VARNAM_SUCCESS;
+        }
+
         asprintf(&msg, "%s => %s is already available. Duplicate entries are not allowed", pattern, value1);
         set_last_error (handle, msg);
         xfree (msg);
