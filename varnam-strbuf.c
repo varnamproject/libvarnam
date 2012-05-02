@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "varnam-util.h"
 
@@ -29,8 +31,8 @@ static int grow_buffer(struct strbuf *string)
 
     assert(string != NULL);
 
-    toallocate = string->allocated + (string->allocated / 2);    
-    tmp = (char*) realloc(string->buffer, toallocate); 
+    toallocate = string->allocated + (string->allocated / 2);
+    tmp = (char*) realloc(string->buffer, toallocate);
     if(tmp) {
         string->buffer = tmp;
         string->allocated = toallocate;
@@ -58,7 +60,7 @@ int strbuf_addc(struct strbuf *string, char c)
 }
 
 struct strbuf *strbuf_init(size_t initial_buf_size)
-{    
+{
     struct strbuf *string = (struct strbuf*) xmalloc(sizeof (struct strbuf));
     string->length = string->allocated = 0;
     string->buffer = (char*) xmalloc(initial_buf_size);
@@ -86,6 +88,68 @@ int strbuf_addln(struct strbuf *string, const char *c)
     return 0;
 }
 
+int strbuf_addf(struct strbuf *string, const char *format, ...)
+{
+    int rc;
+    va_list args;
+
+    va_start(args, format);
+    rc = strbuf_addvf(string, format, args);
+    va_end(args);
+
+    return rc;
+}
+
+int strbuf_addvf(struct strbuf *string, const char *format, va_list args)
+{
+    const char *p;
+    char fmtbuf[256];
+    char *s;
+    char c;
+    int i;
+
+    for(p = format; *p != '\0'; p++)
+    {
+	if(*p != '%')
+        {
+            if(!strbuf_addc(string, *p))
+                return 0;
+
+            continue;
+        }
+
+	switch(*++p)
+        {
+        case 'c':
+            c = (char) va_arg(args, int);
+            if(!strbuf_addc(string, c))
+                return 0;
+            break;
+
+        case 'd':
+            i = va_arg(args, int);
+            snprintf(fmtbuf, 256, "%d", i);
+            if(!strbuf_add(string, fmtbuf))
+                return 0;
+            break;
+
+        case 's':
+            s = va_arg(args, char *);
+            if(!strbuf_add(string, s))
+                return 0;
+            break;
+
+        case '%':
+            if(!strbuf_add(string, "%"))
+                return 0;
+            break;
+        }
+    }
+
+    return 1;
+
+}
+
 void strbuf_destroy(struct strbuf *string)
 {
     if(string->buffer != NULL) {
@@ -96,7 +160,7 @@ void strbuf_destroy(struct strbuf *string)
 
 /*
  * clears the contents in the buffer. this method won't deallocate
- * memory. it will reuse already allocated memory 
+ * memory. it will reuse already allocated memory
  */
 void strbuf_clear(struct strbuf *string)
 {
@@ -123,7 +187,7 @@ int strbuf_is_blank_string(struct strbuf *string)
         case '\n':
         case ' ':
         case '\t':
-        case '\r':             
+        case '\r':
             ++b;
             break;
         default:

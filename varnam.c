@@ -49,10 +49,11 @@ initialize_internal()
         vi->current_rtl_token = NULL;
         vi->output = strbuf_init(100);
         vi->rtl_output = strbuf_init(100);
-        vi->last_error = strbuf_init(50);
+        vi->last_error = strbuf_init(100);
         vi->lookup = strbuf_init(10);
         vi->log_level = VARNAM_LOG_DEFAULT;
         vi->log_callback = NULL;
+        vi->log_message = strbuf_init(100);
         vi->vst_buffering = 0;
 
         /* configuration options */

@@ -245,7 +245,7 @@ ensure_schema_exist(varnam *handle, char **msg)
 
     rc = sqlite3_exec(handle->internal->db, sql, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK ){
-        asprintf(msg, "Failed to initialize output file : %s", zErrMsg);
+        set_last_error (handle, "Failed to initialize output file : %s", zErrMsg);
         sqlite3_free(zErrMsg);
         return VARNAM_STORAGE_ERROR;
     }
@@ -256,7 +256,7 @@ ensure_schema_exist(varnam *handle, char **msg)
 int
 vst_start_buffering(varnam *handle)
 {
-    char *zErrMsg, *msg;
+    char *zErrMsg;
     int rc;
     const char *sql = "BEGIN;";
 
@@ -268,12 +268,8 @@ vst_start_buffering(varnam *handle)
     rc = sqlite3_exec(handle->internal->db, sql, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK )
     {
-        asprintf(&msg, "Failed to start buffering : %s", zErrMsg);
-        set_last_error (handle, msg);
-
+        set_last_error (handle, "Failed to start buffering : %s", zErrMsg);
         sqlite3_free(zErrMsg);
-        xfree (msg);
-
         return VARNAM_STORAGE_ERROR;
     }
 
@@ -291,7 +287,6 @@ already_persisted(
     int *result)
 {
     int rc;
-    char *msg;
     sqlite3 *db; sqlite3_stmt *stmt;
 
     assert (result);
@@ -306,9 +301,7 @@ already_persisted(
 
     if(rc != SQLITE_OK)
     {
-        asprintf(&msg, "Failed to check already persisted : %s", sqlite3_errmsg(db));
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "Failed to check already persisted : %s", sqlite3_errmsg(db));
         sqlite3_finalize( stmt );
         return VARNAM_ERROR;
     }
@@ -333,9 +326,7 @@ already_persisted(
     }
     else
     {
-        asprintf(&msg, "Failed to check already persisted : %s", sqlite3_errmsg(db));
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "Failed to check already persisted : %s", sqlite3_errmsg(db));
         sqlite3_finalize( stmt );
         return VARNAM_ERROR;
     }
@@ -355,7 +346,6 @@ vst_persist_token(
     int match_type)
 {
     int rc, persisted;
-    char *msg;
     sqlite3 *db; sqlite3_stmt *stmt;
     const char *sql = "insert into symbols values (?1, trim(?2), trim(?3), trim(?4), trim(?5), ?6);";
 
@@ -369,15 +359,11 @@ vst_persist_token(
     {
         if (handle->internal->config_ignore_duplicate_tokens)
         {
-            asprintf(&msg, "%s => %s is already available. Ignoring duplicate tokens", pattern, value1);
-            log (msg);
-            xfree (msg);
+            varnam_log (handle, "%s => %s is already available. Ignoring duplicate tokens", pattern, value1);
             return VARNAM_SUCCESS;
         }
 
-        asprintf(&msg, "%s => %s is already available. Duplicate entries are not allowed", pattern, value1);
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "%s => %s is already available. Duplicate entries are not allowed", pattern, value1);
         return VARNAM_ERROR;
     }
 
@@ -386,9 +372,7 @@ vst_persist_token(
     rc = sqlite3_prepare_v2( db, sql, -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
-        asprintf(&msg, "Failed to initialize statement : %s", sqlite3_errmsg(db));
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "Failed to initialize statement : %s", sqlite3_errmsg(db));
         sqlite3_finalize( stmt );
         return VARNAM_ERROR;
     }
@@ -403,9 +387,7 @@ vst_persist_token(
     rc = sqlite3_step( stmt );
     if( rc != SQLITE_DONE )
     {
-        asprintf(&msg, "Failed to persist token : %s", sqlite3_errmsg(db));
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "Failed to persist token : %s", sqlite3_errmsg(db));
         sqlite3_finalize( stmt );
         return VARNAM_ERROR;
     }
@@ -418,7 +400,7 @@ vst_persist_token(
 int
 vst_flush_changes(varnam *handle)
 {
-    char *zErrMsg, *msg;
+    char *zErrMsg;
     int rc;
     const char *sql = "COMMIT;";
 
@@ -430,12 +412,8 @@ vst_flush_changes(varnam *handle)
     rc = sqlite3_exec(handle->internal->db, sql, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK )
     {
-        asprintf(&msg, "Failed to flush changes : %s", zErrMsg);
-        set_last_error (handle, msg);
-
+        set_last_error (handle, "Failed to flush changes : %s", zErrMsg);
         sqlite3_free(zErrMsg);
-        xfree (msg);
-
         return VARNAM_STORAGE_ERROR;
     }
 
@@ -466,7 +444,6 @@ int
 vst_get_virama(varnam* handle, char *output)
 {
     int rc;
-    char *msg;
     sqlite3 *db; sqlite3_stmt *stmt;
     const char* result;
 
@@ -475,9 +452,7 @@ vst_get_virama(varnam* handle, char *output)
     rc = sqlite3_prepare_v2( db, "select value1 from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
-        asprintf(&msg, "Failed to get virama : %s", sqlite3_errmsg(db));
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "Failed to get virama : %s", sqlite3_errmsg(db));
         sqlite3_finalize( stmt );
         return VARNAM_ERROR;
     }
@@ -499,9 +474,7 @@ vst_get_virama(varnam* handle, char *output)
     }
     else
     {
-        asprintf(&msg, "Failed to check already persisted : %s", sqlite3_errmsg(db));
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "Failed to check already persisted : %s", sqlite3_errmsg(db));
         sqlite3_finalize( stmt );
         return VARNAM_ERROR;
     }
@@ -516,7 +489,6 @@ vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
 {
     struct token *head = NULL, *tail = NULL, *tok = NULL;
     int rc;
-    char *msg;
     sqlite3 *db; sqlite3_stmt *stmt;
 
     db = handle->internal->db;
@@ -524,9 +496,7 @@ vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
     rc = sqlite3_prepare_v2( db, "select type, match_type, pattern, value1, value2, tag from symbols where type = ?1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
-        asprintf(&msg, "Failed to get all tokens : %s", sqlite3_errmsg(db));
-        set_last_error (handle, msg);
-        xfree (msg);
+        set_last_error (handle, "Failed to get all tokens : %s", sqlite3_errmsg(db));
         sqlite3_finalize( stmt );
         return VARNAM_ERROR;
     }
@@ -564,9 +534,7 @@ vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
             break;
         else
         {
-            asprintf(&msg, "Failed to get all tokens : %s", sqlite3_errmsg(db));
-            set_last_error (handle, msg);
-            xfree (msg);
+            set_last_error (handle, "Failed to get all tokens : %s", sqlite3_errmsg(db));
             sqlite3_finalize( stmt );
             return VARNAM_ERROR;
         }

@@ -29,7 +29,7 @@
 * substr(str,start,length,output) writes length characters of str beginning with start to substring.
 * start is is 1-indexed and string should be valid UTF8.
 **/
-void 
+void
 substr(char *substring, const char *string, int start, int len)
 {
     unsigned int bytes, i;
@@ -63,7 +63,7 @@ substr(char *substring, const char *string, int start, int len)
  * calculates length of the UTF8 encoded string.
  * length will be the total number of characters and not the bytes
  **/
-int 
+int
 utf8_length(const char *string)
 {
     const unsigned char *ustring;
@@ -101,7 +101,7 @@ utf8_ends_with(const char *buffer, const char *tocheck)
 }
 
 /* return true if string1 starts with string2 */
-int 
+int
 startswith(const char *string1, const char *string2)
 {
     for(; ; string1++, string2++) {
@@ -122,21 +122,61 @@ xmalloc(size_t size)
     return ret;
 }
 
-void 
+void
 xfree (void *ptr)
 {
     if(ptr)
         free(ptr);
 }
 
-void 
-set_last_error(varnam *handle, const char *msg)
+void
+set_last_error(varnam *handle, const char *format, ...)
 {
     struct strbuf *last_error;
+    va_list args;
 
     last_error = handle->internal->last_error;
 
     strbuf_clear (last_error);
-    if (msg != NULL)
-        strbuf_add (last_error, msg);
+    if (format != NULL)
+    {
+        va_start (args, format);
+        strbuf_addvf (last_error, format, args);
+        va_end (args);
+    }
 }
+
+void varnam_debug_log(varnam* handle, const char *format, ...)
+{
+    va_list args;
+    struct strbuf *log_message = handle->internal->log_message;
+
+    if (handle->internal->log_level == VARNAM_LOG_DEBUG && handle->internal->log_callback != NULL)
+    {
+        strbuf_clear (log_message);
+
+        va_start (args, format);
+        strbuf_addvf(log_message, format, args);
+        va_end(args);
+
+        handle->internal->log_callback(log_message->buffer);
+    }
+}
+
+void varnam_log(varnam* handle, const char *format, ...)
+{
+    va_list args;
+    struct strbuf *log_message = handle->internal->log_message;
+
+    if (handle->internal->log_callback != NULL)
+    {
+        strbuf_clear (log_message);
+
+        va_start (args, format);
+        strbuf_addvf(log_message, format, args);
+        va_end(args);
+
+        handle->internal->log_callback(log_message->buffer);
+    }
+}
+

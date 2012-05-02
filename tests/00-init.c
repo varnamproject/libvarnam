@@ -22,6 +22,21 @@
 #include <string.h>
 #include "../varnam.h"
 
+int strbuf_formatted_strings()
+{
+    struct strbuf *buffer = strbuf_init(100);
+    strbuf_addf(buffer, "Character %c, Integer %d, String %s", 'a', 10, "Navaneth");
+    printf("%s", buffer->buffer);
+
+    if (strcmp("Character a, Integer 10, String Navaneth", buffer->buffer) != 0)
+    {
+        printf ("Formatting is incorrect");
+        return 1;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
 int normal_init(char **argv)
 {
     int rc;
@@ -114,6 +129,13 @@ int test_varnam_init(int argc, char **argv)
         return 1;
     }
     printf("%s\n", argv[0]);
+
+    rc = strbuf_formatted_strings();
+    if ( rc != VARNAM_SUCCESS )
+    {
+        printf("Formatted strings on strbuf is not working");
+        return 1;
+    }
  
     rc = normal_init(argv);
     if ( rc != VARNAM_SUCCESS )

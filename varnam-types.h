@@ -86,6 +86,7 @@ struct varnam_internal
 
     int log_level;
     void (*log_callback)(const char*);
+    struct strbuf *log_message;
 
     int vst_buffering;
 

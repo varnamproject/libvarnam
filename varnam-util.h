@@ -27,19 +27,6 @@
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
-/* logging helpers */
-#define debug_log(msg) {                                                                                   \
-    if (handle->internal->log_level == VARNAM_LOG_DEBUG && handle->internal->log_callback != NULL) {       \
-        handle->internal->log_callback(msg);                                                               \
-    }                                                                                                      \
-}                                                                                                          \
-
-#define log(msg) {                                                                                         \
-    if (handle->internal->log_callback != NULL) {                                                          \
-        handle->internal->log_callback(msg);                                                               \
-    }                                                                                                      \
-}                                                                                                          \
-
 /**
  * Iterate over token collection and points `current' variable to the current element
  *
@@ -138,10 +125,15 @@ struct strbuf {
     size_t allocated;      /* total memory allocated */
 };
 
+void varnam_debug_log(varnam* handle, const char *format, ...);
+void varnam_log(varnam* handle, const char *format, ...);
+
 VARNAM_EXPORT struct strbuf *strbuf_init(size_t initial_buf_size);
 VARNAM_EXPORT int strbuf_addc(struct strbuf *string, char c);
 VARNAM_EXPORT int strbuf_add(struct strbuf *string, const char *c);
 VARNAM_EXPORT int strbuf_addln(struct strbuf *string, const char *c);
+VARNAM_EXPORT int strbuf_addf(struct strbuf *string, const char *format, ...);
+VARNAM_EXPORT int strbuf_addvf(struct strbuf *string, const char *format, va_list args);
 VARNAM_EXPORT void strbuf_destroy(struct strbuf *string);
 VARNAM_EXPORT char* strbuf_detach(struct strbuf *string);
 VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
@@ -152,7 +144,7 @@ VARNAM_EXPORT void strbuf_remove_from_last(struct strbuf *string, const char *to
 VARNAM_EXPORT void *xmalloc(size_t size);
 VARNAM_EXPORT void xfree (void *ptr);
 
-void set_last_error(varnam *handle, const char *msg);
+void set_last_error(varnam *handle, const char *format, ...);
 
 /* Constants */
 
