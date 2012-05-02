@@ -40,6 +40,27 @@
     }                                                                                                      \
 }                                                                                                          \
 
+/**
+ * Iterate over token collection and points `current' variable to the current element
+ *
+ * current       - Variable to hold current element
+ * start_from    - Where to start the iteration. Usually this will be the head element
+ *
+ **/
+#define varnam_tokens_for_each(current, start_from)  \
+    for(current = start_from; current != NULL; current = current->next) \
+
+/**
+ * Iterate over token collection and deleted each entry in the list
+ *
+ * current       - Variable to hold current element
+ * head          - Head of the list. This is where the iteration starts
+ *
+ **/
+#define varnam_tokens_free(current, head)                          \
+    while(head != NULL) {                                          \
+        current = head->next; free(head); head = current;}         \
+
 /* Cmake will define varnam_EXPORTS on Windows when it
 configures to build a shared library. If you are going to use
 another build system on windows or create the visual studio

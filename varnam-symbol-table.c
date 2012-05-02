@@ -23,6 +23,7 @@
 #include "varnam-util.h"
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
+#include "varnam-api.h"
 
 static struct token*
 Token(int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* tag)
@@ -577,23 +578,120 @@ vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
     return VARNAM_SUCCESS;
 }
 
-/* int */
-/* vst_generate_cv_combinations(varnam* handle) */
-/* { */
-/*     int rc; */
-/*     char *msg; */
-/*     sqlite3 *db; sqlite3_stmt *vowels_stmt, *consonants_stmt; */
-/*     const char* sql = ""; */
+static void
+remove_from_last(char *buffer, const char *toremove)
+{
+    size_t to_remove_len, buffer_len, newlen;
+    const char *buf;
 
-/*     db = handle->internal->db; */
+    if(!toremove) return;
+    to_remove_len = strlen(toremove);
+    buffer_len = strlen(buffer);
 
-/*     rc = sqlite3_prepare_v2( db, "select * from symbols where type = ?1;", -1, &stmt, NULL ); */
-/*     if(rc != SQLITE_OK) */
-/*     { */
-/*         asprintf(&msg, "Failed to get consonants : %s", sqlite3_errmsg(db)); */
-/*         set_last_error (handle, msg); */
-/*         xfree (msg); */
-/*         sqlite3_finalize( stmt ); */
-/*         return VARNAM_ERROR; */
-/*     } */
-/* } */
+    if(buffer_len < to_remove_len) return;
+
+    newlen = (buffer_len - to_remove_len);
+
+    buf = buffer + newlen;
+    if(strcmp(buf, toremove) == 0) {
+        buffer[newlen] = '\0';
+    }
+}
+
+int
+vst_generate_cv_combinations(varnam* handle)
+{
+    int rc, config_ignore_duplicate_tokens_old_val, new_match_type;
+    struct token *vowels = NULL,
+                 *vowel = NULL,
+                 *consonants = NULL,
+                 *consonant = NULL;
+    char cons_value1[VARNAM_SYMBOL_MAX], cons_value2[VARNAM_SYMBOL_MAX], virama[VARNAM_SYMBOL_MAX];
+    char newpattern[VARNAM_SYMBOL_MAX], newvalue1[VARNAM_SYMBOL_MAX], newvalue2[VARNAM_SYMBOL_MAX];
+
+    set_last_error (handle, NULL);
+
+    rc = vst_get_virama(handle, virama);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
+    else if (virama[0] == '\0')
+    {
+        set_last_error (handle, "Virama needs to be set before generating consonant vowel combinations");
+        return VARNAM_ERROR;
+    }
+
+    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_VOWEL, &vowels);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
+
+    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_DEAD_CONSONANT, &consonants);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
+
+    /* When generating CV combinations, we ignore duplicate token check. duplicate token
+       won't generate an error, instead it won't be persisted. */
+    config_ignore_duplicate_tokens_old_val = handle->internal->config_ignore_duplicate_tokens;
+    handle->internal->config_ignore_duplicate_tokens = 1;
+
+    varnam_tokens_for_each(consonant, consonants)
+    {
+        /* Since we are iterating over dead consonants, value1 and value2 will have a virama at the end.
+           This needs to removed before appending vowel */
+        strncpy(cons_value1, consonant->value1, VARNAM_SYMBOL_MAX);
+        cons_value2[0] = '\0';
+        if(consonant->value2 && consonant->value2[0] != '\0') {
+            strncpy(cons_value2, consonant->value2, VARNAM_SYMBOL_MAX);
+        }
+
+        remove_from_last(cons_value1, virama);
+        remove_from_last(cons_value2, virama);
+
+        varnam_tokens_for_each(vowel, vowels)
+        {
+            newpattern[0] = '\0';
+            newvalue1[0]  = '\0';
+            newvalue2[0]  = '\0';
+
+            snprintf(newpattern, VARNAM_SYMBOL_MAX, "%s%s", consonant->pattern, vowel->pattern);
+            if(vowel->value2 && strlen(vowel->value2) != 0)
+            {
+                snprintf(newvalue1, VARNAM_SYMBOL_MAX, "%s%s", cons_value1, vowel->value2);
+                if(cons_value2[0] != '\0')
+                    snprintf(newvalue2, VARNAM_SYMBOL_MAX, "%s%s", cons_value2, vowel->value2);
+            }
+            else {
+                snprintf(newvalue1, VARNAM_SYMBOL_MAX, "%s", cons_value1);
+                if(cons_value2[0] != '\0')
+                    snprintf(newvalue2, VARNAM_SYMBOL_MAX, "%s", cons_value2);
+            }
+
+            new_match_type = VARNAM_MATCH_EXACT;
+            if (consonant->match_type == VARNAM_MATCH_POSSIBILITY ||
+                vowel->match_type == VARNAM_MATCH_POSSIBILITY)
+            {
+                new_match_type = VARNAM_MATCH_POSSIBILITY;
+            }
+            rc = varnam_create_token(handle,
+                                     newpattern,
+                                     newvalue1,
+                                     newvalue2, VARNAM_TOKEN_CONSONANT_VOWEL, new_match_type, 1);
+
+            if (rc != VARNAM_SUCCESS)
+            {
+                handle->internal->config_ignore_duplicate_tokens = config_ignore_duplicate_tokens_old_val;
+                return rc;
+            }
+        }
+    }
+
+    handle->internal->config_ignore_duplicate_tokens = config_ignore_duplicate_tokens_old_val;
+
+    rc = varnam_flush_buffer(handle);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
+
+    varnam_tokens_free(vowel, vowels);
+    varnam_tokens_free(consonant, consonants);
+
+    return VARNAM_SUCCESS;
+}

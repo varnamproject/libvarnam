@@ -111,8 +111,8 @@ VARNAM_EXPORT extern int varnam_create_token(
  * VARNAM_ERROR          - Any other errors. Check varnam_last_error()
  *
  **/
-/* int */
-/* varnam_generate_cv_combinations(varnam* handle); */
+int
+varnam_generate_cv_combinations(varnam* handle);
 
 VARNAM_EXPORT extern int
 varnam_transliterate(varnam *handle, const char *input, char **result);
@@ -159,27 +159,6 @@ varnam_get_all_tokens(
     int token_type,
     struct token **tokens
 );
-
-/**
- * Iterate over token collection and points `current' variable to the current element
- *
- * current       - Variable to hold current element
- * start_from    - Where to start the iteration. Usually this will be the head element
- *
- **/
-#define varnam_tokens_for_each(current, start_from)  \
-    for(current = start_from; current != NULL; current = current->next) \
-
-/**
- * Iterate over token collection and deleted each entry in the list
- *
- * current       - Variable to hold current element
- * head          - Head of the list. This is where the iteration starts
- *
- **/
-#define varnam_tokens_free(current, head)                          \
-    while(head != NULL) {                                          \
-        current = head->next; free(head); head = current;}         \
 
 /**
  * Enable logging.

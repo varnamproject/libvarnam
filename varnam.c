@@ -282,16 +282,16 @@ varnam_get_all_tokens(
     return vst_get_all_tokens (handle, token_type, tokens);
 }
 
-/* int */
-/* varnam_generate_cv_combinations(varnam* handle) */
-/* { */
-/*     if (handle == NULL) */
-/*         return VARNAM_ARGS_ERROR; */
+int
+varnam_generate_cv_combinations(varnam* handle)
+{
+    if (handle == NULL)
+        return VARNAM_ARGS_ERROR;
 
-/*     set_last_error (handle, NULL); */
+    set_last_error (handle, NULL);
 
-/*     return vst_generate_cv_combinations(handle); */
-/* } */
+    return vst_generate_cv_combinations(handle);
+}
 
 int 
 varnam_flush_buffer(varnam *handle)

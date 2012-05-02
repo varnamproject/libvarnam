@@ -22,6 +22,14 @@
 #include <string.h>
 #include "../varnam.h"
 
+#define return_on_error(rc)      \
+    if (rc != VARNAM_SUCCESS)\
+    {\
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));\
+        return 1;\
+    }\
+
+
 static void log_fun(const char* msg)
 {
     printf("%s\n", msg);
@@ -38,7 +46,7 @@ int create_without_buffering()
 
     if (rc != VARNAM_SUCCESS)
     {
-        printf("VARNAM_SUCCESS expected. Never got. %s", msg);        
+        printf("VARNAM_SUCCESS expected. Never got. %s", msg);
         return 1;
     }
 
@@ -48,6 +56,56 @@ int create_without_buffering()
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
         return 1;
     }
+
+    return 0;
+}
+
+int generate_cv_combinations()
+{
+    int rc;
+    char *msg;
+    varnam *handle;
+
+    const char *filename = "output/03-generate-cv-combinations.vst";
+    rc = varnam_init(filename, &handle, &msg);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", msg);
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "~", "്", NULL, VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 1);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "a", "അ", NULL, VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "aa", "ആ", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "A", "ആ", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "a", "ആ", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "ka", "ക", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "kha", "ഖ", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "gha", "ഘ", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "gha", "ഖ", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0);
+    return_on_error (rc);
+
+    rc = varnam_create_token(handle, "kha", "ഘ", NULL, VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0);
+    return_on_error (rc);
+
+    rc = varnam_generate_cv_combinations(handle);
+    return_on_error (rc);
 
     return 0;
 }
@@ -112,8 +170,6 @@ int get_all_tokens()
         return 1;
     }
 
-    varnam_tokens_free(current, head);
-
     varnam_tokens_for_each(current, head)
     {
         printf ("%s => [%s, %s]\n", current->pattern, current->value1, current->value2);
@@ -125,6 +181,8 @@ int get_all_tokens()
         printf("3 vowels expected, but got %d", count);
         return 1;
     }
+
+    varnam_tokens_free(current, head);
 
     rc = varnam_get_all_tokens(handle, VARNAM_TOKEN_CONSONANT, &head);
     if (rc != VARNAM_SUCCESS)
@@ -161,10 +219,10 @@ int ignore_duplicates()
 
     if (rc != VARNAM_SUCCESS)
     {
-        printf("VARNAM_SUCCESS expected. Never got. %s", msg);        
+        printf("VARNAM_SUCCESS expected. Never got. %s", msg);
         return 1;
     }
-    
+
     varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, &log_fun);
 
     rc = varnam_create_token(handle, "pattern", "value1", "value2", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
@@ -212,7 +270,7 @@ int auto_create_dead_consonants()
 
     if (rc != VARNAM_SUCCESS)
     {
-        printf("VARNAM_SUCCESS expected. Never got. %s", msg);        
+        printf("VARNAM_SUCCESS expected. Never got. %s", msg);
         return 1;
     }
 
@@ -236,7 +294,7 @@ int auto_create_dead_consonants()
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
         return 1;
     }
-   
+
     varnam_flush_buffer(handle);
 
     return 0;
@@ -376,7 +434,7 @@ int maxlength_check()
     int rc, i;
     char *msg; char pattern[VARNAM_SYMBOL_MAX + 2]; char value1[VARNAM_SYMBOL_MAX + 2]; char value2[VARNAM_SYMBOL_MAX + 2];
     varnam *handle;
-    
+
     const char *filename = "output/03-max-length.vst";
     rc = varnam_init(filename, &handle, &msg);
 
@@ -440,6 +498,10 @@ int test_vst_file_creation(int argc, char **argv)
         return 1;
 
     rc = get_all_tokens();
+    if (rc)
+        return 1;
+
+    rc = generate_cv_combinations();
     if (rc)
         return 1;
 
