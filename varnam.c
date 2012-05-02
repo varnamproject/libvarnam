@@ -270,6 +270,18 @@ varnam_create_token(
     return rc;
 }
 
+int
+varnam_get_all_tokens(
+    varnam *handle,
+    int token_type,
+    struct token **tokens)
+{
+    if (handle == NULL)
+        return VARNAM_ARGS_ERROR;
+
+    return vst_get_all_tokens (handle, token_type, tokens);
+}
+
 /* int */
 /* varnam_generate_cv_combinations(varnam* handle) */
 /* { */

@@ -24,16 +24,31 @@
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
 
-struct token* 
+static struct token*
+Token(int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* tag)
+{
+    struct token* tok = (struct token*) xmalloc(sizeof(struct token));
+    tok->type = type;
+    tok->match_type = match_type;
+    strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
+    strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
+    strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
+    strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
+    tok->next = NULL;
+
+    return tok;
+}
+
+struct token*
 find_token(varnam *handle, const char *lookup)
 {
     struct varnam_internal *internal;
     struct token *tok = NULL;
-    char sql[500]; 
+    char sql[500];
     const char *pattern, *value1, *value2, *tag;
     sqlite3_stmt *stmt; sqlite3 *db;
     int rc, type, has_children;
-    
+
     assert( handle ); assert( lookup );
 
     internal = handle->internal;
@@ -41,11 +56,11 @@ find_token(varnam *handle, const char *lookup)
 
     snprintf( sql, 500, "select type, pattern, value1, value2, children, tag from symbols where pattern = ?1;");
     rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
-    if( rc == SQLITE_OK ) 
+    if( rc == SQLITE_OK )
     {
         sqlite3_bind_text (stmt, 1, lookup, (int) strlen(lookup), NULL);
         rc = sqlite3_step (stmt);
-        if( rc == SQLITE_ROW ) 
+        if( rc == SQLITE_ROW )
         {
             type = sqlite3_column_int( stmt, 0 );
             pattern = (const char*) sqlite3_column_text( stmt, 1 );
@@ -73,16 +88,16 @@ find_token(varnam *handle, const char *lookup)
     return tok;
 }
 
-struct token* 
+struct token*
 find_rtl_token(varnam *handle, const char *lookup)
 {
     struct varnam_internal *internal;
     struct token *tok = NULL;
-    char sql[500]; 
+    char sql[500];
     const char *pattern, *value1, *value2, *tag;
     sqlite3_stmt *stmt; sqlite3 *db;
     int rc, type, has_children;
-    
+
     assert( handle ); assert( lookup );
 
     internal = handle->internal;
@@ -90,11 +105,11 @@ find_rtl_token(varnam *handle, const char *lookup)
 
     snprintf( sql, 500, "select type, pattern, value1, value2, children, tag from symbols where value1 = ?1 or value2 = ?1 limit 1;");
     rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
-    if( rc == SQLITE_OK ) 
+    if( rc == SQLITE_OK )
     {
         sqlite3_bind_text (stmt, 1, lookup, (int) strlen(lookup), NULL);
         rc = sqlite3_step (stmt);
-        if( rc == SQLITE_ROW ) 
+        if( rc == SQLITE_ROW )
         {
             type = sqlite3_column_int( stmt, 0 );
             pattern = (const char*) sqlite3_column_text( stmt, 1 );
@@ -122,7 +137,7 @@ find_rtl_token(varnam *handle, const char *lookup)
     return tok;
 }
 
-int 
+int
 can_find_token(varnam *handle, struct token *last, const char *lookup)
 {
     char sql[500];
@@ -150,7 +165,7 @@ can_find_token(varnam *handle, struct token *last, const char *lookup)
     return result;
 }
 
-int 
+int
 can_find_rtl_token(varnam *handle, struct token *last, const char *lookup)
 {
     char sql[500];
@@ -178,14 +193,14 @@ can_find_rtl_token(varnam *handle, struct token *last, const char *lookup)
     return result;
 }
 
-void 
+void
 fill_general_values(varnam *handle, char *output, const char *name)
 {
     char sql[500];
     const char *result;
     sqlite3_stmt *stmt;
     sqlite3 *db;
-    int rc; 
+    int rc;
 
     assert( name );
     assert( handle );
@@ -198,7 +213,7 @@ fill_general_values(varnam *handle, char *output, const char *name)
     if( rc == SQLITE_OK ) {
         sqlite3_bind_text(stmt, 1, name, (int) strlen(name), NULL);
         rc = sqlite3_step( stmt );
-        if( rc == SQLITE_ROW ) 
+        if( rc == SQLITE_ROW )
         {
             result = (const char*) sqlite3_column_text(stmt, 0);
             if(result) {
@@ -213,14 +228,14 @@ fill_general_values(varnam *handle, char *output, const char *name)
 int
 ensure_schema_exist(varnam *handle, char **msg)
 {
-    const char *sql = 
+    const char *sql =
         "create table if not exists general (key TEXT, value TEXT);"
         "create table if not exists symbols (type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
         "create index if not exists index_general on general (key);"
         "create index if not exists index_pattern on symbols (pattern);"
         "create index if not exists index_value1  on symbols (value1);"
         "create index if not exists index_value2  on symbols (value2);";
- 
+
    char *zErrMsg = 0;
    int rc;
 
@@ -260,17 +275,17 @@ vst_start_buffering(varnam *handle)
 
         return VARNAM_STORAGE_ERROR;
     }
-    
+
     handle->internal->vst_buffering = 1;
 
     return VARNAM_SUCCESS;
 }
 
-static int 
+static int
 already_persisted(
     varnam *handle,
     const char *pattern,
-    const char *value1, 
+    const char *value1,
     int match_type,
     int *result)
 {
@@ -329,7 +344,7 @@ already_persisted(
     return VARNAM_SUCCESS;
 }
 
-int 
+int
 vst_persist_token(
     varnam *handle,
     const char *pattern,
@@ -364,7 +379,7 @@ vst_persist_token(
         xfree (msg);
         return VARNAM_ERROR;
     }
-    
+
     db = handle->internal->db;
 
     rc = sqlite3_prepare_v2( db, sql, -1, &stmt, NULL );
@@ -385,7 +400,7 @@ vst_persist_token(
     sqlite3_bind_int (stmt, 6, match_type);
 
     rc = sqlite3_step( stmt );
-    if( rc != SQLITE_DONE ) 
+    if( rc != SQLITE_DONE )
     {
         asprintf(&msg, "Failed to persist token : %s", sqlite3_errmsg(db));
         set_last_error (handle, msg);
@@ -437,9 +452,9 @@ vst_discard_changes(varnam *handle)
     if (!handle->internal->vst_buffering)
         return VARNAM_SUCCESS;
 
-    /* vst_discard_changes() is usually called when something wrong happened. 
+    /* vst_discard_changes() is usually called when something wrong happened.
      * at this time, most probably last error will have some value. so just executing
-     * rollback without any error check as this function don't want to overwrite the 
+     * rollback without any error check as this function don't want to overwrite the
      * last error set by previous functions */
     sqlite3_exec(handle->internal->db, "ROLLBACK;", NULL, 0, &zErrMsg);
     handle->internal->vst_buffering = 0;
@@ -492,6 +507,73 @@ vst_get_virama(varnam* handle, char *output)
 
     sqlite3_finalize( stmt );
 
+    return VARNAM_SUCCESS;
+}
+
+int
+vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
+{
+    struct token *head = NULL, *tail = NULL, *tok = NULL;
+    int rc;
+    char *msg;
+    sqlite3 *db; sqlite3_stmt *stmt;
+
+    db = handle->internal->db;
+
+    rc = sqlite3_prepare_v2( db, "select type, match_type, pattern, value1, value2, tag from symbols where type = ?1;", -1, &stmt, NULL );
+    if(rc != SQLITE_OK)
+    {
+        asprintf(&msg, "Failed to get all tokens : %s", sqlite3_errmsg(db));
+        set_last_error (handle, msg);
+        xfree (msg);
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_bind_int (stmt, 1, token_type);
+
+    while(1)
+    {
+        rc = sqlite3_step( stmt );
+        if( rc == SQLITE_ROW )
+        {
+            tok = Token( (int) sqlite3_column_int(stmt, 0),
+                         (int) sqlite3_column_int(stmt, 1),
+                         (const char*) sqlite3_column_text(stmt, 2),
+                         (const char*) sqlite3_column_text(stmt, 3),
+                         (const char*) sqlite3_column_text(stmt, 4),
+                         (const char*) sqlite3_column_text(stmt, 5));
+
+            if (head == NULL)
+            {
+                head = tok;
+            }
+            else if (head->next == NULL)
+            {
+                head->next = tok;
+                tail = tok;
+            }
+            else
+            {
+                tail->next = tok;
+                tail = tok;
+            }
+        }
+        else if ( rc == SQLITE_DONE )
+            break;
+        else
+        {
+            asprintf(&msg, "Failed to get all tokens : %s", sqlite3_errmsg(db));
+            set_last_error (handle, msg);
+            xfree (msg);
+            sqlite3_finalize( stmt );
+            return VARNAM_ERROR;
+        }
+    }
+
+    sqlite3_finalize( stmt );
+
+    *tokens = head;
     return VARNAM_SUCCESS;
 }
 

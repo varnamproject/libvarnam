@@ -24,7 +24,7 @@
 #include "varnam-types.h"
 #include "varnam-util.h"
 
-VARNAM_EXPORT extern int 
+VARNAM_EXPORT extern int
 varnam_init(const char *symbols_file, varnam **handle, char **msg);
 
 /**
@@ -36,14 +36,14 @@ varnam_init(const char *symbols_file, varnam **handle, char **msg);
  *
  * NOTES
  *
- * This function won't persist configuration options permanantly. It will reset 
+ * This function won't persist configuration options permanantly. It will reset
  * back to the default configuration when varnam_init() is called next time.
  *
  * Following configuration options are available.
  *
  * VARNAM_CONFIG_USE_DEAD_CONSONANTS
  *   This will make varnam_create_token() to infer dead consonants and persist that rather
- *   than storing consonants. This option is set by default when varnam initializes. 
+ *   than storing consonants. This option is set by default when varnam initializes.
  *   Eg : varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 0) - Turns this option off
  *        varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 1) - Turns this option on
  *
@@ -58,7 +58,7 @@ varnam_init(const char *symbols_file, varnam **handle, char **msg);
  * VARNAM_INVALID_CONFIG  - Invalid configuration option
  * VARNAM_ERROR           - All other errors
  **/
-VARNAM_EXPORT extern int 
+VARNAM_EXPORT extern int
 varnam_config(varnam *handle, int type, ...);
 
 /**
@@ -70,12 +70,12 @@ varnam_config(varnam *handle, int type, ...);
  * value2     - Alternative replacement (Optional)
  * token_type - One among VARNAM_TOKEN_XXX
  * match_type - Either VARNAM_MATCH_EXACT or VARNAM_MATCH_POSSIBILITY
- * buffered   - Setting TRUE will enable buffering. If set to TRUE, 
+ * buffered   - Setting TRUE will enable buffering. If set to TRUE,
                 varnam_flush() has to be called to flush buffers.
  *
  * NOTES
  *
- * Turning on buffering improves performance as it delays disk writes. This is 
+ * Turning on buffering improves performance as it delays disk writes. This is
  * helpful when creating large number of tokens in a tight loop.
  *
  *
@@ -114,19 +114,19 @@ VARNAM_EXPORT extern int varnam_create_token(
 /* int */
 /* varnam_generate_cv_combinations(varnam* handle); */
 
-VARNAM_EXPORT extern int 
+VARNAM_EXPORT extern int
 varnam_transliterate(varnam *handle, const char *input, char **result);
 
-VARNAM_EXPORT extern int 
+VARNAM_EXPORT extern int
 varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
 
-VARNAM_EXPORT extern const char* 
+VARNAM_EXPORT extern const char*
 varnam_scheme_identifier(varnam *handle);
 
-VARNAM_EXPORT extern const char* 
+VARNAM_EXPORT extern const char*
 varnam_scheme_display_name(varnam *handle);
 
-VARNAM_EXPORT extern const char* 
+VARNAM_EXPORT extern const char*
 varnam_scheme_author(varnam *handle);
 
 VARNAM_EXPORT extern int
@@ -135,8 +135,51 @@ varnam_set_metadata(
     const char *
 );
 
-VARNAM_EXPORT extern const char* 
+VARNAM_EXPORT extern const char*
 varnam_last_error(varnam *handle);
+
+/**
+ * Retrieves all tokens matching the supplied token type
+ *
+ * handle     - Valid varnam instance
+ * token_type - One among VARNAM_TOKEN_XXX
+ * tokens     - Output will be written here. This will be a linked list of tokens. This variable will
+ *              point to the first item in the list. varnam_tokens_for_each() can be used to iterate over this list.
+                varnam_tokens_free() will free the list.
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS    - On successful execution
+ * VARNAM_ARGS_ERROR - Invalid handle or incorrect token type
+ * VARNAM_ERROR      - Any other errors
+ * */
+VARNAM_EXPORT extern int
+varnam_get_all_tokens(
+    varnam *handle,
+    int token_type,
+    struct token **tokens
+);
+
+/**
+ * Iterate over token collection and points `current' variable to the current element
+ *
+ * current       - Variable to hold current element
+ * start_from    - Where to start the iteration. Usually this will be the head element
+ *
+ **/
+#define varnam_tokens_for_each(current, start_from)  \
+    for(current = start_from; current != NULL; current = current->next) \
+
+/**
+ * Iterate over token collection and deleted each entry in the list
+ *
+ * current       - Variable to hold current element
+ * head          - Head of the list. This is where the iteration starts
+ *
+ **/
+#define varnam_tokens_free(current, head)                          \
+    while(head != NULL) {                                          \
+        current = head->next; free(head); head = current;}         \
 
 /**
  * Enable logging.
@@ -145,7 +188,7 @@ varnam_last_error(varnam *handle);
  * log_type - Either VARNAM_LOG_DEFAULT or VARNAM_LOG_DEBUG
  * callback - Actual function that does the logging
  *
- * USAGE 
+ * USAGE
  *
  * varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, func) - Enables default logging
  * varnam_enable_logging (handle, VARNAM_LOG_DBUG, func)    - Enables debug level logging
@@ -179,7 +222,7 @@ VARNAM_EXPORT extern int varnam_flush_buffer(
     varnam *handle
 );
 
-VARNAM_EXPORT extern int 
+VARNAM_EXPORT extern int
 varnam_destroy(varnam *handle);
 
 #endif

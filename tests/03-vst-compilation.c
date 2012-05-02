@@ -52,6 +52,104 @@ int create_without_buffering()
     return 0;
 }
 
+int get_all_tokens()
+{
+    int rc, count = 0;
+    char *msg;
+    varnam *handle;
+    struct token *head, *current;
+
+    const char *filename = "output/03-get-all-tokens.vst";
+    rc = varnam_init(filename, &handle, &msg);
+
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", msg);
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "pattern1", "value11", "value21", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "pattern2", "value12", "value22", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 0);
+
+    rc = varnam_create_token(handle, "p", "v", "v", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    rc = varnam_create_token(handle, "p", "v12", "v", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    rc = varnam_get_all_tokens(handle, VARNAM_TOKEN_VOWEL, &head);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    varnam_tokens_free(current, head);
+
+    varnam_tokens_for_each(current, head)
+    {
+        printf ("%s => [%s, %s]\n", current->pattern, current->value1, current->value2);
+        ++count;
+    }
+
+    if (count != 3)
+    {
+        printf("3 vowels expected, but got %d", count);
+        return 1;
+    }
+
+    rc = varnam_get_all_tokens(handle, VARNAM_TOKEN_CONSONANT, &head);
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("VARNAM_SUCCESS expected. Never got. %s", varnam_last_error(handle));
+        return 1;
+    }
+
+    count = 0;
+
+    varnam_tokens_for_each(current, head)
+    {
+        printf ("%s => [%s, %s]\n", current->pattern, current->value1, current->value2);
+        ++count;
+    }
+
+    if (count != 2)
+    {
+        printf("2 consonants expected, but got %d", count);
+        return 1;
+    }
+
+    return 0;
+}
+
 int ignore_duplicates()
 {
     int rc;
@@ -338,6 +436,10 @@ int test_vst_file_creation(int argc, char **argv)
         return 1;
 
     rc = ignore_duplicates();
+    if (rc)
+        return 1;
+
+    rc = get_all_tokens();
     if (rc)
         return 1;
 

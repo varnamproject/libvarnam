@@ -109,4 +109,7 @@ vst_get_virama(varnam* handle, char* output);
 int
 vst_generate_cv_combinations(varnam* handle);
 
+int
+vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens);
+
 #endif
