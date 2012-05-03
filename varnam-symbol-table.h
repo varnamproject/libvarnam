@@ -55,12 +55,6 @@ int
 can_find_rtl_token(varnam *handle, struct token *last, const char *lookup);
 
 /**
- * fetches the value for the supplied name and writes that to the output
- **/
-void 
-fill_general_values(varnam *handle, char *output, const char *name);
-
-/**
  * checks the schema availability. this function will create it when necessary
  **/
 int
@@ -111,5 +105,14 @@ vst_generate_cv_combinations(varnam* handle);
 
 int
 vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens);
+
+/**
+ * Adds supplied metadata
+ **/
+int
+vst_add_metadata (varnam *handle, const char* key, const char* value);
+
+int
+vst_get_metadata (varnam *handle, const char* key, struct strbuf *output);
 
 #endif

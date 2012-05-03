@@ -25,14 +25,67 @@
 int strbuf_formatted_strings()
 {
     struct strbuf *buffer = strbuf_init(100);
-    strbuf_addf(buffer, "Character %c, Integer %d, String %s", 'a', 10, "Navaneth");
+    strbuf_addf(buffer, "Character %c, Integer %d, String %s\n", 'a', 10, "Navaneth");
     printf("%s", buffer->buffer);
 
-    if (strcmp("Character a, Integer 10, String Navaneth", buffer->buffer) != 0)
+    if (strcmp("Character a, Integer 10, String Navaneth\n", buffer->buffer) != 0)
     {
         printf ("Formatting is incorrect");
         return 1;
     }
+
+    return VARNAM_SUCCESS;
+}
+
+int set_scheme_details()
+{
+    int rc;
+    char *msg;
+    varnam *handle;
+
+    rc = varnam_init("output/00-set-scheme-details.vst", &handle, &msg);
+    if(rc != VARNAM_SUCCESS) {
+        printf("initialization failed - %s\n", msg);
+        return 1;
+    }
+
+    rc = varnam_set_scheme_details(handle, "ml", "ml-unicode", "Malayalam", "Navaneeth K N", "May 3 2012");
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf ("set scheme details failed - %s\n", varnam_get_last_error(handle));
+        return 1;
+    }
+
+    if (strcmp(varnam_get_scheme_language_code(handle), "ml") != 0)
+    {
+        printf("Failed to read lang code\n");
+        return 1;
+    }
+
+    if (strcmp(varnam_get_scheme_identifier(handle), "ml-unicode") != 0)
+    {
+        printf("Failed to read lang identifier\n");
+        return 1;
+    }
+
+    if (strcmp(varnam_get_scheme_display_name(handle), "Malayalam") != 0)
+    {
+        printf("Failed to read display name\n");
+        return 1;
+    }
+
+    if (strcmp(varnam_get_scheme_author(handle), "Navaneeth K N") != 0)
+    {
+        printf("Failed to read author\n");
+        return 1;
+    }
+
+    if (strcmp(varnam_get_scheme_compiled_date(handle), "May 3 2012") != 0)
+    {
+        printf("Failed to read compiled date\n");
+        return 1;
+    }
+
 
     return VARNAM_SUCCESS;
 }
@@ -164,6 +217,10 @@ int test_varnam_init(int argc, char **argv)
         printf("Initialization on already existing file should not have allowed");
         return 1;
     }
+
+    rc = set_scheme_details();
+    if (rc)
+        return rc;
 
     return 0;
 }

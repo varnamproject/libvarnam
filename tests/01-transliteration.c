@@ -45,33 +45,6 @@ static int rendering_dependent_vowels(varnam *handle)
     return 1;
 }
 
-static int scheme_details(varnam *handle)
-{
-    const char *author = varnam_scheme_author (handle);
-    const char *identifier = varnam_scheme_identifier (handle);
-    const char *display_name = varnam_scheme_display_name (handle);
-
-    if(strcmp(author, "navaneeth") != 0) 
-    {
-        printf("author : expected %s but was %s\n", "navaneeth", author);
-        return 1;
-    }
-
-    if(strcmp(identifier, "ml") != 0) 
-    {
-        printf("scheme_identifier : expected %s but was %s\n", "ml", identifier);
-        return 1;
-    }
-
-    if(strcmp(display_name, "language name") != 0) 
-    {
-        printf("scheme_display_name : expected %s but was %s\n", "language name", display_name);
-        return 1;
-    }
-
-    return 0;
-}
-
 static void log_fun(const char* msg)
 {
     printf("%s\n", msg);
@@ -96,12 +69,6 @@ int basic_transliteration(int argc, char **argv)
 
     rc = varnam_enable_logging(handle, VARNAM_LOG_DEBUG, &log_fun);
     printf("Return code is %d", rc);
-
-    rc = scheme_details (handle);
-    if(rc != VARNAM_SUCCESS) {
-        printf("reading scheme details failed - \n");
-        return 1;
-    }    
 
     rc = rendering_vowels(handle);
     if(rc != VARNAM_SUCCESS) {

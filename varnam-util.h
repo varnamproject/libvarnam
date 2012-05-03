@@ -136,8 +136,9 @@ VARNAM_EXPORT int strbuf_addf(struct strbuf *string, const char *format, ...);
 VARNAM_EXPORT int strbuf_addvf(struct strbuf *string, const char *format, va_list args);
 VARNAM_EXPORT void strbuf_destroy(struct strbuf *string);
 VARNAM_EXPORT char* strbuf_detach(struct strbuf *string);
+VARNAM_EXPORT const char* strbuf_to_s(struct strbuf *string);
 VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
-VARNAM_EXPORT int strbuf_is_blank_string(struct strbuf *string);
+VARNAM_EXPORT int strbuf_is_blank(struct strbuf *string);
 VARNAM_EXPORT int strbuf_endswith(struct strbuf *string, const char *str);
 VARNAM_EXPORT void strbuf_remove_from_last(struct strbuf *string, const char *toremove);
 

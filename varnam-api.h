@@ -24,8 +24,26 @@
 #include "varnam-types.h"
 #include "varnam-util.h"
 
+/**
+ * Initializes the varnam library.
+ *
+ * scheme_file    - Full path to the varnam scheme file
+ * handle         - If successfull, a valid instance of varnam will
+                    point here. This needs to passed to all the functions in
+                    varnam library
+ * msg            - If any error happens, this will contain the error message.
+                    User has to free this
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS       - Successfully initialized
+ * VARNAM_ARGS_ERROR    - When mandatory arguements are NULL
+ * VARNAM_MEMORY_ERROR  - No sufficient memory to initialize
+ * VARNAM_STORAGE_ERROR - Errors related to underlying file
+ *
+ **/
 VARNAM_EXPORT extern int
-varnam_init(const char *symbols_file, varnam **handle, char **msg);
+varnam_init(const char *scheme_file, varnam **handle, char **msg);
 
 /**
  * Configure varnam library.
@@ -111,7 +129,7 @@ VARNAM_EXPORT extern int varnam_create_token(
  * VARNAM_ERROR          - Any other errors. Check varnam_last_error()
  *
  **/
-int
+VARNAM_EXPORT extern int
 varnam_generate_cv_combinations(varnam* handle);
 
 VARNAM_EXPORT extern int
@@ -120,14 +138,72 @@ varnam_transliterate(varnam *handle, const char *input, char **result);
 VARNAM_EXPORT extern int
 varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
 
-VARNAM_EXPORT extern const char*
-varnam_scheme_identifier(varnam *handle);
+/**
+ * Set scheme details. This will overwrite any scheme details set before
+ *
+ * handle            - Valid varnam instance
+ * language_code     - ISO 639-1 standard two letter language code
+ * identifier        - Unique identifier used to identify this scheme
+ * display_name      - Friendly name for the scheme
+ * author            - Author
+ * compiled_date     - Date on which the compilation happened.
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS    - Upon successful execution
+ * VARNAM_ARGS_ERROR - If any arguements are not supplied.
+ * VARNAM_ERROR      - Any other error
+ *
+ **/
+VARNAM_EXPORT extern int
+varnam_set_scheme_details(
+    varnam *handle,
+    const char *language_code,
+    const char *identifier,
+    const char *display_name,
+    const char *author,
+    const char *compiled_date
+);
 
+/**
+ * Returns the language code for the current scheme.
+ * See varnam_set_scheme_details() to set the values
+ *
+ **/
 VARNAM_EXPORT extern const char*
-varnam_scheme_display_name(varnam *handle);
+varnam_get_scheme_language_code(varnam *handle);
 
+/**
+ * Returns the identifier for the current scheme.
+ * See varnam_set_scheme_details() to set the values
+ *
+ **/
 VARNAM_EXPORT extern const char*
-varnam_scheme_author(varnam *handle);
+varnam_get_scheme_identifier(varnam *handle);
+
+/**
+ * Returns the friendly display name for the current scheme.
+ * See varnam_set_scheme_details() to set the values
+ *
+ **/
+VARNAM_EXPORT extern const char*
+varnam_get_scheme_display_name(varnam *handle);
+
+/**
+ * Returns the author for the current scheme.
+ * See varnam_set_scheme_details() to set the values
+ *
+ **/
+VARNAM_EXPORT extern const char*
+varnam_get_scheme_author(varnam *handle);
+
+/**
+ * Returns the compiled date for the current scheme.
+ * See varnam_set_scheme_details() to set the values
+ *
+ **/
+VARNAM_EXPORT extern const char*
+varnam_get_scheme_compiled_date(varnam *handle);
 
 VARNAM_EXPORT extern int
 varnam_set_metadata(
@@ -135,8 +211,12 @@ varnam_set_metadata(
     const char *
 );
 
+/**
+ * Returns error message for the most recent failed call to varnam API functions.
+ *
+ **/
 VARNAM_EXPORT extern const char*
-varnam_last_error(varnam *handle);
+varnam_get_last_error(varnam *handle);
 
 /**
  * Retrieves all tokens matching the supplied token type

@@ -54,6 +54,14 @@
 #define VARNAM_CONFIG_USE_DEAD_CONSONANTS      100
 #define VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN   101
 
+/* Keys used in metadata*/
+#define VARNAM_METADATA_SCHEME_LANGUAGE_CODE     "lang-code"
+#define VARNAM_METADATA_SCHEME_IDENTIFIER        "scheme-id"
+#define VARNAM_METADATA_SCHEME_DISPLAY_NAME      "scheme-display-name"
+#define VARNAM_METADATA_SCHEME_AUTHOR            "scheme-author"
+#define VARNAM_METADATA_SCHEME_COMPILED_DATE     "scheme-compiled-date"
+
+
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
@@ -66,9 +74,6 @@ struct varnam_internal
     struct varnam_token_rendering *renderers;
 
     char virama[VARNAM_SYMBOL_MAX];
-    char scheme_identifier[VARNAM_SYMBOL_MAX];
-    char scheme_display_name[VARNAM_SYMBOL_MAX];
-    char scheme_author[VARNAM_SYMBOL_MAX];
 
     struct strbuf *output;
     struct strbuf *rtl_output;
@@ -90,13 +95,20 @@ struct varnam_internal
 
     int vst_buffering;
 
+    /* Buffers to cache scheme details */
+    struct strbuf *scheme_language_code;
+    struct strbuf *scheme_identifier;
+    struct strbuf *scheme_display_name;
+    struct strbuf *scheme_author;
+    struct strbuf *scheme_compiled_date;
+
     /* configuration options */
     int config_use_dead_consonants;
     int config_ignore_duplicate_tokens;
 };
 
 typedef struct varnam {
-    char *symbols_file;
+    char *scheme_file;
     struct varnam_internal *internal;
 } varnam;
 

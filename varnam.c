@@ -32,15 +32,12 @@ static struct varnam_token_rendering renderers[] = {
 };
 
 static struct varnam_internal*
-initialize_internal() 
+initialize_internal()
 {
     struct varnam_internal *vi;
     vi = (struct varnam_internal *) xmalloc(sizeof (struct varnam_internal));
     if(vi) {
         vi->virama[0] = '\0';
-        vi->scheme_identifier[0] = '\0';
-        vi->scheme_display_name[0] = '\0';
-        vi->scheme_author[0] = '\0';
         vi->last_token_available = 0;
         vi->last_rtl_token_available = 0;
         vi->last_token = NULL;
@@ -56,6 +53,13 @@ initialize_internal()
         vi->log_message = strbuf_init(100);
         vi->vst_buffering = 0;
 
+        /* scheme details buffers */
+        vi->scheme_language_code = strbuf_init(2);
+        vi->scheme_identifier = strbuf_init(10);
+        vi->scheme_display_name = strbuf_init(10);
+        vi->scheme_author = strbuf_init(25);
+        vi->scheme_compiled_date = strbuf_init(10);
+
         /* configuration options */
         vi->config_use_dead_consonants = 1;
         vi->config_ignore_duplicate_tokens = 0;
@@ -63,19 +67,19 @@ initialize_internal()
     return vi;
 }
 
-int 
-varnam_init(const char *symbols_file, varnam **handle, char **msg)
+int
+varnam_init(const char *scheme_file, varnam **handle, char **msg)
 {
     int rc;
     varnam *c;
     struct varnam_internal *vi;
     size_t filename_length;
 
-    if(symbols_file == NULL)
-        return VARNAM_MISUSE;
+    if(scheme_file == NULL)
+        return VARNAM_ARGS_ERROR;
 
     c = (varnam *) xmalloc(sizeof (varnam));
-    if(!c) 
+    if(!c)
         return VARNAM_MEMORY_ERROR;
 
     vi = initialize_internal();
@@ -85,72 +89,156 @@ varnam_init(const char *symbols_file, varnam **handle, char **msg)
     vi->message = (char *) xmalloc(sizeof (char) * VARNAM_LIB_TEMP_BUFFER_SIZE);
     if(!vi->message)
         return VARNAM_MEMORY_ERROR;
-   
-    rc = sqlite3_open(symbols_file, &vi->db);
+
+    rc = sqlite3_open(scheme_file, &vi->db);
     if( rc ) {
-        asprintf(msg, "Can't open %s: %s\n", symbols_file, sqlite3_errmsg(vi->db));
+        asprintf(msg, "Can't open %s: %s\n", scheme_file, sqlite3_errmsg(vi->db));
         sqlite3_close(vi->db);
         return VARNAM_STORAGE_ERROR;
     }
 
-    filename_length = strlen(symbols_file);
-    c->symbols_file = (char *) xmalloc(filename_length + 1);
-    if(!c->symbols_file)
+    filename_length = strlen(scheme_file);
+    c->scheme_file = (char *) xmalloc(filename_length + 1);
+    if(!c->scheme_file)
         return VARNAM_MEMORY_ERROR;
 
-    strncpy(c->symbols_file, symbols_file, filename_length + 1);
+    strncpy(c->scheme_file, scheme_file, filename_length + 1);
     vi->renderers = renderers;
     c->internal = vi;
 
     rc = ensure_schema_exist(c, msg);
     if (rc != VARNAM_SUCCESS)
         return rc;
-    
+
     *handle = c;
     return VARNAM_SUCCESS;
 }
 
-const char*
-varnam_scheme_identifier(varnam *handle)
+int
+varnam_set_scheme_details(
+    varnam *handle,
+    const char *language_code,
+    const char *identifier,
+    const char *display_name,
+    const char *author,
+    const char *compiled_date)
 {
+    int rc;
+
+    set_last_error (handle, NULL);
+
+    if (language_code != NULL && strlen(language_code) > 0)
+    {
+        if (strlen(language_code) != 2)
+        {
+            set_last_error (handle, "Language code should be one of ISO 639-1 two letter codes.");
+            return VARNAM_ERROR;
+        }
+
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_LANGUAGE_CODE, language_code);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+
+        varnam_log (handle, "Set language code to : %s", language_code);
+    }
+
+    if (identifier != NULL && strlen(identifier) > 0)
+    {
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_IDENTIFIER, identifier);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+
+        varnam_log (handle, "Set language identifier to : %s", identifier);
+    }
+
+    if (display_name != NULL && strlen(display_name) > 0)
+    {
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_DISPLAY_NAME, display_name);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+
+        varnam_log (handle, "Set language display name to : %s", display_name);
+    }
+
+    if (author != NULL && strlen(author) > 0)
+    {
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_AUTHOR, author);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+
+        varnam_log (handle, "Set author to : %s", author);
+    }
+
+    if (compiled_date != NULL && strlen(compiled_date) > 0)
+    {
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_COMPILED_DATE, compiled_date);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+
+        varnam_log (handle, "Set compiled date to : %s", compiled_date);
+    }
+
+    return VARNAM_SUCCESS;
+}
+
+static const char*
+get_scheme_details(varnam *handle, const char* key, struct strbuf *buffer)
+{
+    struct strbuf *value = buffer;
+
     if (handle == NULL)
         return NULL;
 
-    if(handle->internal->scheme_identifier[0] == '\0') {
-        fill_general_values(handle, handle->internal->scheme_identifier, "scheme_identifier");
+    if (strbuf_is_blank (value))
+    {
+        vst_get_metadata (handle, key, value);
     }
 
-    return handle->internal->scheme_identifier;
+    return strbuf_to_s (value);
 }
 
 const char*
-varnam_scheme_display_name(varnam *handle)
+varnam_get_scheme_language_code(varnam *handle)
 {
-    if (handle == NULL)
-        return NULL;
-
-    if(handle->internal->scheme_display_name[0] == '\0') {
-        fill_general_values(handle, handle->internal->scheme_display_name, "scheme_display_name");
-    }
-
-    return handle->internal->scheme_display_name;
+    return get_scheme_details (handle,
+                               VARNAM_METADATA_SCHEME_LANGUAGE_CODE,
+                               handle->internal->scheme_language_code);
 }
 
 const char*
-varnam_scheme_author(varnam *handle)
+varnam_get_scheme_identifier(varnam *handle)
 {
-    if (handle == NULL)
-        return NULL;
-
-    if(handle->internal->scheme_author[0] == '\0') {
-        fill_general_values(handle, handle->internal->scheme_author, "scheme_author");
-    }
-
-    return handle->internal->scheme_author;
+    return get_scheme_details (handle,
+                               VARNAM_METADATA_SCHEME_IDENTIFIER,
+                               handle->internal->scheme_identifier);
 }
 
 const char*
-varnam_last_error(varnam *handle)
+varnam_get_scheme_display_name(varnam *handle)
+{
+    return get_scheme_details (handle,
+                               VARNAM_METADATA_SCHEME_DISPLAY_NAME,
+                               handle->internal->scheme_display_name);
+}
+
+const char*
+varnam_get_scheme_author(varnam *handle)
+{
+    return get_scheme_details (handle,
+                               VARNAM_METADATA_SCHEME_AUTHOR,
+                               handle->internal->scheme_author);
+}
+
+const char*
+varnam_get_scheme_compiled_date(varnam *handle)
+{
+    return get_scheme_details (handle,
+                               VARNAM_METADATA_SCHEME_COMPILED_DATE,
+                               handle->internal->scheme_compiled_date);
+}
+
+const char*
+varnam_get_last_error(varnam *handle)
 {
     if (handle == NULL)
         return NULL;
@@ -158,7 +246,7 @@ varnam_last_error(varnam *handle)
     return handle->internal->last_error->buffer;
 }
 
-int 
+int
 varnam_enable_logging(varnam *handle, int log_type, void (*callback)(const char*))
 {
     if (handle == NULL)
@@ -184,7 +272,7 @@ static int can_generate_dead_consonant(const char *string, size_t len)
     return string[len - 2] != 'a' && string[len - 1] == 'a';
 }
 
-int 
+int
 varnam_create_token(
     varnam *handle,
     const char *pattern,
@@ -226,7 +314,7 @@ varnam_create_token(
 
     pattern_len = strlen(pattern);
 
-    if (token_type == VARNAM_TOKEN_CONSONANT && 
+    if (token_type == VARNAM_TOKEN_CONSONANT &&
         handle->internal->config_use_dead_consonants)
     {
         rc = vst_get_virama(handle, virama);
@@ -294,7 +382,7 @@ varnam_generate_cv_combinations(varnam* handle)
     return vst_generate_cv_combinations(handle);
 }
 
-int 
+int
 varnam_flush_buffer(varnam *handle)
 {
     if (handle == NULL)
@@ -303,7 +391,7 @@ varnam_flush_buffer(varnam *handle)
     return vst_flush_changes(handle);
 }
 
-int 
+int
 varnam_config(varnam *handle, int type, ...)
 {
     va_list args;
@@ -333,7 +421,7 @@ varnam_config(varnam *handle, int type, ...)
     return rc;
 }
 
-int 
+int
 varnam_destroy(varnam *handle)
 {
     struct varnam_internal *vi;
@@ -345,10 +433,17 @@ varnam_destroy(varnam *handle)
     vi = handle->internal;
 
     xfree(vi->message);
-    strbuf_destroy(vi->output);
-    strbuf_destroy(vi->rtl_output);
-    strbuf_destroy(vi->lookup);
-    strbuf_destroy(vi->last_error);
+    strbuf_destroy (vi->output);
+    strbuf_destroy (vi->rtl_output);
+    strbuf_destroy (vi->lookup);
+    strbuf_destroy (vi->last_error);
+
+    strbuf_destroy (vi->scheme_language_code);
+    strbuf_destroy (vi->scheme_identifier);
+    strbuf_destroy (vi->scheme_display_name);
+    strbuf_destroy (vi->scheme_author);
+    strbuf_destroy (vi->scheme_compiled_date);
+
     xfree(vi->last_token);
     xfree(vi->current_token);
     xfree(vi->last_rtl_token);
@@ -358,7 +453,7 @@ varnam_destroy(varnam *handle)
         return VARNAM_ERROR;
     }
     xfree(handle->internal);
-    xfree(handle->symbols_file);
+    xfree(handle->scheme_file);
     xfree(handle);
     return VARNAM_SUCCESS;
 }

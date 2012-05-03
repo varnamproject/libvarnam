@@ -71,7 +71,7 @@ struct strbuf *strbuf_init(size_t initial_buf_size)
 
 int strbuf_add(struct strbuf *string, const char *c)
 {
-    if(string == NULL) return 0;
+    if(string == NULL || c == NULL) return 0;
 
     while(*c != '\0') {
         if(!strbuf_addc(string, *c++))
@@ -175,7 +175,7 @@ void strbuf_clear(struct strbuf *string)
  * Checks the string is empty by stripping whitespaces.
  * returns true if it is blank, else false
  */
-int strbuf_is_blank_string(struct strbuf *string)
+int strbuf_is_blank(struct strbuf *string)
 {
     const char *b = string->buffer;
 
@@ -237,4 +237,9 @@ char* strbuf_detach(struct strbuf *string)
     buffer = string->buffer;
     xfree(string);
     return buffer;
+}
+
+const char* strbuf_to_s(struct strbuf *string)
+{
+    return string->buffer;
 }

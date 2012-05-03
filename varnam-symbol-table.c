@@ -194,45 +194,45 @@ can_find_rtl_token(varnam *handle, struct token *last, const char *lookup)
     return result;
 }
 
-void
-fill_general_values(varnam *handle, char *output, const char *name)
-{
-    char sql[500];
-    const char *result;
-    sqlite3_stmt *stmt;
-    sqlite3 *db;
-    int rc;
+/* void */
+/* fill_general_values(varnam *handle, char *output, const char *name) */
+/* { */
+/*     char sql[500]; */
+/*     const char *result; */
+/*     sqlite3_stmt *stmt; */
+/*     sqlite3 *db; */
+/*     int rc; */
 
-    assert( name );
-    assert( handle );
+/*     assert( name ); */
+/*     assert( handle ); */
 
-    db = handle->internal->db;
+/*     db = handle->internal->db; */
 
-    snprintf(sql, 500, "select value from general where key = ?1;");
+/*     snprintf(sql, 500, "select value from general where key = ?1;"); */
 
-    rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
-    if( rc == SQLITE_OK ) {
-        sqlite3_bind_text(stmt, 1, name, (int) strlen(name), NULL);
-        rc = sqlite3_step( stmt );
-        if( rc == SQLITE_ROW )
-        {
-            result = (const char*) sqlite3_column_text(stmt, 0);
-            if(result) {
-                strncpy(output, result, VARNAM_SYMBOL_MAX);
-            }
-        }
-    }
+/*     rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL ); */
+/*     if( rc == SQLITE_OK ) { */
+/*         sqlite3_bind_text(stmt, 1, name, (int) strlen(name), NULL); */
+/*         rc = sqlite3_step( stmt ); */
+/*         if( rc == SQLITE_ROW ) */
+/*         { */
+/*             result = (const char*) sqlite3_column_text(stmt, 0); */
+/*             if(result) { */
+/*                 strncpy(output, result, VARNAM_SYMBOL_MAX); */
+/*             } */
+/*         } */
+/*     } */
 
-    sqlite3_finalize( stmt );
-}
+/*     sqlite3_finalize( stmt ); */
+/* } */
 
 int
 ensure_schema_exist(varnam *handle, char **msg)
 {
     const char *sql =
-        "create table if not exists general (key TEXT, value TEXT);"
+        "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create table if not exists symbols (type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
-        "create index if not exists index_general on general (key);"
+        "create index if not exists index_metadata on metadata (key);"
         "create index if not exists index_pattern on symbols (pattern);"
         "create index if not exists index_value1  on symbols (value1);"
         "create index if not exists index_value2  on symbols (value2);";
@@ -660,6 +660,73 @@ vst_generate_cv_combinations(varnam* handle)
 
     varnam_tokens_free(vowel, vowels);
     varnam_tokens_free(consonant, consonants);
+
+    return VARNAM_SUCCESS;
+}
+
+int
+vst_add_metadata (varnam *handle, const char* key, const char* value)
+{
+    int rc;
+    sqlite3 *db; sqlite3_stmt *stmt;
+
+    db = handle->internal->db;
+
+    rc = sqlite3_prepare_v2( db, "insert or replace into metadata (key, value) values (?1, ?2);", -1, &stmt, NULL );
+    if(rc != SQLITE_OK)
+    {
+        set_last_error (handle, "Failed to add metadata : %s", sqlite3_errmsg(db));
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_bind_text(stmt, 1, key, -1, NULL);
+    sqlite3_bind_text(stmt, 2, value, -1, NULL);
+
+    rc = sqlite3_step( stmt );
+    if (rc != SQLITE_DONE)
+    {
+        set_last_error (handle, "Failed to add metadata : %s", sqlite3_errmsg(db));
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_finalize( stmt );
+    return VARNAM_SUCCESS;
+}
+
+int
+vst_get_metadata (varnam *handle, const char* key, struct strbuf *output)
+{
+    int rc;
+    sqlite3 *db; sqlite3_stmt *stmt;
+
+    assert (handle);
+    strbuf_clear (output);
+
+    db = handle->internal->db;
+
+    rc = sqlite3_prepare_v2( db, "select value from metadata where key = ?1;", -1, &stmt, NULL );
+    if(rc != SQLITE_OK)
+    {
+        set_last_error (handle, "Failed to get metadata : %s", sqlite3_errmsg(db));
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_bind_text(stmt, 1, key, -1, NULL);
+
+    rc = sqlite3_step( stmt );
+    if (rc == SQLITE_ROW)
+        strbuf_add (output, (const char*) sqlite3_column_text( stmt, 0 ));
+    else if (rc != SQLITE_DONE)
+    {
+        set_last_error (handle, "Failed to get metadata : %s", sqlite3_errmsg(db));
+        sqlite3_finalize( stmt );
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_finalize( stmt );
 
     return VARNAM_SUCCESS;
 }
