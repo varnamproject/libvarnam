@@ -1,0 +1,351 @@
+#!/usr/bin/env ruby
+
+require 'singleton'
+require 'ffi'
+require 'optparse'
+
+# Defining command line options
+
+$options = {}
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: varnam-compile [options] file1 file2 ..."
+
+  # ability to provide varnam library name
+  $options[:library] = 'libvarnam'
+  $options[:library] = 'varnam' if RUBY_PLATFORM.downcase.include?('mswin')
+  opts.on('-l', '--library FILE', 'Sets the varnam library') do |file|
+    $options[:library] = file
+  end
+
+  $options[:verbose] = false
+  opts.on('-v', '--verbose', 'Enable verbose output') do
+    $options[:verbose] = true
+  end
+
+  # help screen
+  opts.on( '-h', '--help', 'Display this screen' ) do
+     puts opts
+     exit
+  end
+end
+
+optparse.parse!
+
+# Ensure we have files available to process
+if ARGV.size == 0
+  puts "No files specified"
+  puts optparse
+  exit(1)
+end
+
+# Ruby wrapper for libvarnam
+module VarnamLibrary
+  extend FFI::Library
+  ffi_lib $options[:library]
+  
+  attach_function :varnam_init, [:string, :pointer, :pointer], :int
+  attach_function :varnam_create_token, [:pointer, :string, :string, :string, :int, :int, :int], :int
+  attach_function :varnam_generate_cv_combinations, [:pointer], :int
+  attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
+  attach_function :varnam_get_last_error, [:pointer], :string
+  attach_function :varnam_flush_buffer, [:pointer], :int
+end
+
+if not File.exists?(ARGV[0]) or not File.file?(ARGV[0])
+  puts "#{ARGV[0]} is not a valid file"
+  exit(1)
+end
+
+$source_file_name = ARGV[0]
+$vst_file_name = ARGV[0].sub(File.extname(ARGV[0]), "") + ".vst"
+
+if File.exists?($vst_file_name) 
+  File.delete($vst_file_name)
+end
+
+$varnam_handle = FFI::MemoryPointer.new :pointer
+init_error_msg = FFI::MemoryPointer.new(:pointer, 1)
+
+initialized = VarnamLibrary.varnam_init($vst_file_name, $varnam_handle, init_error_msg)
+if (initialized != 0)
+  ptr = init_error_msg.read_pointer()
+  msg = msg.nil? ? "" : msg.read_string
+  puts "Varnam initialization failed #{msg}"
+  exit(1)
+end
+
+VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :match_type)
+
+module Varnam
+  VARNAM_TOKEN_VOWEL           = 1
+  VARNAM_TOKEN_CONSONANT       = 2
+  VARNAM_TOKEN_DEAD_CONSONANT  = 3
+  VARNAM_TOKEN_CONSONANT_VOWEL = 4
+  VARNAM_TOKEN_NUMBER          = 5
+  VARNAM_TOKEN_SYMBOL          = 6
+  VARNAM_TOKEN_ANUSVARA        = 7
+  VARNAM_TOKEN_VISARGA         = 8
+  VARNAM_TOKEN_VIRAMA          = 9
+  VARNAM_TOKEN_OTHER           = 10
+
+  VARNAM_MATCH_EXACT           = 1
+  VARNAM_MATCH_POSSIBILITY     = 2
+
+  class RuntimeContext
+    include Singleton
+
+    def initialize
+      @errors = 0
+      @warnings = 0
+      @tokens = {}
+      @current_expression = ""
+      @error_messages = []
+      @warning_messages = []
+    end
+
+    def errored
+      @errors += 1
+    end
+
+    def warned
+      @warnings += 1
+    end
+
+    def errors
+      @errors
+    end
+
+    def warnings
+      @warnings
+    end
+
+    attr_accessor :tokens, :current_expression, :error_messages, :warning_messages
+  end
+end
+
+def _context
+  return Varnam::RuntimeContext.instance
+end
+
+def get_source_file_with_linenum
+  Kernel::caller.last.sub(":in `<main>'", "")  # We don't need :in `<main>' to appear and make confusion
+end
+
+def inform(message)
+  puts "   #{message}"
+end
+
+def warn(message)
+  if _context.current_expression.nil?
+    _context.warning_messages.push "#{get_source_file_with_linenum} : WARNING: #{message}"
+  else
+    _context.warning_messages.push "#{get_source_file_with_linenum} : WARNING: In expression #{_context.current_expression}. #{message}"
+  end
+  _context.warned
+end
+
+def error(message)
+  if _context.current_expression.nil?
+    _context.error_messages.push "#{get_source_file_with_linenum} : ERROR : #{message}"
+  else
+    _context.error_messages.push "#{get_source_file_with_linenum} : ERROR : In expression #{_context.current_expression}. #{message}"
+  end
+  _context.errored
+end
+
+def _ensure_sanity_of_array(array)
+  # Possibilities are
+  #  [e1, e2]
+  #  [e1, [e2,e3], e4]
+  error "An empty array won't workout" if array.size == 0
+  array.each do |element|
+    if element.is_a?(Array)
+      _ensure_sanity_of_array(element)
+    else
+      _ensure_type_safety(element)
+    end
+  end
+end
+
+def _ensure_sanity_of_element(element)
+  if element.is_a?(Array)
+    _ensure_sanity_of_array(element)
+  else
+    _ensure_type_safety(element)
+    if element.is_a?(String) and element.length == 0
+      error "Empty values are not allowed"
+    end
+  end
+end
+
+def _ensure_type_safety(element)
+  valid_types = [Fixnum, String, Array]
+  error "#{element.class} is not a valid type. Valid types are #{valid_types.to_s}" if not valid_types.include?(element.class)
+end
+
+def _ensure_sanity(hash)
+  if not hash.is_a?(Hash)
+    error "Expected a Hash, but got a #{hash.class}"
+    exit 1
+  end
+
+  hash.each_pair do |key, value|
+    _context.current_expression = "#{key} => #{value}"
+
+    _ensure_sanity_of_element (key)
+    _ensure_sanity_of_element (value)
+
+    warn "#{value} has more than two elements. Additional elements specified will be ignored" if value.is_a?(Array) and value.size > 2
+
+    _context.current_expression = nil
+  end
+end
+
+def _extract_keys_values_and_persist(keys, values, token_type, match_type = Varnam::VARNAM_MATCH_EXACT)
+  keys.each do |key|
+    if key.is_a?(Array)
+      # This a possibility match
+      key.flatten!
+      _extract_keys_values_and_persist(key, values, token_type, Varnam::VARNAM_MATCH_POSSIBILITY)
+    else
+        _persist_key_values(key, values, token_type, match_type)
+    end
+  end
+end
+
+def _persist_key_values(pattern, values, token_type, match_type)
+  return if _context.errors > 0
+
+  match = match_type == Varnam::VARNAM_MATCH_EXACT ? "EXACT" : "POSSIBILITY"
+
+  if (values.is_a?(Array))
+    values.flatten!
+    value1 = values[0]
+    value2 = values[1] if values.size >= 2       
+  else
+    value1 = values
+    value2 = ""
+  end
+
+  created = VarnamLibrary.varnam_create_token($varnam_handle.get_pointer(0), pattern, value1, value2, token_type, match_type, 1)
+  if created != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    error error_message
+    return
+  end
+
+  _context.tokens[token_type] = [] if _context.tokens[token_type].nil?
+  _context.tokens[token_type].push(VarnamToken.new(token_type, pattern, value1, value2, match_type))
+
+  inform "Persisting #{match} - #{pattern} => #{value1},#{value2}"
+end
+
+def flush_unsaved_changes
+  saved = VarnamLibrary.varnam_flush_buffer($varnam_handle.get_pointer(0))
+  if saved != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    error error_message
+    return
+  end
+end
+
+def generate_cv_combinations
+  done = VarnamLibrary.varnam_generate_cv_combinations($varnam_handle.get_pointer(0))
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    error error_message
+    return
+  end
+end
+
+def _create_token(hash, token_type)
+  return if _context.errors > 0
+  hash.each_pair do |key, value|
+    if key.is_a?(Array)
+      _extract_keys_values_and_persist(key, value, token_type)
+    else
+      _persist_key_values(key, value, token_type, Varnam::VARNAM_MATCH_EXACT)
+    end
+  end
+end
+
+def vowels(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_VOWEL)
+end
+
+def consonants(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_CONSONANT)
+end
+
+def consonant_vowel_combinations(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_CONSONANT_VOWEL)
+end
+
+def anusvara(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_ANUSVARA)
+end
+
+def visarga(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_VISARGA)
+end
+
+def virama(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_VIRAMA)
+end
+
+def symbols(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_SYMBOL)
+end
+
+def numbers(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_NUMBER)
+end
+
+def others(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_OTHER)
+end
+
+def print_warnings_and_errors
+  if _context.warnings > 0
+    _context.warning_messages.each do |msg|
+      puts msg
+    end
+  end
+
+  if _context.errors > 0
+    _context.error_messages.each do |msg|
+      puts msg
+    end
+  end
+end
+
+def start_compilation
+  puts "Compiling #{$source_file_name}"
+  puts "Building #{$vst_file_name}"
+
+  load $source_file_name
+  generate_cv_combinations
+  flush_unsaved_changes
+
+  if _context.errors > 0
+    print_warnings_and_errors
+    returncode = 1
+  else
+    returncode = 0
+  end
+
+  puts "Completed with '#{_context.warnings}' warning(s) and '#{_context.errors}' error(s)"
+  exit(returncode)
+end
+
+start_compilation

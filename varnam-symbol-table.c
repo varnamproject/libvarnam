@@ -363,7 +363,7 @@ vst_persist_token(
             return VARNAM_SUCCESS;
         }
 
-        set_last_error (handle, "%s => %s is already available. Duplicate entries are not allowed", pattern, value1);
+        set_last_error (handle, "There is already a match available for pattern '%s'. Duplicate entries are not allowed", pattern, value1);
         return VARNAM_ERROR;
     }
 

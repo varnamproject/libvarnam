@@ -61,7 +61,6 @@
 #define VARNAM_METADATA_SCHEME_AUTHOR            "scheme-author"
 #define VARNAM_METADATA_SCHEME_COMPILED_DATE     "scheme-compiled-date"
 
-
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
