@@ -33,8 +33,13 @@ Token(int type, int match_type, const char* pattern, const char* value1, const c
     tok->match_type = match_type;
     strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
     strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
-    strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
-    strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
+
+    if (value2 != NULL)
+        strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
+
+    if (tag != NULL)
+        strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
+
     tok->next = NULL;
 
     return tok;
@@ -237,8 +242,8 @@ ensure_schema_exist(varnam *handle, char **msg)
         "create index if not exists index_value1  on symbols (value1);"
         "create index if not exists index_value2  on symbols (value2);";
 
-   char *zErrMsg = 0;
-   int rc;
+    char *zErrMsg = 0;
+    int rc;
 
     assert(handle);
     assert(handle->internal->db);
@@ -363,7 +368,7 @@ vst_persist_token(
             return VARNAM_SUCCESS;
         }
 
-        set_last_error (handle, "There is already a match available for pattern '%s'. Duplicate entries are not allowed", pattern, value1);
+        set_last_error (handle, "There is already a match available for '%s => %s'. Duplicate entries are not allowed", pattern, value1);
         return VARNAM_ERROR;
     }
 
@@ -441,15 +446,14 @@ vst_discard_changes(varnam *handle)
 }
 
 int
-vst_get_virama(varnam* handle, char *output)
+vst_get_virama(varnam* handle, struct token **output)
 {
     int rc;
     sqlite3 *db; sqlite3_stmt *stmt;
-    const char* result;
 
     db = handle->internal->db;
 
-    rc = sqlite3_prepare_v2( db, "select value1 from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
+    rc = sqlite3_prepare_v2( db, "select type, match_type, pattern, value1, value2 from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
         set_last_error (handle, "Failed to get virama : %s", sqlite3_errmsg(db));
@@ -463,14 +467,15 @@ vst_get_virama(varnam* handle, char *output)
     rc = sqlite3_step( stmt );
     if( rc == SQLITE_ROW )
     {
-        result = (const char*) sqlite3_column_text(stmt, 0);
-        if(result) {
-            strncpy(output, result, VARNAM_SYMBOL_MAX);
-        }
+        *output = Token( (int) sqlite3_column_int(stmt, 0),
+                         (int) sqlite3_column_int(stmt, 1),
+                         (const char*) sqlite3_column_text(stmt, 2),
+                         (const char*) sqlite3_column_text(stmt, 3),
+                         (const char*) sqlite3_column_text(stmt, 4), NULL);
     }
     else if ( rc == SQLITE_DONE )
     {
-        output[0] = '\0';
+        *output = NULL;
     }
     else
     {
@@ -573,16 +578,17 @@ vst_generate_cv_combinations(varnam* handle)
     struct token *vowels = NULL,
                  *vowel = NULL,
                  *consonants = NULL,
-                 *consonant = NULL;
-    char cons_value1[VARNAM_SYMBOL_MAX], cons_value2[VARNAM_SYMBOL_MAX], virama[VARNAM_SYMBOL_MAX];
+                 *consonant = NULL,
+                 *virama = NULL;
+    char cons_pattern[VARNAM_SYMBOL_MAX], cons_value1[VARNAM_SYMBOL_MAX], cons_value2[VARNAM_SYMBOL_MAX];
     char newpattern[VARNAM_SYMBOL_MAX], newvalue1[VARNAM_SYMBOL_MAX], newvalue2[VARNAM_SYMBOL_MAX];
 
     set_last_error (handle, NULL);
 
-    rc = vst_get_virama(handle, virama);
+    rc = vst_get_virama(handle, &virama);
     if (rc != VARNAM_SUCCESS)
         return rc;
-    else if (virama[0] == '\0')
+    else if (virama == NULL)
     {
         set_last_error (handle, "Virama needs to be set before generating consonant vowel combinations");
         return VARNAM_ERROR;
@@ -603,16 +609,18 @@ vst_generate_cv_combinations(varnam* handle)
 
     varnam_tokens_for_each(consonant, consonants)
     {
-        /* Since we are iterating over dead consonants, value1 and value2 will have a virama at the end.
+        /* Since we are iterating over dead consonants, pattern, value1 and value2 will have a virama at the end.
            This needs to removed before appending vowel */
+        strncpy(cons_pattern, consonant->pattern, VARNAM_SYMBOL_MAX);
         strncpy(cons_value1, consonant->value1, VARNAM_SYMBOL_MAX);
         cons_value2[0] = '\0';
         if(consonant->value2 && consonant->value2[0] != '\0') {
             strncpy(cons_value2, consonant->value2, VARNAM_SYMBOL_MAX);
         }
 
-        remove_from_last(cons_value1, virama);
-        remove_from_last(cons_value2, virama);
+        remove_from_last(cons_pattern, virama->pattern);
+        remove_from_last(cons_value1, virama->value1);
+        remove_from_last(cons_value2, virama->value1);
 
         varnam_tokens_for_each(vowel, vowels)
         {
@@ -620,7 +628,7 @@ vst_generate_cv_combinations(varnam* handle)
             newvalue1[0]  = '\0';
             newvalue2[0]  = '\0';
 
-            snprintf(newpattern, VARNAM_SYMBOL_MAX, "%s%s", consonant->pattern, vowel->pattern);
+            snprintf(newpattern, VARNAM_SYMBOL_MAX, "%s%s", cons_pattern, vowel->pattern);
             if(vowel->value2 && strlen(vowel->value2) != 0)
             {
                 snprintf(newvalue1, VARNAM_SYMBOL_MAX, "%s%s", cons_value1, vowel->value2);

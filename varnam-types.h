@@ -22,7 +22,6 @@
 #include "foreign/sqlite3.h"
 
 #define VARNAM_SYMBOL_MAX           30
-#define VARNAM_TOKEN_TYPE_MAX       5
 #define VARNAM_TOKEN_TAG_MAX        15
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
 

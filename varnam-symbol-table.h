@@ -95,7 +95,7 @@ vst_discard_changes(varnam *handle);
  * Reads VARNAM_TOKEN_VIRAMA and assigns that to output
  **/
 int
-vst_get_virama(varnam* handle, char* output);
+vst_get_virama(varnam* handle, struct token **output);
 
 /**
  * Loops through all the dead consonants and make vowel combinations for all of them

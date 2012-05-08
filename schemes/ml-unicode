@@ -1,0 +1,162 @@
+# encoding: utf-8
+
+$virama = "്"
+virama "~" => "്"
+
+vowels "a" => "അ",
+       ["aa", "A", ["a"]]  => ["ആ", "ാ"],
+       "i" => ["ഇ", "ി"],
+       ["ii", "I", "ee", ["i"]]   => ["ഈ", "ീ"],
+       "u" => ["ഉ", "ു"],
+       ["uu", "oo", "U", ["u"]]   => ["ഊ", "ൂ"],
+       "r" => ["ഋ", "ൃ"],
+       "e" => ["എ", "െ"],
+       ["E", ["e"]] => ["ഏ", "േ"],
+       ["ai", "ei"] => ["ഐ", "ൈ"],
+       "o" => ["ഒ", "ൊ"],
+       ["O", ["o"]] => ["ഓ", "ോ"],
+       ["au", "ow", "ou"]  => ["ഔ", "ൌ"],
+       "ia" => ["ഇയ", "ിയ"],
+       "am" => ["അം", "ം"]
+
+consonants ["ka", "ca", "qa"] => "ക",
+           ["kha", ["gha"]] => "ഖ",
+           "ga"  => "ഗ",
+           ["gha", ["kha"]] => "ഘ",
+           "nga" => "ങ",
+           ["NGa", ["nga"]] =>  "ങ്ങ",
+           "cha" => "ച",
+           ["CHa", ["cha"]] => "ഛ",
+           [["cha"]] => "ച്ഛ",
+           "ja"  => "ജ",
+           ["jha", "JHa"] => "ഝ",
+           "nja" => "ഞ",
+           ["NJa", ["nja"]] => "ഞ്ഞ",
+           "ta" => "റ്റ",
+           ["Ta", ["ta"]] => "ട",
+           ["Tha", "TTa", ["da", "ta"]] => "ഠ",
+           ["Da", ["da"]] => "ഡ",
+           "Dha" => "ഢ",
+           ["tha", ["ta"]] => "ത",
+           ["thha", ["tha", "dha"]] => "ഥ",
+           "da" => "ദ",
+           "dha" => "ധ",
+           "pa" => "പ",
+           ["pha", "fa", "Fa"] => "ഫ",
+           "ba" => "ബ",
+           "bha" => "ഭ",
+           "ya" => "യ",
+           ["va", "wa"] => "വ",
+           ["Sa", "Za", ["sha"]] => "ശ",
+           "sha" => "ഷ",
+           ["sa", "za"] => "സ",
+           "ha" => "ഹ",
+           "zha" => "ഴ",
+           "xa" => "ക്സ",
+           ["ksha", "Xa"] => "ക്ഷ"
+
+consonants "nka" => "ങ്ക",
+           "ncha" => "ഞ്ച",
+           "ntha" => "ന്ത",
+           "nta" => "ന്റ",
+           ["Nta", "nTa", ["nta", "nda"]] => "ണ്ട",
+           "nda" => "ന്ദ",
+           "tta" => "ട്ട",
+           ["THa", "ttha", ["tha"]] => "ത്ത",
+           "lla" => "ല്ല",
+           ["LLa", ["lla"]] => "ള്ള",
+           "nna" => "ന്ന",
+           ["NNa", ["nna"]] => "ണ്ണ",
+           ["bba", "Ba"] => "ബ്ബ",
+           ["kka", "Ka", "Ca"] => "ക്ക",
+           ["gga", "Ga"] => "ഗ്ഗ",
+           ["jja", "Ja"] => "ജ്ജ",
+           ["mma", "Ma"] => "മ്മ",
+           ["ppa", "Pa"] => "പ്പ",
+           ["vva", "Va", "wwa", "Wa"] => "വ്വ",
+           ["yya", "Ya"] => "യ്യ",
+           ["mpa", "mba"] => "മ്പ",
+           "scha" => "സ്ക",
+           ["chcha", "ccha", "Cha"] => "ച്ച",
+           "ndha" => "ന്ധ",
+           "jnja" => "ജ്ഞ",
+           "nma" => "ന്മ",
+           ["Nma", ["nma"]] => "ണ്മ",
+           ["nJa", ["nja"]] => "ഞ്ജ"
+
+consonants ["rva", "rwa"] => "ര്വ",
+           "rya" => "ര്യ",
+           ["Rva", "Rwa", ["rva"]] => "റ്വ്",
+           ["Rya", ["rya"]] => "റ്യ്",
+           ["nva", "nwa"] => "ന്വ",
+           "nya" => "ന്യ",
+           ["Nva", "Nwa", ["nva", "nwa"]] => "ണ്വ",
+           ["Nya", ["nya"]] => "ണ്യ",
+           ["lva", "lwa"] => "ല്വ",
+           "lya" => "ല്യ",
+           ["Lva", "Lwa", ["lva", "lwa"]] => "ള്വ",
+           ["Lya", ["lya"]] => "ള്യ",
+           ["mva", "mwa"] => "മ്വ",
+           "mya" => "മ്യ"
+
+consonants "r~" => "ര്",
+           "R~" => "റ്",
+           "n~" => "ന്",
+           "N~" => "ണ്",
+           "l~" => "ല്",
+           "L~" => "ള്",
+           "m~" => "മ്"
+
+symbols "/" => "ഽ",
+        ["H", ":"] => "ഃ"
+
+# Chillaksharams are specified as consonant because it is a special form of consonant
+consonants "m" => "ം",
+           "n" => "ന്‍",
+           ["N", ["n"]] => "ണ്‍",
+           "l" => "ല്‍",
+           ["L", ["l"]] => "ള്‍",
+           ["R", ["r"]] => "ര്‍"
+
+infer_dead_consonants false
+ignore_duplicates true
+
+# This is shortcut to generate consonant+ra
+get_dead_consonants(:exact => true).each do |dc|
+  consonants ["#{dc.pattern}v", "#{dc.pattern}w"] => "#{dc.value1}വ#{$virama}" ,
+             "#{dc.pattern}y" => "#{dc.value1}യ#{$virama}"
+
+  get_vowels(:exact => true).each do |vowel|
+    consonants "#{dc.pattern}r#{vowel.pattern}" => "#{dc.value1}ര#{vowel.value2}" ,
+               ["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"] => "#{dc.value1}വ#{vowel.value2}",
+               "#{dc.pattern}y#{vowel.pattern}" => "#{dc.value1}യ#{vowel.value2}"
+  end
+
+  get_vowels(:possibility => true).each do |vowel|
+    consonants [["#{dc.pattern}r#{vowel.pattern}"]] => "#{dc.value1}ര#{vowel.value2}",
+               [["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"]] => "#{dc.value1}വ#{vowel.value2}" ,
+               [["#{dc.pattern}y#{vowel.pattern}"]] => "#{dc.value1}യ#{vowel.value2}"
+  end
+end
+
+get_dead_consonants(:possibility => true).each do |dc|
+  consonants [["#{dc.pattern}v", "#{dc.pattern}w"]] => "#{dc.value1}വ#{$virama}" ,
+             [["#{dc.pattern}y"]] => "#{dc.value1}യ#{$virama}"
+
+  get_vowels(:exact => true).each do |vowel|
+    consonants [["#{dc.pattern}r#{vowel.pattern}"]] => "#{dc.value1}ര#{vowel.value2}" ,
+               [["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"]] => "#{dc.value1}വ#{vowel.value2}",
+               [["#{dc.pattern}y#{vowel.pattern}"]] => "#{dc.value1}യ#{vowel.value2}"
+  end
+
+  get_vowels(:possibility => true).each do |vowel|
+    consonants [["#{dc.pattern}r#{vowel.pattern}"]] => "#{dc.value1}ര#{vowel.value2}",
+               [["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"]] => "#{dc.value1}വ#{vowel.value2}" ,
+               [["#{dc.pattern}y#{vowel.pattern}"]] => "#{dc.value1}യ#{vowel.value2}"
+  end
+end
+
+ignore_duplicates false
+infer_dead_consonants true
+
+

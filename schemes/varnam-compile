@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# encoding: utf-8
+
 require 'singleton'
 require 'ffi'
 require 'optparse'
@@ -43,13 +45,29 @@ end
 module VarnamLibrary
   extend FFI::Library
   ffi_lib $options[:library]
-  
+
+  VARNAM_SYMBOL_MAX      = 30
+  VARNAM_TOKEN_TAG_MAX   = 15
+
+  class Token < FFI::Struct
+    layout :type, :int,
+           :match_type, :int,
+           :tag, [:char, VARNAM_TOKEN_TAG_MAX],
+           :pattern, [:char, VARNAM_SYMBOL_MAX],
+           :value1, [:char, VARNAM_SYMBOL_MAX],
+           :value2, [:char, VARNAM_SYMBOL_MAX],
+           :children, :int,
+           :next,  :pointer
+  end
+
   attach_function :varnam_init, [:string, :pointer, :pointer], :int
   attach_function :varnam_create_token, [:pointer, :string, :string, :string, :int, :int, :int], :int
   attach_function :varnam_generate_cv_combinations, [:pointer], :int
   attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
   attach_function :varnam_get_last_error, [:pointer], :string
   attach_function :varnam_flush_buffer, [:pointer], :int
+  attach_function :varnam_config, [:pointer, :int, :varargs], :int
+  attach_function :varnam_get_all_tokens, [:pointer, :int, :pointer], :int
 end
 
 if not File.exists?(ARGV[0]) or not File.file?(ARGV[0])
@@ -60,7 +78,7 @@ end
 $source_file_name = ARGV[0]
 $vst_file_name = ARGV[0].sub(File.extname(ARGV[0]), "") + ".vst"
 
-if File.exists?($vst_file_name) 
+if File.exists?($vst_file_name)
   File.delete($vst_file_name)
 end
 
@@ -91,6 +109,9 @@ module Varnam
 
   VARNAM_MATCH_EXACT           = 1
   VARNAM_MATCH_POSSIBILITY     = 2
+
+  VARNAM_CONFIG_USE_DEAD_CONSONANTS    = 100
+  VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN = 101
 
   class RuntimeContext
     include Singleton
@@ -222,7 +243,7 @@ def _persist_key_values(pattern, values, token_type, match_type)
   if (values.is_a?(Array))
     values.flatten!
     value1 = values[0]
-    value2 = values[1] if values.size >= 2       
+    value2 = values[1] if values.size >= 2
   else
     value1 = values
     value2 = ""
@@ -244,6 +265,24 @@ end
 def flush_unsaved_changes
   saved = VarnamLibrary.varnam_flush_buffer($varnam_handle.get_pointer(0))
   if saved != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    error error_message
+    return
+  end
+end
+
+def infer_dead_consonants(infer)
+  configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_USE_DEAD_CONSONANTS, :int, infer ? 1 : 0)
+  if configured != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    error error_message
+    return
+  end
+end
+
+def ignore_duplicates(ignore)
+  configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN, :int, ignore ? 1 : 0)
+  if configured != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     error error_message
     return
@@ -313,6 +352,59 @@ end
 def others(hash)
   _ensure_sanity(hash)
   _create_token(hash, Varnam::VARNAM_TOKEN_OTHER)
+end
+
+def get_tokens(token_type, criteria = {})
+  tokens = _context.tokens[token_type]
+  if criteria.empty?
+    return tokens
+  elsif criteria[:exact]
+    return tokens.find_all {|t| t.match_type == Varnam::VARNAM_MATCH_EXACT}
+  else
+    return tokens.find_all {|t| t.match_type == Varnam::VARNAM_MATCH_POSSIBILITY}
+  end
+end
+
+def get_vowels(criteria = {})
+  return get_tokens(Varnam::VARNAM_TOKEN_VOWEL, criteria)
+end
+
+def get_consonants(criteria = {})
+  return get_tokens(Varnam::VARNAM_TOKEN_CONSONANT, criteria)
+end
+
+def ffito_string(value)
+   str = ""
+   ptr = value.to_ptr
+   if not ptr.null?
+      str = ptr.read_string
+      str.force_encoding('UTF-8')
+   end
+   return str
+end
+
+def get_dead_consonants(criteria = {})
+  # dead consonants are infered by varnam. ruby wrapper don't know anything about it.
+  token_type = Varnam::VARNAM_TOKEN_DEAD_CONSONANT
+  token_ptr = FFI::MemoryPointer.new :pointer
+  done = VarnamLibrary.varnam_get_all_tokens($varnam_handle.get_pointer(0), token_type, token_ptr);
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    error error_message
+    return
+  end
+
+  ptr = token_ptr.read_pointer
+  _context.tokens[token_type] = [] if _context.tokens[token_type].nil?
+  until ptr.null?
+    item = VarnamLibrary::Token.new(ptr)
+    _context.tokens[token_type].push(VarnamToken.new(item[:type],
+                                    ffito_string(item[:pattern]), ffito_string(item[:value1]),
+                                    ffito_string(item[:value2]), item[:match_type]))
+    ptr = item[:next]
+  end
+
+  return get_tokens(token_type, criteria)
 end
 
 def print_warnings_and_errors

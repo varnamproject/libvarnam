@@ -284,7 +284,8 @@ varnam_create_token(
 {
     int rc;
     size_t pattern_len;
-    char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX], virama[VARNAM_SYMBOL_MAX];
+    char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX];
+    struct token *virama;
 
     set_last_error (handle, NULL);
 
@@ -317,26 +318,26 @@ varnam_create_token(
     if (token_type == VARNAM_TOKEN_CONSONANT &&
         handle->internal->config_use_dead_consonants)
     {
-        rc = vst_get_virama(handle, virama);
+        rc = vst_get_virama(handle, &virama);
         if (rc != VARNAM_SUCCESS)
             return rc;
-        else if (virama[0] == '\0')
+        else if (virama == NULL)
         {
             set_last_error (handle, "Virama needs to be set before auto generating dead consonants");
             return VARNAM_ERROR;
         }
 
-        if (utf8_ends_with(value1, virama))
+        if (utf8_ends_with(value1, virama->value1))
         {
             token_type = VARNAM_TOKEN_DEAD_CONSONANT;
         }
         else if (can_generate_dead_consonant(pattern, pattern_len))
         {
             substr(p, pattern, 1, (int) (pattern_len - 1));
-            snprintf(v1, VARNAM_SYMBOL_MAX, "%s%s", value1, virama);
+            snprintf(v1, VARNAM_SYMBOL_MAX, "%s%s", value1, virama->value1);
 
             if (value2 != NULL)
-                snprintf(v2, VARNAM_SYMBOL_MAX, "%s%s", value2, virama);
+                snprintf(v2, VARNAM_SYMBOL_MAX, "%s%s", value2, virama->value1);
             else
                 v2[0] = '\0';
 
