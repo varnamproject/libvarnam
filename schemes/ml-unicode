@@ -1,5 +1,10 @@
 # encoding: utf-8
 
+language_code "ml"
+identifier "ml-unicode"
+display_name "Malayalam"
+author "Navaneeth KN"
+
 $virama = "്"
 virama "~" => "്"
 
