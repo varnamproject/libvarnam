@@ -27,6 +27,10 @@
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
+typedef int bool;
+#define false 0
+#define true  1
+
 /**
  * Iterate over token collection and points `current' variable to the current element
  *

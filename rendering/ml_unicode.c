@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../varnam-types.h"
 #include "../varnam-result-codes.h"
 
-
 #define CHIL_TAG "chil"
 
 int 
@@ -32,8 +31,11 @@ ml_unicode_renderer(varnam *handle,
                     struct token *match, 
                     struct strbuf *output)
 {
+    struct token *virama;
+    vst_get_virama (handle, &virama);
+
     if(strcmp(match->pattern, "r") == 0 || strcmp(match->pattern, "R") == 0) {
-        if(handle->internal->last_token_available && !strbuf_endswith(output, handle->internal->virama)) {
+        if(handle->internal->last_token_available && !strbuf_endswith(output, virama->value1)) {
             strbuf_add(output, "ര്‍");
             return VARNAM_SUCCESS;
         }

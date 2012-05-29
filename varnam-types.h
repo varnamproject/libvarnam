@@ -24,6 +24,7 @@
 #define VARNAM_SYMBOL_MAX           30
 #define VARNAM_TOKEN_TAG_MAX        15
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
+#define VARNAM_WORD_MAX             25
 
 /* logging */
 #define VARNAM_LOG_DEFAULT 1
@@ -64,6 +65,7 @@ struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
 struct token;
+struct word;
 
 struct varnam_internal 
 {
@@ -71,14 +73,13 @@ struct varnam_internal
     char *message;
     struct varnam_token_rendering *renderers;
 
-    char virama[VARNAM_SYMBOL_MAX];
+    struct token *virama;
 
     struct strbuf *output;
     struct strbuf *rtl_output;
     struct strbuf *lookup;
     struct strbuf *last_error;
 
-    struct token *current_token;
     struct token *current_rtl_token;
 
     struct token *last_token;
@@ -103,6 +104,9 @@ struct varnam_internal
     /* configuration options */
     int config_use_dead_consonants;
     int config_ignore_duplicate_tokens;
+
+    /* cache to hold all word instances */
+    struct word *words[VARNAM_WORD_MAX];
 };
 
 typedef struct varnam {
@@ -110,15 +114,14 @@ typedef struct varnam {
     struct varnam_internal *internal;
 } varnam;
 
-struct token {
+typedef struct token {
     int type, match_type;
     char tag[VARNAM_TOKEN_TAG_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];
-    int children; /* this will be removed later */
     struct token* next;
-};
+} vtoken;
 
 struct varnam_rule {
     char scheme_name[VARNAM_SYMBOL_MAX];
