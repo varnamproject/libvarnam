@@ -58,7 +58,10 @@ can_find_rtl_token(varnam *handle, struct token *last, const char *lookup);
  * checks the schema availability. this function will create it when necessary
  **/
 int
-ensure_schema_exist(varnam *handle, char **msg);
+ensure_schema_exists(varnam *handle, char **msg);
+
+int
+vst_ensure_schema_exists_for_known_words(varnam *handle);
 
 /**
  * Starts buffering

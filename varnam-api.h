@@ -69,6 +69,12 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg);
  *   This will make varnam_create_token() to ignore duplicate tokens. Varnam will issue a warning
  *   log message when duplicates are detected.
  *
+ * VARNAM_CONFIG_ENABLE_SUGGESTIONS
+ *   If this option is set, varnam_transliterate() will return possible suggestions from the words
+ *   known to varnam. This configuration option takes a file which contains all know words
+ *   Eg: varnam_config(handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "/home/user/.words") - Use words from the file
+ *       varnam_config(handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, NULL) - Turn off suggestions
+ *
  * RETURN
  *
  * VARNAM_SUCCESS         - Successfull operation

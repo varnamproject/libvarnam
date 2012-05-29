@@ -37,12 +37,11 @@ initialize_internal()
     struct varnam_internal *vi;
     vi = (struct varnam_internal *) xmalloc(sizeof (struct varnam_internal));
     if(vi) {
-        vi->virama[0] = '\0';
+        vi->virama = NULL;
         vi->last_token_available = 0;
         vi->last_rtl_token_available = 0;
         vi->last_token = NULL;
         vi->last_rtl_token = NULL;
-        vi->current_token = NULL;
         vi->current_rtl_token = NULL;
         vi->output = strbuf_init(100);
         vi->rtl_output = strbuf_init(100);
@@ -63,6 +62,9 @@ initialize_internal()
         /* configuration options */
         vi->config_use_dead_consonants = 1;
         vi->config_ignore_duplicate_tokens = 0;
+
+        /* suggestions */
+        vi->known_words = NULL;
     }
     return vi;
 }
@@ -106,7 +108,7 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
     vi->renderers = renderers;
     c->internal = vi;
 
-    rc = ensure_schema_exist(c, msg);
+    rc = ensure_schema_exists(c, msg);
     if (rc != VARNAM_SUCCESS)
         return rc;
 
@@ -392,6 +394,33 @@ varnam_flush_buffer(varnam *handle)
     return vst_flush_changes(handle);
 }
 
+static int
+enable_suggestions(varnam *handle, const char *file)
+{
+    int rc;
+
+    if (v_->known_words != NULL) {
+        sqlite3_close (v_->known_words);
+        v_->known_words = NULL;
+    }
+
+    if (file == NULL)
+        return VARNAM_SUCCESS;
+
+    rc = sqlite3_open(file, &v_->known_words);
+    if( rc )
+    {
+        set_last_error (handle, "Can't open %s: %s\n", file, sqlite3_errmsg(v_->known_words));
+        sqlite3_close (v_->known_words);
+        v_->known_words = NULL;
+        return VARNAM_ERROR;
+    }
+
+    varnam_debug (handle, "%s will be used to store known words", file);
+
+    return vst_ensure_schema_exists_for_known_words (handle);
+}
+
 int
 varnam_config(varnam *handle, int type, ...)
 {
@@ -407,10 +436,13 @@ varnam_config(varnam *handle, int type, ...)
     switch (type)
     {
     case VARNAM_CONFIG_USE_DEAD_CONSONANTS:
-        handle->internal->config_use_dead_consonants = va_arg(args, int);
+        v_->config_use_dead_consonants = va_arg(args, int);
         break;
     case VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN:
-        handle->internal->config_ignore_duplicate_tokens = va_arg(args, int);
+        v_->config_ignore_duplicate_tokens = va_arg(args, int);
+        break;
+    case VARNAM_CONFIG_ENABLE_SUGGESTIONS:
+        rc = enable_suggestions (handle, va_arg(args, const char*));
         break;
     default:
         set_last_error (handle, "Invalid configuration key");
@@ -446,7 +478,6 @@ varnam_destroy(varnam *handle)
     strbuf_destroy (vi->scheme_compiled_date);
 
     xfree(vi->last_token);
-    xfree(vi->current_token);
     xfree(vi->last_rtl_token);
     xfree(vi->current_rtl_token);
     rc = sqlite3_close(handle->internal->db);

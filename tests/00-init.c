@@ -90,6 +90,29 @@ int set_scheme_details()
     return VARNAM_SUCCESS;
 }
 
+int enable_suggestions()
+{
+    int rc;
+    char *msg;
+    varnam *handle;
+
+    rc = varnam_init("output/00-enable-suggestions.vst", &handle, &msg);
+    if(rc != VARNAM_SUCCESS) {
+        printf ("enable suggestions : initialization failed - %s\n", msg);
+        return 1;
+    }
+
+    rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "output/00-suggestions");
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf ("Failed to enable suggestions - %s", varnam_get_last_error (handle));
+        return 1;
+    }
+
+    return VARNAM_SUCCESS;
+
+}
+
 int normal_init(char **argv)
 {
     int rc;
@@ -219,6 +242,10 @@ int test_varnam_init(int argc, char **argv)
     }
 
     rc = set_scheme_details();
+    if (rc)
+        return rc;
+
+    rc = enable_suggestions();
     if (rc)
         return rc;
 

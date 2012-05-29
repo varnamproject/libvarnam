@@ -53,6 +53,7 @@
 /* configuration options */
 #define VARNAM_CONFIG_USE_DEAD_CONSONANTS      100
 #define VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN   101
+#define VARNAM_CONFIG_ENABLE_SUGGESTIONS       102
 
 /* Keys used in metadata*/
 #define VARNAM_METADATA_SCHEME_LANGUAGE_CODE     "lang-code"
@@ -69,7 +70,7 @@ struct word;
 
 struct varnam_internal 
 {
-    sqlite3 *db;
+    sqlite3 *db, *known_words;
     char *message;
     struct varnam_token_rendering *renderers;
 
@@ -120,6 +121,7 @@ typedef struct token {
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];
+    int children;
     struct token* next;
 } vtoken;
 

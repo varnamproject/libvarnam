@@ -27,6 +27,8 @@
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
+#define v_ handle->internal
+
 typedef int bool;
 #define false 0
 #define true  1
@@ -129,7 +131,7 @@ struct strbuf {
     size_t allocated;      /* total memory allocated */
 };
 
-void varnam_debug_log(varnam* handle, const char *format, ...);
+void varnam_debug(varnam* handle, const char *format, ...);
 void varnam_log(varnam* handle, const char *format, ...);
 
 VARNAM_EXPORT struct strbuf *strbuf_init(size_t initial_buf_size);

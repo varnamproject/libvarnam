@@ -146,7 +146,7 @@ set_last_error(varnam *handle, const char *format, ...)
     }
 }
 
-void varnam_debug_log(varnam* handle, const char *format, ...)
+void varnam_debug(varnam* handle, const char *format, ...)
 {
     va_list args;
     struct strbuf *log_message = handle->internal->log_message;

@@ -48,50 +48,50 @@ Token(int type, int match_type, const char* pattern, const char* value1, const c
 struct token*
 find_token(varnam *handle, const char *lookup)
 {
-    struct varnam_internal *internal;
-    struct token *tok = NULL;
-    char sql[500];
-    const char *pattern, *value1, *value2, *tag;
-    sqlite3_stmt *stmt; sqlite3 *db;
-    int rc, type, has_children;
+    /* struct varnam_internal *internal; */
+    /* struct token *tok = NULL; */
+    /* char sql[500]; */
+    /* const char *pattern, *value1, *value2, *tag; */
+    /* sqlite3_stmt *stmt; sqlite3 *db; */
+    /* int rc, type, has_children; */
 
-    assert( handle ); assert( lookup );
+    /* assert( handle ); assert( lookup ); */
 
-    internal = handle->internal;
-    db = internal->db;
+    /* internal = handle->internal; */
+    /* db = internal->db; */
 
-    snprintf( sql, 500, "select type, pattern, value1, value2, children, tag from symbols where pattern = ?1;");
-    rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
-    if( rc == SQLITE_OK )
-    {
-        sqlite3_bind_text (stmt, 1, lookup, (int) strlen(lookup), NULL);
-        rc = sqlite3_step (stmt);
-        if( rc == SQLITE_ROW )
-        {
-            type = sqlite3_column_int( stmt, 0 );
-            pattern = (const char*) sqlite3_column_text( stmt, 1 );
-            value1 = (const char*) sqlite3_column_text( stmt, 2 );
-            value2 = (const char*) sqlite3_column_text( stmt, 3 );
-            has_children = sqlite3_column_int( stmt, 4 );
-            tag = (const char*) sqlite3_column_text( stmt, 5 );
+    /* snprintf( sql, 500, "select type, pattern, value1, value2, children, tag from symbols where pattern = ?1;"); */
+    /* rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL ); */
+    /* if( rc == SQLITE_OK ) */
+    /* { */
+    /*     sqlite3_bind_text (stmt, 1, lookup, (int) strlen(lookup), NULL); */
+    /*     rc = sqlite3_step (stmt); */
+    /*     if( rc == SQLITE_ROW ) */
+    /*     { */
+    /*         type = sqlite3_column_int( stmt, 0 ); */
+    /*         pattern = (const char*) sqlite3_column_text( stmt, 1 ); */
+    /*         value1 = (const char*) sqlite3_column_text( stmt, 2 ); */
+    /*         value2 = (const char*) sqlite3_column_text( stmt, 3 ); */
+    /*         has_children = sqlite3_column_int( stmt, 4 ); */
+    /*         tag = (const char*) sqlite3_column_text( stmt, 5 ); */
 
-            if(internal->current_token == NULL) {
-                internal->current_token = (struct token *) xmalloc(sizeof (struct token));
-                assert( internal->current_token );
-            }
+    /*         if(internal->current_token == NULL) { */
+    /*             internal->current_token = (struct token *) xmalloc(sizeof (struct token)); */
+    /*             assert( internal->current_token ); */
+    /*         } */
 
-            tok = internal->current_token;
-            tok->type = type;
-            strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
-            strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
-            strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
-            strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
-            tok->children = has_children;
-        }
-    }
+    /*         tok = internal->current_token; */
+    /*         tok->type = type; */
+    /*         strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX); */
+    /*         strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX); */
+    /*         strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX); */
+    /*         strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX); */
+    /*         tok->children = has_children; */
+    /*     } */
+    /* } */
 
-    sqlite3_finalize( stmt );
-    return tok;
+    /* sqlite3_finalize( stmt ); */
+    /* return tok; */
 }
 
 struct token*
@@ -232,7 +232,28 @@ can_find_rtl_token(varnam *handle, struct token *last, const char *lookup)
 /* } */
 
 int
-ensure_schema_exist(varnam *handle, char **msg)
+vst_ensure_schema_exists_for_known_words(varnam *handle)
+{
+    const char *sql =
+        "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
+        "create virtual table if not exists words using fts4(pattern text, word text, confidence integer, learned_on text);"
+        "create virtual table if not exists words_substrings using fts4(word text);";
+
+    char *zErrMsg = 0;
+    int rc;
+
+    rc = sqlite3_exec(v_->known_words, sql, NULL, 0, &zErrMsg);
+    if( rc != SQLITE_OK ){
+        set_last_error (handle, "Failed to initialize file for storing known words : %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return VARNAM_ERROR;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
+int
+ensure_schema_exists(varnam *handle, char **msg)
 {
     const char *sql =
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
