@@ -759,3 +759,4 @@ vst_get_metadata (varnam *handle, const char* key, struct strbuf *output)
 
     return VARNAM_SUCCESS;
 }
+

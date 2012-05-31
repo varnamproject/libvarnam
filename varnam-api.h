@@ -145,6 +145,22 @@ VARNAM_EXPORT extern int
 varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
 
 /**
+ * Varnam will learn the supplied word. It will also learn all possible ways to write 
+ * the supplied word.
+ *
+ * handle            - Valid varnam instance
+ * word              - word to learn
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS    - Upon successful execution
+ * VARNAM_ARGS_ERROR - Handle or word is NULL
+ * VARNAM_ERROR      - Any other errors
+ **/
+VARNAM_EXPORT extern int
+varnam_learn(varnam *handle, const char *word);
+
+/**
  * Set scheme details. This will overwrite any scheme details set before
  *
  * handle            - Valid varnam instance

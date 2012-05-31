@@ -67,6 +67,7 @@ struct varnam_token_rendering;
 struct strbuf;
 struct token;
 struct word;
+struct vpool_t;
 
 struct varnam_internal 
 {
@@ -106,8 +107,8 @@ struct varnam_internal
     int config_use_dead_consonants;
     int config_ignore_duplicate_tokens;
 
-    /* cache to hold all word instances */
-    struct word *words[VARNAM_WORD_MAX];
+    /* token pool */
+    struct vpool_t *tokens;
 };
 
 typedef struct varnam {

@@ -22,16 +22,16 @@
 
 #include <stddef.h>
 #include <stdarg.h> 
-
 #include "varnam-types.h"
-
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-
-#define v_ handle->internal
 
 typedef int bool;
 #define false 0
 #define true  1
+
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
+#define v_ \
+    (handle->internal)\
 
 /**
  * Iterate over token collection and points `current' variable to the current element
@@ -131,8 +131,8 @@ struct strbuf {
     size_t allocated;      /* total memory allocated */
 };
 
-void varnam_debug(varnam* handle, const char *format, ...);
-void varnam_log(varnam* handle, const char *format, ...);
+void varnam_debug(varnam *handle, const char *format, ...);
+void varnam_log(varnam *handle, const char *format, ...);
 
 VARNAM_EXPORT struct strbuf *strbuf_init(size_t initial_buf_size);
 VARNAM_EXPORT int strbuf_addc(struct strbuf *string, char c);

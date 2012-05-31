@@ -65,6 +65,9 @@ initialize_internal()
 
         /* suggestions */
         vi->known_words = NULL;
+
+        /* tokens pool */
+        vi->tokens = vpool_init();
     }
     return vi;
 }
@@ -452,6 +455,20 @@ varnam_config(varnam *handle, int type, ...)
     va_end (args);
 
     return rc;
+}
+
+int
+varnam_learn(varnam *handle, const char *word)
+{
+    if (handle == NULL || word == NULL)
+        return VARNAM_ARGS_ERROR;
+
+    if (v_->known_words == NULL) {
+        set_last_error (handle, "'words' store is not enabled.");
+        return VARNAM_ERROR;
+    }
+
+    return VARNAM_SUCCESS;
 }
 
 int

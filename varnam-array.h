@@ -39,8 +39,8 @@ typedef struct vpool_t
     int next_slot;
 } vpool;
 
-void
-varray_init(varray **array);
+varray*
+varray_init();
 
 void
 varray_push(varray *array, void *data);
@@ -58,10 +58,10 @@ void
 varray_insert(varray *array, int index, void *data);
 
 void
-varray_free(varray *array, bool elements);
+varray_free(varray *array, int free_items);
 
-void
-vpool_init(vpool **pool);
+vpool*
+vpool_init();
 
 /**
  * Returns next item from the pool. NULL otherwise

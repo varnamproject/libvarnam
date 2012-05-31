@@ -19,16 +19,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "varnam-array.h"
 
-void
-varray_init(varray **array)
+varray*
+varray_init()
 {
-    *array = (varray*) malloc (sizeof(varray));
-    (*array)->memory = NULL;
-    (*array)->allocated = 0;
-    (*array)->used = 0;
-    (*array)->index = -1;
+    varray *array = (varray*) malloc (sizeof(varray));
+    array->memory = NULL;
+    array->allocated = 0;
+    array->used = 0;
+    array->index = -1;
 }
 
 void
@@ -99,4 +100,47 @@ varray_insert(varray *array, int index, void *data)
         return;
 
     array->memory[index] = data;
+}
+
+vpool*
+vpool_init()
+{
+    vpool *pool = (vpool*) malloc (sizeof(vpool));
+    pool->array = varray_init();
+    pool->next_slot = -1;
+    return pool;
+}
+
+void*
+vpool_get(vpool *pool)
+{
+    assert (pool);
+    void *item = varray_get (pool->array, pool->next_slot);
+    if (item != NULL)
+        ++pool->next_slot;
+
+    return item;
+}
+
+void
+vpool_add(vpool *pool, void *item)
+{
+    assert (pool);
+    assert (item);
+    varray_push (pool->array, item);
+    ++pool->next_slot;
+}
+
+void
+vpool_reset(vpool *pool)
+{
+    assert (pool);
+    pool->next_slot = -1;
+}
+
+void
+vpool_free(vpool *pool)
+{
+    assert (pool);
+    varray_free (pool->array, true);
 }
