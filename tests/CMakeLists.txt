@@ -13,6 +13,7 @@ list (APPEND TEST_FILES
   01-transliteration.c  
   02-ml-unicode.c
   03-vst-compilation.c
+  04-learning.c
   )
 
 set(test_executable_name runner)

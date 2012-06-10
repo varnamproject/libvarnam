@@ -21,7 +21,7 @@
 #define VARNAM_LIB_UTIL_H_INCLUDED_095439
 
 #include <stddef.h>
-#include <stdarg.h> 
+#include <stdarg.h>
 #include "varnam-types.h"
 
 typedef int bool;
@@ -61,7 +61,7 @@ projects by hand you need to define varnam_EXPORTS when
 building a DLL on windows.
 */
 
-#if defined (_WIN32) 
+#if defined (_WIN32)
   #if defined(varnam_EXPORTS)
     #define  VARNAM_EXPORT __declspec(dllexport)
   #else
@@ -106,12 +106,25 @@ VARNAM_EXPORT extern int vasnprintf(char **ptr, size_t str_m, const char *fmt, v
 }
 
 /**
+ * Advances input to next valid character in a UTF8 sequence
+ **/
+#define READ_A_UTF8_CHAR(ustring, input, bytes) {        \
+    if (*input != '\0') { \
+        ustring = (const unsigned char*) input; \
+        bytes++; input++;                       \
+        if( (*(ustring++)) >= 0xc0 ) {                                  \
+            while( (*ustring & 0xc0) == 0x80 ){ ustring++;input++; bytes++; } \
+        }}\
+else  {bytes = 0;}                              \
+}\
+
+/**
 * substr(output,str,start,length) writes length characters of str beginning with start to substring.
 * start is is 1-indexed and string should be valid UTF8.
 **/
-VARNAM_EXPORT void substr(char *substring, 
+VARNAM_EXPORT void substr(char *substring,
                           const char *string,
-                          int start, 
+                          int start,
                           int len);
 
 VARNAM_EXPORT int startswith(const char *string1, const char *string2);
@@ -137,6 +150,7 @@ void varnam_log(varnam *handle, const char *format, ...);
 VARNAM_EXPORT struct strbuf *strbuf_init(size_t initial_buf_size);
 VARNAM_EXPORT int strbuf_addc(struct strbuf *string, char c);
 VARNAM_EXPORT int strbuf_add(struct strbuf *string, const char *c);
+VARNAM_EXPORT int strbuf_add_bytes(struct strbuf *string, const char *c, int bytes_to_read);
 VARNAM_EXPORT int strbuf_addln(struct strbuf *string, const char *c);
 VARNAM_EXPORT int strbuf_addf(struct strbuf *string, const char *format, ...);
 VARNAM_EXPORT int strbuf_addvf(struct strbuf *string, const char *format, va_list args);
@@ -157,5 +171,5 @@ void set_last_error(varnam *handle, const char *format, ...);
 
 #define MAX_PATH_LENGTH 4096
 #define MAX_PATTERN_LENGTH 20
- 
+
 #endif

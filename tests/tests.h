@@ -44,4 +44,9 @@ extern int ml_unicode_reverse_transliteration(int argc, char **argv);
  **/
 extern int test_vst_file_creation(int argc, char **argv);
 
+/**
+ * tests the learning module
+ **/
+extern int test_varnam_learn(int argc, char **argv);
+
 #endif

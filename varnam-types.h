@@ -62,6 +62,9 @@
 #define VARNAM_METADATA_SCHEME_AUTHOR            "scheme-author"
 #define VARNAM_METADATA_SCHEME_COMPILED_DATE     "scheme-compiled-date"
 
+#define VARNAM_TOKENIZER_PATTERN 200
+#define VARNAM_TOKENIZER_VALUE   201
+
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
@@ -69,7 +72,7 @@ struct token;
 struct word;
 struct vpool_t;
 
-struct varnam_internal 
+struct varnam_internal
 {
     sqlite3 *db, *known_words;
     char *message;
@@ -108,7 +111,14 @@ struct varnam_internal
     int config_ignore_duplicate_tokens;
 
     /* token pool */
-    struct vpool_t *tokens;
+    struct vpool_t *tokens_pool;
+    struct vpool_t *tokens_array_pool;
+
+    struct varray_t *tokens;
+
+    sqlite3_stmt *tokenize_using_pattern;
+    sqlite3_stmt *tokenize_using_value;
+    sqlite3_stmt *can_find_more_matches;
 };
 
 typedef struct varnam {

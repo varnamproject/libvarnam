@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "varnam-array.h"
+#include "varnam-util.h"
 
 varray*
 varray_init()
@@ -30,6 +31,8 @@ varray_init()
     array->allocated = 0;
     array->used = 0;
     array->index = -1;
+
+    return array;
 }
 
 void
@@ -69,7 +72,7 @@ void
 varray_free(varray *array, bool free_items)
 {
     int i;
-    if (free_items) 
+    if (free_items)
     {
         for(i = 0; i < varray_length(array); i++)
         {
@@ -102,6 +105,12 @@ varray_insert(varray *array, int index, void *data)
     array->memory[index] = data;
 }
 
+bool
+varray_is_empty (varray *array)
+{
+    return (varray_length (array) == 0);
+}
+
 vpool*
 vpool_init()
 {
@@ -114,8 +123,10 @@ vpool_init()
 void*
 vpool_get(vpool *pool)
 {
+    void *item;
     assert (pool);
-    void *item = varray_get (pool->array, pool->next_slot);
+
+    item = varray_get (pool->array, pool->next_slot);
     if (item != NULL)
         ++pool->next_slot;
 
@@ -134,8 +145,8 @@ vpool_add(vpool *pool, void *item)
 void
 vpool_reset(vpool *pool)
 {
-    assert (pool);
-    pool->next_slot = -1;
+    if (pool != NULL)
+        pool->next_slot = 0;
 }
 
 void

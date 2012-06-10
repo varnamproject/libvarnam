@@ -32,7 +32,9 @@ list (APPEND VARNAM_SOURCES
   varnam-strbuf.c
   varnam-tl.c
   varnam-symbol-table.c
+  varnam-words-table.c
   varnam-array.c
+  varnam-token.c
   rendering/ml_unicode.c
   varnam.c
   )

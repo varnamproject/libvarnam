@@ -20,11 +20,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <stdarg.h>
 
+#include "varnam-array.h"
 #include "varnam-api.h"
 #include "varnam-types.h"
 #include "varnam-util.h"
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
+#include "varnam-words-table.h"
 #include "rendering/renderers.h"
 
 static struct varnam_token_rendering renderers[] = {
@@ -67,7 +69,16 @@ initialize_internal()
         vi->known_words = NULL;
 
         /* tokens pool */
-        vi->tokens = vpool_init();
+        vi->tokens_pool = vpool_init ();
+        vi->tokens_array_pool = vpool_init ();
+
+        /* Result of tokenization will be stored inside */
+        vi->tokens = varray_init();
+
+        /* Prepared statements */
+        vi->tokenize_using_pattern = NULL;
+        vi->tokenize_using_value = NULL;
+        vi->can_find_more_matches = NULL;
     }
     return vi;
 }
@@ -421,7 +432,7 @@ enable_suggestions(varnam *handle, const char *file)
 
     varnam_debug (handle, "%s will be used to store known words", file);
 
-    return vst_ensure_schema_exists_for_known_words (handle);
+    return vwt_ensure_schema_exists (handle);
 }
 
 int
@@ -460,12 +471,31 @@ varnam_config(varnam *handle, int type, ...)
 int
 varnam_learn(varnam *handle, const char *word)
 {
+    int rc;
+    int i, j;
+    varray *tokens;
+    vtoken *tok;
+
     if (handle == NULL || word == NULL)
         return VARNAM_ARGS_ERROR;
 
-    if (v_->known_words == NULL) {
-        set_last_error (handle, "'words' store is not enabled.");
-        return VARNAM_ERROR;
+    /* if (v_->known_words == NULL) { */
+    /*     set_last_error (handle, "'words' store is not enabled."); */
+    /*     return VARNAM_ERROR; */
+    /* } */
+
+    rc = vst_tokenize (handle, word, VARNAM_TOKENIZER_VALUE, v_->tokens);
+
+    printf ("%d\n", varray_length (v_->tokens));
+
+    for (i = 0; i < varray_length (v_->tokens); i++)
+    {
+        tokens = varray_get (v_->tokens, i);
+        for (j = 0; j < varray_length (tokens); j++)
+        {
+            tok = varray_get (tokens, j);
+            printf ("%s\n", tok->pattern);
+        }
     }
 
     return VARNAM_SUCCESS;

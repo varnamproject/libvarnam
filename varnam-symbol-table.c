@@ -24,26 +24,7 @@
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
 #include "varnam-api.h"
-
-static struct token*
-Token(int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* tag)
-{
-    struct token* tok = (struct token*) xmalloc(sizeof(struct token));
-    tok->type = type;
-    tok->match_type = match_type;
-    strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
-    strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
-
-    if (value2 != NULL)
-        strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
-
-    if (tag != NULL)
-        strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
-
-    tok->next = NULL;
-
-    return tok;
-}
+#include "varnam-token.h"
 
 struct token*
 find_token(varnam *handle, const char *lookup)
@@ -230,27 +211,6 @@ can_find_rtl_token(varnam *handle, struct token *last, const char *lookup)
 
 /*     sqlite3_finalize( stmt ); */
 /* } */
-
-int
-vst_ensure_schema_exists_for_known_words(varnam *handle)
-{
-    const char *sql =
-        "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create virtual table if not exists words using fts4(pattern text, word text, confidence integer, learned_on text);"
-        "create virtual table if not exists words_substrings using fts4(word text);";
-
-    char *zErrMsg = 0;
-    int rc;
-
-    rc = sqlite3_exec(v_->known_words, sql, NULL, 0, &zErrMsg);
-    if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to initialize file for storing known words : %s", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return VARNAM_ERROR;
-    }
-
-    return VARNAM_SUCCESS;
-}
 
 int
 ensure_schema_exists(varnam *handle, char **msg)
@@ -760,3 +720,175 @@ vst_get_metadata (varnam *handle, const char* key, struct strbuf *output)
     return VARNAM_SUCCESS;
 }
 
+static int
+prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **stmt)
+{
+    int rc;
+
+    switch (tokenize_using)
+    {
+    case VARNAM_TOKENIZER_PATTERN:
+        if (v_->tokenize_using_pattern == NULL)
+        {
+            rc = sqlite3_prepare_v2( v_->db, "select type, match_type, pattern, value1, value2 from symbols where pattern = ?1;", -1, &v_->tokenize_using_pattern, NULL );
+            if (rc != SQLITE_OK) {
+                set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
+                return VARNAM_ERROR;
+            }
+        }
+        *stmt = v_->tokenize_using_pattern;
+        break;
+    case VARNAM_TOKENIZER_VALUE:
+        if (v_->tokenize_using_value == NULL)
+        {
+            rc = sqlite3_prepare_v2( v_->db, "select type, match_type, pattern, value1, value2 from symbols where value1 = ?1;", -1, &v_->tokenize_using_value, NULL );
+            if (rc != SQLITE_OK) {
+                set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
+                return VARNAM_ERROR;
+            }
+        }
+        *stmt = v_->tokenize_using_value;
+        break;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
+static int
+read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokenize_using, varray *tokens, bool *tokens_available)
+{
+    vtoken *tok = 0;
+    bool cleared = false;
+    int rc;
+    sqlite3_stmt *stmt = 0;
+
+    rc = prepare_tokenization_stmt (handle, tokenize_using, &stmt);
+    if (rc) return rc;
+
+    *tokens_available = false;
+    sqlite3_bind_text (stmt, 1, lookup, -1, NULL);
+    while (true)
+    {
+        rc = sqlite3_step (stmt);
+        if (rc == SQLITE_ROW)
+        {
+            tok = get_pooled_token (handle,
+                                    sqlite3_column_int( stmt, 0 ),
+                                    sqlite3_column_int( stmt, 1 ),
+                                    (const char*) sqlite3_column_text( stmt, 2 ),
+                                    (const char*) sqlite3_column_text( stmt, 3 ),
+                                    (const char*) sqlite3_column_text( stmt, 4 ), "");
+
+            if (!cleared) {
+                /* We have new set of tokens and we don't care about previous match */
+                varray_clear (tokens);
+                cleared = true;
+            }
+
+            varray_push (tokens, tok);
+            *tokens_available = true;
+        }
+        else if (rc == SQLITE_DONE)
+            break;
+    }
+
+    sqlite3_clear_bindings (stmt);
+    rc = sqlite3_reset (stmt);
+    if (rc != SQLITE_OK) {
+        set_last_error (handle, "Failed to read tokens : %s", sqlite3_errmsg(v_->db));
+        return VARNAM_ERROR;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
+static bool
+can_find_more_matches(varnam *handle, struct strbuf *lookup, bool *possible)
+{
+    int rc;
+    sqlite3_stmt *stmt;
+    char candidate[500];
+
+    if (v_->can_find_more_matches == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->db, "select count(pattern) as cnt from symbols where value1 like ?1 or value2 like ?1;", -1, &v_->can_find_more_matches, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to prepare query for possible tokens detection : %s", sqlite3_errmsg(v_->db));
+            return VARNAM_ERROR;
+        }
+    }
+
+    stmt = v_->can_find_more_matches;
+    snprintf( candidate, 500, "%s%s", strbuf_to_s (lookup), "%");
+    sqlite3_bind_text (stmt, 1, candidate, -1, NULL);
+
+    *possible = false;
+    rc = sqlite3_step( stmt );
+    if( rc == SQLITE_ROW ) {
+        if( sqlite3_column_int( stmt, 0 ) > 0 ) {
+            *possible = true;
+        }
+    }
+
+    sqlite3_clear_bindings (stmt);
+    sqlite3_reset (stmt);
+
+    return VARNAM_SUCCESS;;
+}
+
+int
+vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *result)
+{
+    int rc, bytes_read = 0, matchpos = 0;
+    const unsigned char *ustring; const char *inputcopy;
+    struct strbuf *lookup;
+    varray *tokens = NULL;
+    bool possibility, tokens_available = false;
+
+    if (input == NULL || *input == '\0') return VARNAM_SUCCESS;
+
+    varray_clear (result);
+    reset_tokens_pool (handle);
+    inputcopy = input;
+    lookup = v_->lookup;
+
+    while (*inputcopy != '\0')
+    {
+        READ_A_UTF8_CHAR (ustring, inputcopy, bytes_read);
+
+        strbuf_clear (lookup);
+        strbuf_add_bytes (lookup, input, bytes_read);
+
+        if (tokens == NULL)
+            tokens = get_pooled_tokens (handle);
+
+        rc = read_all_tokens_and_add_to_array (handle, strbuf_to_s (lookup), tokenize_using, tokens, &tokens_available);
+        if (rc) return rc;
+
+        if (tokens_available)
+            matchpos = bytes_read;
+
+        rc = can_find_more_matches (handle, lookup, &possibility);
+        if (rc) return rc;
+        if (!possibility || *inputcopy == '\0')
+        {
+            if (varray_is_empty (tokens)) {
+                /* We couldn't find any tokens. So adding lookup as the match */
+                varray_push (tokens, get_pooled_token (handle,
+                                                       VARNAM_TOKEN_OTHER,
+                                                       VARNAM_MATCH_EXACT,
+                                                       strbuf_to_s (lookup), "", "", ""));
+                matchpos = (int) lookup->length;
+            }
+
+            varray_push (result, tokens);
+            bytes_read = 0;
+            tokens = NULL;
+
+            input = input + matchpos;
+            inputcopy = input;
+        }
+    }
+
+    return VARNAM_SUCCESS;
+}

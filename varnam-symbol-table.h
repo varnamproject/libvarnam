@@ -21,20 +21,21 @@
 #define VARNAM_SYMBOL_TABLE_H_INCLUDED_120215
 
 #include "varnam-types.h"
+#include "varnam-array.h"
 
 /**
-* This function will try to get a token for the lookup text provided. 
+* This function will try to get a token for the lookup text provided.
 * search will be done directly on the symbol table.
-* A valid instance of token will returned upon success. 
+* A valid instance of token will returned upon success.
 * NULL value indicates a failure to get the token
 **/
 struct token*
 find_token(varnam *handle, const char *lookup);
 
 /**
-* This function will try to get a token for the lookup text provided. 
+* This function will try to get a token for the lookup text provided.
 * search will be done directly on the symbol table on value1 and value2 fields.
-* A valid instance of token will returned upon success. 
+* A valid instance of token will returned upon success.
 * NULL value indicates a failure to get the token
 **/
 struct token*
@@ -44,14 +45,14 @@ find_rtl_token(varnam *handle, const char *lookup);
 * Does a search in the symbol table and retrns a boolean value indicating
 * the possibility of finding a token for the lookup text.
 **/
-int 
+int
 can_find_token(varnam *handle, struct token *last, const char *lookup);
 
 /**
 * Does a search in the symbol table and retrns a boolean value indicating
 * the possibility of finding a rtl token for the lookup text.
 **/
-int 
+int
 can_find_rtl_token(varnam *handle, struct token *last, const char *lookup);
 
 /**
@@ -59,9 +60,6 @@ can_find_rtl_token(varnam *handle, struct token *last, const char *lookup);
  **/
 int
 ensure_schema_exists(varnam *handle, char **msg);
-
-int
-vst_ensure_schema_exists_for_known_words(varnam *handle);
 
 /**
  * Starts buffering
@@ -72,7 +70,7 @@ vst_start_buffering(varnam *handle);
 /**
  * Persist the token
  **/
-int 
+int
 vst_persist_token(
     varnam *handle,
     const char *pattern,
@@ -117,5 +115,8 @@ vst_add_metadata (varnam *handle, const char* key, const char* value);
 
 int
 vst_get_metadata (varnam *handle, const char* key, struct strbuf *output);
+
+int
+vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *result);
 
 #endif

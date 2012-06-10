@@ -81,6 +81,19 @@ int strbuf_add(struct strbuf *string, const char *c)
     return 1;
 }
 
+int strbuf_add_bytes(struct strbuf *string, const char *c, int bytes_to_read)
+{
+    int i;
+
+    if (c == NULL || *c == '\0') return 0;
+    for (i = 0; i < bytes_to_read; i++)
+    {
+        strbuf_addc (string, c[i]);
+    }
+
+    return 1;
+}
+
 int strbuf_addln(struct strbuf *string, const char *c)
 {
     if(strbuf_add(string, c))

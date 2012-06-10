@@ -48,6 +48,9 @@ varray_push(varray *array, void *data);
 int
 varray_length(varray *array);
 
+bool
+varray_is_empty (varray *array);
+
 void
 varray_clear(varray *array);
 
