@@ -49,6 +49,7 @@
 #define VARNAM_TOKEN_VISARGA           8
 #define VARNAM_TOKEN_VIRAMA            9
 #define VARNAM_TOKEN_OTHER             10
+#define VARNAM_TOKEN_NON_JOINER        11
 
 /* configuration options */
 #define VARNAM_CONFIG_USE_DEAD_CONSONANTS      100

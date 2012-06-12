@@ -41,6 +41,10 @@ if ARGV.size == 0
   exit(1)
 end
 
+# this contains default symbols key overridden in the scheme file
+# key will be the token type
+$overridden_default_symbols = []
+
 # Ruby wrapper for libvarnam
 module VarnamLibrary
   extend FFI::Library
@@ -107,6 +111,7 @@ module Varnam
   VARNAM_TOKEN_VISARGA         = 8
   VARNAM_TOKEN_VIRAMA          = 9
   VARNAM_TOKEN_OTHER           = 10
+  VARNAM_TOKEN_NON_JOINER      = 11
 
   VARNAM_MATCH_EXACT           = 1
   VARNAM_MATCH_POSSIBILITY     = 2
@@ -386,6 +391,12 @@ def others(hash)
   _create_token(hash, Varnam::VARNAM_TOKEN_OTHER)
 end
 
+def non_joiner(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_NON_JOINER);
+  $overridden_default_symbols.push Varnam::VARNAM_TOKEN_NON_JOINER
+end
+
 def get_tokens(token_type, criteria = {})
   tokens = _context.tokens[token_type]
   if criteria.empty?
@@ -453,11 +464,17 @@ def print_warnings_and_errors
   end
 end
 
+# Sets default symbols if user has not set overridden in the scheme file
+def set_default_symbols
+  non_joiner "_" => "_"  if not $overridden_default_symbols.include?(Varnam::VARNAM_TOKEN_NON_JOINER)
+end
+
 def start_compilation
   puts "Compiling #{$source_file_name}"
   puts "Building #{$vst_file_name}"
 
   load $source_file_name
+  set_default_symbols
   generate_cv_combinations
   flush_unsaved_changes
   set_scheme_details :date => Time.now.to_s
