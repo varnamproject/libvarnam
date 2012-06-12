@@ -40,10 +40,13 @@ varray_push(varray *array, void *data)
 {
     size_t toallocate;
     size_t size = sizeof(void*);
+
+    if (data == NULL) return;
+
     if ((array->allocated - array->used) < size) {
         toallocate = array->allocated == 0 ? size : (array->allocated * 2);
         array->memory = realloc(array->memory, toallocate);
-        array->allocated = array->allocated + toallocate;
+        array->allocated = toallocate;
     }
 
     array->memory[++array->index] = data;
@@ -116,7 +119,7 @@ vpool_init()
 {
     vpool *pool = (vpool*) malloc (sizeof(vpool));
     pool->array = varray_init();
-    pool->next_slot = -1;
+    pool->next_slot = 0;
     return pool;
 }
 

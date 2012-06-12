@@ -25,6 +25,7 @@ int test_varnam_learn(int argc, char **argv)
     char *msg;
     varnam *handle;
     int rc;
+    vinfo *info;
 
     rc = varnam_init("output/04-learn.vst", &handle, &msg);
     if (rc != VARNAM_SUCCESS) {
@@ -34,10 +35,20 @@ int test_varnam_learn(int argc, char **argv)
 
     rc = varnam_create_token(handle, "a", "അ", NULL, VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
     rc = varnam_create_token(handle, "aa", "ആ", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "*n*", "n-t", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "*a*", "abb", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
 
     /* rc = varnam_learn (handle, "ആnav"); */
 
-    rc = varnam_learn (handle, "ആആപ");
+    /* rc = varnam_learn (handle, "abcdefഅghijklmn-topqrstuvwxyz"); */
+    rc = varnam_learn (handle, "abb");
+
+    /* rc = varnam_learn (handle, "ആആപ"); */
+
+    varnam_get_info (handle, true, &info);
+
+    printf ("No of in memory tokens - %d\n", info->tokens_in_memory);
+    printf ("No of in memory arrays - %d\n", info->arrays_in_memory);
 
     return 0;
 

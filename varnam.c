@@ -69,8 +69,8 @@ initialize_internal()
         vi->known_words = NULL;
 
         /* tokens pool */
-        vi->tokens_pool = vpool_init ();
-        vi->tokens_array_pool = vpool_init ();
+        vi->tokens_pool = NULL;
+        vi->tokens_array_pool = NULL;
 
         /* Result of tokenization will be stored inside */
         vi->tokens = varray_init();
@@ -78,7 +78,8 @@ initialize_internal()
         /* Prepared statements */
         vi->tokenize_using_pattern = NULL;
         vi->tokenize_using_value = NULL;
-        vi->can_find_more_matches = NULL;
+        vi->can_find_more_matches_using_pattern = NULL;
+        vi->can_find_more_matches_using_value = NULL;
     }
     return vi;
 }
@@ -497,6 +498,23 @@ varnam_learn(varnam *handle, const char *word)
             printf ("%s\n", tok->pattern);
         }
     }
+
+    return VARNAM_SUCCESS;
+}
+
+int
+varnam_get_info (varnam *handle, bool detailed, vinfo **info)
+{
+    /* only array details are implemeted */
+    vinfo *i = xmalloc (sizeof (vinfo));
+    i->scheme_file = handle->scheme_file;
+    i->symbols = 0;
+    i->words = 0;
+
+    i->tokens_in_memory = varray_length (v_->tokens_pool->array);
+    i->arrays_in_memory = varray_length (v_->tokens_array_pool->array);
+
+    *info = i;
 
     return VARNAM_SUCCESS;
 }

@@ -303,6 +303,12 @@ VARNAM_EXPORT extern int varnam_flush_buffer(
     varnam *handle
 );
 
+VARNAM_EXPORT extern int varnam_get_info(
+    varnam *handle,
+    bool detailed,
+    vinfo **info
+);
+
 VARNAM_EXPORT extern int
 varnam_destroy(varnam *handle);
 

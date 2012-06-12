@@ -118,7 +118,8 @@ struct varnam_internal
 
     sqlite3_stmt *tokenize_using_pattern;
     sqlite3_stmt *tokenize_using_value;
-    sqlite3_stmt *can_find_more_matches;
+    sqlite3_stmt *can_find_more_matches_using_pattern;
+    sqlite3_stmt *can_find_more_matches_using_value;
 };
 
 typedef struct varnam {
@@ -152,5 +153,14 @@ struct varnam_token_rendering {
     int (*render)(varnam *handle, struct token *match,  struct strbuf *output);
     int (*render_rtl)(varnam *handle, struct token *match,  struct strbuf *output);
 };
+
+typedef struct varnam_info_t {
+    const char *scheme_file;
+    int symbols;
+    int words;
+
+    int tokens_in_memory;
+    int arrays_in_memory;
+} vinfo;
 
 #endif
