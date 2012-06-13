@@ -33,15 +33,15 @@ int test_varnam_learn(int argc, char **argv)
         return 1;
     }
 
-    rc = varnam_create_token(handle, "a", "അ", NULL, VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
-    rc = varnam_create_token(handle, "aa", "ആ", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
-    rc = varnam_create_token(handle, "*n*", "n-t", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
-    rc = varnam_create_token(handle, "*a*", "abb", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    /* rc = varnam_create_token(handle, "a", "അ", NULL, VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0); */
+    /* rc = varnam_create_token(handle, "aa", "ആ", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0); */
+    /* rc = varnam_create_token(handle, "*n*", "n-t", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0); */
+    /* rc = varnam_create_token(handle, "*a*", "abb", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0); */
 
     /* rc = varnam_learn (handle, "ആnav"); */
 
-    /* rc = varnam_learn (handle, "abcdefഅghijklmn-topqrstuvwxyz"); */
-    rc = varnam_learn (handle, "abb");
+    /*rc = varnam_learn (handle, "abcdefഅghijklmn-topqrstuvwxyz");*/
+    rc = varnam_learn (handle, "നവനീത്");
 
     /* rc = varnam_learn (handle, "ആആപ"); */
 

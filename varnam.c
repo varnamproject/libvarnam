@@ -495,8 +495,9 @@ varnam_learn(varnam *handle, const char *word)
         for (j = 0; j < varray_length (tokens); j++)
         {
             tok = varray_get (tokens, j);
-            printf ("%s\n", tok->pattern);
+            printf (" %s, ", tok->pattern);
         }
+        printf ("\n");
     }
 
     return VARNAM_SUCCESS;

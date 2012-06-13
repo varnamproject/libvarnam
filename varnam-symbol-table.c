@@ -885,21 +885,19 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *res
 
         if (tokens_available)
             matchpos = bytes_read;
-        else
+
+        if (varray_is_empty (tokens))
         {
-            if (varray_is_empty (tokens))
-            {
-                /* We couldn't find any tokens. So adding lookup as the match */
-                varray_push (tokens, get_pooled_token (handle,
-                                                       VARNAM_TOKEN_OTHER,
-                                                       VARNAM_MATCH_EXACT,
-                                                       strbuf_to_s (lookup), "", "", ""));
-                matchpos = (int) lookup->length;
-            }
-            rc = can_find_more_matches (handle, lookup, tokenize_using, &possibility);
-            if (rc) return rc;
-            if (possibility && *inputcopy != '\0') continue;
+            /* We couldn't find any tokens. So adding lookup as the match */
+            varray_push (tokens, get_pooled_token (handle,
+                                                   VARNAM_TOKEN_OTHER,
+                                                   VARNAM_MATCH_EXACT,
+                                                   strbuf_to_s (lookup), "", "", ""));
+            matchpos = (int) lookup->length;
         }
+        rc = can_find_more_matches (handle, lookup, tokenize_using, &possibility);
+        if (rc) return rc;
+        if (possibility && *inputcopy != '\0') continue;
 
         varray_push (result, tokens);
         bytes_read = 0;
