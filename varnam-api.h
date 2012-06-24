@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "varnam-types.h"
 #include "varnam-util.h"
+#include "varnam-array.h"
 
 /**
  * Initializes the varnam library.
@@ -245,9 +246,7 @@ varnam_get_last_error(varnam *handle);
  *
  * handle     - Valid varnam instance
  * token_type - One among VARNAM_TOKEN_XXX
- * tokens     - Output will be written here. This will be a linked list of tokens. This variable will
- *              point to the first item in the list. varnam_tokens_for_each() can be used to iterate over this list.
-                varnam_tokens_free() will free the list.
+ * tokens     - Output will be written here. This will be an array of tokens. 
  *
  * RETURN
  *
@@ -259,7 +258,7 @@ VARNAM_EXPORT extern int
 varnam_get_all_tokens(
     varnam *handle,
     int token_type,
-    struct token **tokens
+    varray **tokens
 );
 
 /**

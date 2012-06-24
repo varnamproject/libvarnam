@@ -112,10 +112,11 @@ int generate_cv_combinations()
 
 int get_all_tokens()
 {
-    int rc, count = 0;
+    int rc, count = 0, i;
     char *msg;
     varnam *handle;
-    struct token *head, *current;
+    struct token *current;
+    varray *tokens;
 
     const char *filename = "output/03-get-all-tokens.vst";
     rc = varnam_init(filename, &handle, &msg);
@@ -163,15 +164,16 @@ int get_all_tokens()
         return 1;
     }
 
-    rc = varnam_get_all_tokens(handle, VARNAM_TOKEN_VOWEL, &head);
+    rc = varnam_get_all_tokens(handle, VARNAM_TOKEN_VOWEL, &tokens);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    varnam_tokens_for_each(current, head)
+    for (i = 0; i < varray_length (tokens); i++)
     {
+        current = (struct token*) varray_get (tokens, i);
         printf ("%s => [%s, %s]\n", current->pattern, current->value1, current->value2);
         ++count;
     }
@@ -182,9 +184,7 @@ int get_all_tokens()
         return 1;
     }
 
-    varnam_tokens_free(current, head);
-
-    rc = varnam_get_all_tokens(handle, VARNAM_TOKEN_CONSONANT, &head);
+    rc = varnam_get_all_tokens(handle, VARNAM_TOKEN_CONSONANT, &tokens);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -193,8 +193,9 @@ int get_all_tokens()
 
     count = 0;
 
-    varnam_tokens_for_each(current, head)
+    for (i = 0; i < varray_length (tokens); i++)
     {
+        current = (struct token*) varray_get (tokens, i);
         printf ("%s => [%s, %s]\n", current->pattern, current->value1, current->value2);
         ++count;
     }

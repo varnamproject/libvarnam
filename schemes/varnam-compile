@@ -60,8 +60,7 @@ module VarnamLibrary
     :pattern, [:char, VARNAM_SYMBOL_MAX],
     :value1, [:char, VARNAM_SYMBOL_MAX],
     :value2, [:char, VARNAM_SYMBOL_MAX],
-    :children, :int,
-    :next,  :pointer
+    :children, :int
   end
 
   attach_function :varnam_init, [:string, :pointer, :pointer], :int
@@ -73,6 +72,8 @@ module VarnamLibrary
   attach_function :varnam_config, [:pointer, :int, :varargs], :int
   attach_function :varnam_get_all_tokens, [:pointer, :int, :pointer], :int
   attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
+  attach_function :varray_get, [:pointer, :int], :pointer
+  attach_function :varray_length, [:pointer], :int
 end
 
 if not File.exists?(ARGV[0]) or not File.file?(ARGV[0])
@@ -437,14 +438,19 @@ def get_dead_consonants(criteria = {})
     return
   end
 
-  ptr = token_ptr.read_pointer
+  size = VarnamLibrary.varray_length(token_ptr.get_pointer(0))
+  i = 0
   _context.tokens[token_type] = [] if _context.tokens[token_type].nil?
-  until ptr.null?
-    item = VarnamLibrary::Token.new(ptr)
-    _context.tokens[token_type].push(VarnamToken.new(item[:type],
-                                                     ffito_string(item[:pattern]), ffito_string(item[:value1]),
-                                                     ffito_string(item[:value2]), item[:match_type]))
-    ptr = item[:next]
+  until i >= size
+    tok = VarnamLibrary.varray_get(token_ptr.get_pointer(0), i)
+    ptr = token_ptr.read_pointer
+    item = VarnamLibrary::Token.new(tok)
+    varnam_token = VarnamToken.new(item[:type],
+                                   ffito_string(item[:pattern]), ffito_string(item[:value1]),
+                                   ffito_string(item[:value2]), item[:match_type])
+    puts varnam_token
+    _context.tokens[token_type].push(varnam_token)
+    i += 1
   end
 
   return get_tokens(token_type, criteria)

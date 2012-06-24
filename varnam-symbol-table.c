@@ -471,13 +471,15 @@ vst_get_virama(varnam* handle, struct token **output)
 }
 
 int
-vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
+vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
 {
-    struct token *head = NULL, *tail = NULL, *tok = NULL;
+    struct token *tok = NULL;
     int rc;
     sqlite3 *db; sqlite3_stmt *stmt;
 
     db = handle->internal->db;
+
+    varray_clear (tokens);
 
     rc = sqlite3_prepare_v2( db, "select type, match_type, pattern, value1, value2, tag from symbols where type = ?1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
@@ -501,20 +503,7 @@ vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
                          (const char*) sqlite3_column_text(stmt, 4),
                          (const char*) sqlite3_column_text(stmt, 5));
 
-            if (head == NULL)
-            {
-                head = tok;
-            }
-            else if (head->next == NULL)
-            {
-                head->next = tok;
-                tail = tok;
-            }
-            else
-            {
-                tail->next = tok;
-                tail = tok;
-            }
+            varray_push (tokens, tok);
         }
         else if ( rc == SQLITE_DONE )
             break;
@@ -527,8 +516,6 @@ vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens)
     }
 
     sqlite3_finalize( stmt );
-
-    *tokens = head;
     return VARNAM_SUCCESS;
 }
 
@@ -555,12 +542,11 @@ remove_from_last(char *buffer, const char *toremove)
 int
 vst_generate_cv_combinations(varnam* handle)
 {
-    int rc, config_ignore_duplicate_tokens_old_val, new_match_type;
-    struct token *vowels = NULL,
-                 *vowel = NULL,
-                 *consonants = NULL,
+    int rc, config_ignore_duplicate_tokens_old_val, new_match_type, i , j;
+    struct token *vowel = NULL,
                  *consonant = NULL,
                  *virama = NULL;
+    varray *vowels, *consonants;
     char cons_pattern[VARNAM_SYMBOL_MAX], cons_value1[VARNAM_SYMBOL_MAX], cons_value2[VARNAM_SYMBOL_MAX];
     char newpattern[VARNAM_SYMBOL_MAX], newvalue1[VARNAM_SYMBOL_MAX], newvalue2[VARNAM_SYMBOL_MAX];
 
@@ -575,11 +561,13 @@ vst_generate_cv_combinations(varnam* handle)
         return VARNAM_ERROR;
     }
 
-    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_VOWEL, &vowels);
+    vowels = varray_init ();
+    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_VOWEL, vowels);
     if (rc != VARNAM_SUCCESS)
         return rc;
 
-    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_DEAD_CONSONANT, &consonants);
+    consonants = varray_init ();
+    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_DEAD_CONSONANT, consonants);
     if (rc != VARNAM_SUCCESS)
         return rc;
 
@@ -588,8 +576,9 @@ vst_generate_cv_combinations(varnam* handle)
     config_ignore_duplicate_tokens_old_val = handle->internal->config_ignore_duplicate_tokens;
     handle->internal->config_ignore_duplicate_tokens = 1;
 
-    varnam_tokens_for_each(consonant, consonants)
+    for (i = 0; i < varray_length (consonants); i++)
     {
+        consonant = (struct token*) varray_get (consonants, i);
         /* Since we are iterating over dead consonants, pattern, value1 and value2 will have a virama at the end.
            This needs to removed before appending vowel */
         strncpy(cons_pattern, consonant->pattern, VARNAM_SYMBOL_MAX);
@@ -603,8 +592,9 @@ vst_generate_cv_combinations(varnam* handle)
         remove_from_last(cons_value1, virama->value1);
         remove_from_last(cons_value2, virama->value1);
 
-        varnam_tokens_for_each(vowel, vowels)
+        for (j = 0; j < varray_length (vowels); j++)
         {
+            vowel = (struct token*) varray_get (vowels, j);
             newpattern[0] = '\0';
             newvalue1[0]  = '\0';
             newvalue2[0]  = '\0';
@@ -647,8 +637,8 @@ vst_generate_cv_combinations(varnam* handle)
     if (rc != VARNAM_SUCCESS)
         return rc;
 
-    varnam_tokens_free(vowel, vowels);
-    varnam_tokens_free(consonant, consonants);
+    varray_free (consonants, true);
+    varray_free (vowels, true);
 
     return VARNAM_SUCCESS;
 }

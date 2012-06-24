@@ -381,12 +381,13 @@ int
 varnam_get_all_tokens(
     varnam *handle,
     int token_type,
-    struct token **tokens)
+    varray **tokens)
 {
     if (handle == NULL)
         return VARNAM_ARGS_ERROR;
 
-    return vst_get_all_tokens (handle, token_type, tokens);
+    *tokens = v_->tokens;
+    return vst_get_all_tokens (handle, token_type, v_->tokens);
 }
 
 int
@@ -555,4 +556,3 @@ varnam_destroy(varnam *handle)
     xfree(handle);
     return VARNAM_SUCCESS;
 }
-

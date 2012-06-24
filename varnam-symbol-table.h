@@ -105,7 +105,7 @@ int
 vst_generate_cv_combinations(varnam* handle);
 
 int
-vst_get_all_tokens (varnam* handle, int token_type, struct token **tokens);
+vst_get_all_tokens (varnam* handle, int token_type, varray *tokens);
 
 /**
  * Adds supplied metadata

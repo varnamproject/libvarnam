@@ -36,10 +36,16 @@ initialize_token (vtoken *tok,
     tok->match_type = match_type;
     strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
     strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
+
     if (value2 != NULL)
         strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX);
+    else
+        tok->value2[0] = '\0';
+
     if (tag != NULL)
         strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
+    else
+        tok->tag[0] = '\0';
 }
 
 struct token*

@@ -135,7 +135,6 @@ typedef struct token {
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];
     int children;
-    struct token* next;
 } vtoken;
 
 struct varnam_rule {
