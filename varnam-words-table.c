@@ -42,3 +42,25 @@ vwt_ensure_schema_exists(varnam *handle)
 
     return VARNAM_SUCCESS;
 }
+
+int
+vwt_persist_possibilities(varnam *handle, varray *tokens)
+{
+    int i, j;
+    varray *array;
+    vtoken *token;
+    
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        array = varray_get (tokens, i);
+        printf ("Persisting - ");
+        for (j = 0; j < varray_length (array); j++)
+        {
+            token = varray_get (array, j);
+            printf ("%s", token->pattern);
+        }
+        printf ("\n");
+    }
+
+    return VARNAM_SUCCESS;
+}

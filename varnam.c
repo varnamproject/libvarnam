@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
 #include "varnam-words-table.h"
+#include "varnam-token.h"
 #include "rendering/renderers.h"
 
 static struct varnam_token_rendering renderers[] = {
@@ -470,16 +471,56 @@ varnam_config(varnam *handle, int type, ...)
     return rc;
 }
 
+static varray* product_tokens(varnam *handle, varray *tokens)
+{
+    int array_cnt, *offsets, i, last_array_offset;
+    varray *product, *array, *tmp;
+
+    array_cnt = varray_length (tokens);
+    offsets = xmalloc(sizeof(int) * (size_t) array_cnt);
+    product = get_pooled_tokens (handle);
+
+    varray_clear (product);
+    for (i = 0; i < array_cnt; i++) offsets[i] = 0;
+
+    for (;;)
+    {
+        array = get_pooled_tokens (handle);
+        for (i = 0; i < array_cnt; i++) {
+            tmp = varray_get (tokens, i);
+            varray_push (array, varray_get (tmp, offsets[i]));
+        }
+
+        varray_push (product, array);
+
+        last_array_offset = array_cnt - 1;
+        offsets[last_array_offset]++;
+
+        while (offsets[last_array_offset] == varray_length ((varray*) varray_get (tokens, last_array_offset)))
+        {
+            offsets[last_array_offset] = 0;
+
+            if (--last_array_offset < 0) goto finished;
+
+            offsets[last_array_offset]++;
+        }
+    }
+
+finished:
+    xfree (offsets);
+    return product;
+}
+
 int
 varnam_learn(varnam *handle, const char *word)
 {
     int rc;
-    int i, j;
-    varray *tokens;
-    vtoken *tok;
+    varray *product;
 
     if (handle == NULL || word == NULL)
         return VARNAM_ARGS_ERROR;
+
+    reset_tokens_pool (handle);
 
     /* if (v_->known_words == NULL) { */
     /*     set_last_error (handle, "'words' store is not enabled."); */
@@ -487,19 +528,12 @@ varnam_learn(varnam *handle, const char *word)
     /* } */
 
     rc = vst_tokenize (handle, word, VARNAM_TOKENIZER_VALUE, v_->tokens);
+    if (rc) return rc;
 
-    printf ("%d\n", varray_length (v_->tokens));
+    /* find all possible combination of tokens */
+    product = product_tokens (handle, v_->tokens);
 
-    for (i = 0; i < varray_length (v_->tokens); i++)
-    {
-        tokens = varray_get (v_->tokens, i);
-        for (j = 0; j < varray_length (tokens); j++)
-        {
-            tok = varray_get (tokens, j);
-            printf (" %s, ", tok->pattern);
-        }
-        printf ("\n");
-    }
+    rc = vwt_persist_possibilities (handle, product);
 
     return VARNAM_SUCCESS;
 }

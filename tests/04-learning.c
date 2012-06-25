@@ -41,7 +41,7 @@ int test_varnam_learn(int argc, char **argv)
     /* rc = varnam_learn (handle, "ആnav"); */
 
     /*rc = varnam_learn (handle, "abcdefഅghijklmn-topqrstuvwxyz");*/
-    rc = varnam_learn (handle, "നവനീത്");
+    rc = varnam_learn (handle, "ഴിയില്‍");
 
     /* rc = varnam_learn (handle, "ആആപ"); */
 

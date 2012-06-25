@@ -1,4 +1,4 @@
-/* <file-name>
+/* varnam-words-table.h
  *
  * Copyright (C) Navaneeth K N
  *
@@ -21,9 +21,13 @@
 #define VARNAM_WORDS_TABLE_H_INCLUDED
 
 #include "varnam-types.h"
+#include "varnam-array.h"
 
 int
 vwt_ensure_schema_exists(varnam *handle);
+
+int
+vwt_persist_possibilities(varnam *handle, varray *tokens);
 
 
 #endif
