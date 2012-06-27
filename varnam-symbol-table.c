@@ -434,7 +434,7 @@ vst_get_virama(varnam* handle, struct token **output)
 
     db = handle->internal->db;
 
-    rc = sqlite3_prepare_v2( db, "select type, match_type, pattern, value1, value2 from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
+    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2 from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
         set_last_error (handle, "Failed to get virama : %s", sqlite3_errmsg(db));
@@ -859,7 +859,6 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *res
     if (input == NULL || *input == '\0') return VARNAM_SUCCESS;
 
     varray_clear (result);
-    reset_tokens_pool (handle);
     inputcopy = input;
     lookup = v_->lookup;
 

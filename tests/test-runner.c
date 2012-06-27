@@ -58,11 +58,21 @@ static int execute_test(int argc, char **argv)
     return test->function(argc, argv);
 }
 
+static void print_all_test_names()
+{
+    int i;
+    for (i = 0; i < NO_OF_TESTS; i++) { 
+	struct tests_t *t  = tests + i;
+        printf ("%s\n", t->name);
+    }
+}
+
 
 int main(int argc, char **argv)
 {
     if(argc == 1) {
         printf("no tests specified\n");
+        print_all_test_names();
         return 1;
     }
     argc--;

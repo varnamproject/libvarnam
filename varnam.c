@@ -547,7 +547,7 @@ can_learn_from_tokens (varnam *handle, varray *tokens, const char *word)
 {
     bool all_vowels = true, unknown_tokens = false;
     int i, j, repeating_tokens = 0, last_token_id = 0;
-    vtoken *t;
+    vtoken *t, *unknown_token;
     varray *array;
 
     if (varray_length (tokens) < 2) {
@@ -567,6 +567,7 @@ can_learn_from_tokens (varnam *handle, varray *tokens, const char *word)
 
             if (t->type == VARNAM_TOKEN_OTHER) {
                 unknown_tokens = true;
+                unknown_token = t;
                 goto done;
             }
 
@@ -586,7 +587,7 @@ done:
         return false;
     }
     else if (unknown_tokens) {
-        set_last_error (handle, "One or more characters in '%s' are not known", word);
+        set_last_error (handle, "Can't process '%s'. One or more characters in '%s' are not known", unknown_token->pattern, word);
         return false;
     }
     else if (repeating_tokens >= 3) {
@@ -606,6 +607,11 @@ varnam_learn(varnam *handle, const char *word)
 
     if (handle == NULL || word == NULL)
         return VARNAM_ARGS_ERROR;
+
+    if (!is_utf8 (word)) {
+        set_last_error (handle, "Incorrect encoding. Expected UTF-8 string");
+        return VARNAM_ERROR;
+    }
 
     reset_pool (handle);
 

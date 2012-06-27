@@ -262,9 +262,11 @@ int ignore_duplicates()
 
 int auto_create_dead_consonants()
 {
-    int rc;
+    int rc, i;
     char *msg;
     varnam *handle;
+    varray *tokens;
+    vtoken *token;
 
     const char *filename = "output/03-auto_create_dead_co.vst";
     rc = varnam_init(filename, &handle, &msg);
@@ -298,7 +300,17 @@ int auto_create_dead_consonants()
 
     varnam_flush_buffer(handle);
 
-    return 0;
+    varnam_get_all_tokens (handle, VARNAM_TOKEN_DEAD_CONSONANT, &tokens);
+
+    for (i = 0; i < varray_length (tokens); i++) {
+        token = varray_get (tokens, i);
+        if (strcmp(token->pattern, "k") == 0) {
+            return 0;
+        }
+    }
+
+    printf ("Expected dead consonants, found none\n");
+    return 1;
 }
 
 int create_with_buffering()

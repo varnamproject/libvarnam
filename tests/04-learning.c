@@ -53,7 +53,9 @@ int test_varnam_learn(int argc, char **argv)
     /* rc = varnam_learn (handle, "ആnav"); */
 
     /*rc = varnam_learn (handle, "abcdefഅghijklmn-topqrstuvwxyz");*/
-    rc = varnam_learn (handle, "‍സ്ഥാനം");
+    /*rc = varnam_learn (handle, "‍സ്ഥാനം");*/
+    /*rc = varnam_learn (handle, "നവനീത്");*/
+    rc = varnam_learn (handle, argv[0]);
     if (rc != VARNAM_SUCCESS) {
         printf ("Error - %s", varnam_get_last_error (handle));
     }

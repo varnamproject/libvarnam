@@ -167,6 +167,7 @@ VARNAM_EXPORT void *xmalloc(size_t size);
 VARNAM_EXPORT void xfree (void *ptr);
 
 void set_last_error(varnam *handle, const char *format, ...);
+bool is_utf8(const char *string);
 
 /* Constants */
 
