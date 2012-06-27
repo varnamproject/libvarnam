@@ -137,7 +137,7 @@ can_find_token(varnam *handle, struct token *last, const char *lookup)
 
     db = handle->internal->db;
 
-    snprintf( sql, 500, "select count(pattern) as cnt from symbols where pattern like '%s%%';", lookup );
+    snprintf( sql, 500, "select count(id) as cnt from symbols where pattern like '%s%%';", lookup );
     rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL );
     if( rc == SQLITE_OK ) {
         rc = sqlite3_step( stmt );
@@ -217,7 +217,7 @@ ensure_schema_exists(varnam *handle, char **msg)
 {
     const char *sql =
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create table if not exists symbols (type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
+        "create table if not exists symbols (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
         "create index if not exists index_metadata on metadata (key);"
         "create index if not exists index_pattern on symbols (pattern);"
         "create index if not exists index_value1  on symbols (value1);"
@@ -333,7 +333,7 @@ vst_persist_token(
 {
     int rc, persisted;
     sqlite3 *db; sqlite3_stmt *stmt;
-    const char *sql = "insert into symbols values (?1, trim(?2), trim(?3), trim(?4), trim(?5), ?6);";
+    const char *sql = "insert into symbols (type, pattern, value1, value2, tag, match_type) values (?1, trim(?2), trim(?3), trim(?4), trim(?5), ?6);";
 
     assert(handle); assert(pattern); assert(value1); assert(token_type);
 
@@ -450,9 +450,10 @@ vst_get_virama(varnam* handle, struct token **output)
     {
         *output = Token( (int) sqlite3_column_int(stmt, 0),
                          (int) sqlite3_column_int(stmt, 1),
-                         (const char*) sqlite3_column_text(stmt, 2),
+                         (int) sqlite3_column_int(stmt, 2),
                          (const char*) sqlite3_column_text(stmt, 3),
-                         (const char*) sqlite3_column_text(stmt, 4), NULL);
+                         (const char*) sqlite3_column_text(stmt, 4),
+                         (const char*) sqlite3_column_text(stmt, 5), NULL);
     }
     else if ( rc == SQLITE_DONE )
     {
@@ -481,7 +482,7 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
 
     varray_clear (tokens);
 
-    rc = sqlite3_prepare_v2( db, "select type, match_type, pattern, value1, value2, tag from symbols where type = ?1;", -1, &stmt, NULL );
+    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, tag from symbols where type = ?1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
         set_last_error (handle, "Failed to get all tokens : %s", sqlite3_errmsg(db));
@@ -496,12 +497,13 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
         rc = sqlite3_step( stmt );
         if( rc == SQLITE_ROW )
         {
-            tok = Token( (int) sqlite3_column_int(stmt, 0),
-                         (int) sqlite3_column_int(stmt, 1),
-                         (const char*) sqlite3_column_text(stmt, 2),
-                         (const char*) sqlite3_column_text(stmt, 3),
-                         (const char*) sqlite3_column_text(stmt, 4),
-                         (const char*) sqlite3_column_text(stmt, 5));
+            tok = get_pooled_token (handle, (int) sqlite3_column_int(stmt, 0), 
+                                    (int) sqlite3_column_int(stmt, 1),
+                                    (int) sqlite3_column_int(stmt, 2),
+                                    (const char*) sqlite3_column_text(stmt, 3),
+                                    (const char*) sqlite3_column_text(stmt, 4),
+                                    (const char*) sqlite3_column_text(stmt, 5),
+                                    (const char*) sqlite3_column_text(stmt, 6));
 
             varray_push (tokens, tok);
         }
@@ -720,7 +722,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **st
     case VARNAM_TOKENIZER_PATTERN:
         if (v_->tokenize_using_pattern == NULL)
         {
-            rc = sqlite3_prepare_v2( v_->db, "select type, match_type, pattern, value1, value2 from symbols where pattern = ?1;", -1, &v_->tokenize_using_pattern, NULL );
+            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where pattern = ?1;", -1, &v_->tokenize_using_pattern, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
                 return VARNAM_ERROR;
@@ -731,7 +733,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **st
     case VARNAM_TOKENIZER_VALUE:
         if (v_->tokenize_using_value == NULL)
         {
-            rc = sqlite3_prepare_v2( v_->db, "select type, match_type, pattern, value1, value2 from symbols where value1 = ?1;", -1, &v_->tokenize_using_value, NULL );
+            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where value1 = ?1;", -1, &v_->tokenize_using_value, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
                 return VARNAM_ERROR;
@@ -765,9 +767,10 @@ read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokeni
             tok = get_pooled_token (handle,
                                     sqlite3_column_int( stmt, 0 ),
                                     sqlite3_column_int( stmt, 1 ),
-                                    (const char*) sqlite3_column_text( stmt, 2 ),
+                                    sqlite3_column_int( stmt, 2 ),
                                     (const char*) sqlite3_column_text( stmt, 3 ),
-                                    (const char*) sqlite3_column_text( stmt, 4 ), "");
+                                    (const char*) sqlite3_column_text( stmt, 4 ),
+                                    (const char*) sqlite3_column_text( stmt, 5 ), "");
 
             if (!cleared) {
                 /* We have new set of tokens and we don't care about previous match */
@@ -879,7 +882,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *res
         if (varray_is_empty (tokens))
         {
             /* We couldn't find any tokens. So adding lookup as the match */
-            varray_push (tokens, get_pooled_token (handle,
+            varray_push (tokens, get_pooled_token (handle, -99,
                                                    VARNAM_TOKEN_OTHER,
                                                    VARNAM_MATCH_EXACT,
                                                    strbuf_to_s (lookup), "", "", ""));

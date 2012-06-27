@@ -54,7 +54,8 @@ module VarnamLibrary
   VARNAM_TOKEN_TAG_MAX   = 15
 
   class Token < FFI::Struct
-    layout :type, :int,
+    layout :id, :int,
+    :type, :int,
     :match_type, :int,
     :tag, [:char, VARNAM_TOKEN_TAG_MAX],
     :pattern, [:char, VARNAM_SYMBOL_MAX],
@@ -448,11 +449,9 @@ def get_dead_consonants(criteria = {})
     varnam_token = VarnamToken.new(item[:type],
                                    ffito_string(item[:pattern]), ffito_string(item[:value1]),
                                    ffito_string(item[:value2]), item[:match_type])
-    puts varnam_token
     _context.tokens[token_type].push(varnam_token)
     i += 1
   end
-
   return get_tokens(token_type, criteria)
 end
 

@@ -115,6 +115,8 @@ struct varnam_internal
     struct vpool_t *tokens_pool;
     struct vpool_t *tokens_array_pool;
 
+    struct vpool_t *strings_pool;
+
     struct varray_t *tokens;
 
     sqlite3_stmt *tokenize_using_pattern;
@@ -129,7 +131,7 @@ typedef struct varnam {
 } varnam;
 
 typedef struct token {
-    int type, match_type;
+    int id, type, match_type;
     char tag[VARNAM_TOKEN_TAG_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];

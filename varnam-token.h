@@ -24,11 +24,12 @@
 #include "varnam-array.h"
 
 struct token*
-Token(int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* tag);
+Token(int id, int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* tag);
 
 struct token*
 get_pooled_token (
     varnam *handle,
+    int id,
     int type,
     int match_type,
     const char* pattern,

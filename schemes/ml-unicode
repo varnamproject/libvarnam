@@ -83,12 +83,13 @@ consonants "nka" => "ങ്ക",
            ["yya", "Ya"] => "യ്യ",
            ["mpa", "mba"] => "മ്പ",
            "scha" => "സ്ക",
-           ["cha", "chcha", "ccha", "Cha"] => "ച്ച",
+           [["cha"], "chcha", "ccha", "Cha"] => "ച്ച",
            "ndha" => "ന്ധ",
            "jnja" => "ജ്ഞ",
            "nma" => "ന്മ",
            ["Nma", ["nma"]] => "ണ്മ",
-           ["nJa", ["nja"]] => "ഞ്ജ"
+           ["nJa", ["nja"]] => "ഞ്ജ",
+           ["NDa", ["nda"]] => "ണ്ഡ"
 
 consonants ["rva", "rwa"] => "ര്വ",
            "rya" => "ര്യ",

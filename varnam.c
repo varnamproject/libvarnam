@@ -73,6 +73,8 @@ initialize_internal()
         vi->tokens_pool = NULL;
         vi->tokens_array_pool = NULL;
 
+        vi->strings_pool = NULL;
+
         /* Result of tokenization will be stored inside */
         vi->tokens = varray_init();
 
@@ -511,28 +513,120 @@ finished:
     return product;
 }
 
+static void
+reset_pool(varnam *handle)
+{
+    reset_tokens_pool (handle);
+    vpool_reset (v_->strings_pool);
+}
+
+static char special_chars[] = {'\n', '\t', '\r', ',', '.', '/', '<', '>', '?', ';', '\'', ':',
+                               '"', '[', ']', '{', '}', '~', '`', '!', '@', '#', '$', '%', '^',
+                               '&', '*', '(', ')', '-', '_', '+', '=', '\\', '|', ' '};
+
+static strbuf*
+sanitize_word (varnam *handle, const char *word)
+{
+    char c[2];
+    int i;
+    strbuf *string = get_pooled_string (handle);
+    strbuf_add (string, word);
+
+    for (i = 0; i < ARRAY_SIZE(special_chars); i++)
+    {
+        c[0] = special_chars[i];
+        c[1] = '\0';
+        strbuf_remove_from_last (string, c);
+    }
+
+    return string;
+}
+
+static bool
+can_learn_from_tokens (varnam *handle, varray *tokens, const char *word)
+{
+    bool all_vowels = true, unknown_tokens = false;
+    int i, j, repeating_tokens = 0, last_token_id = 0;
+    vtoken *t;
+    varray *array;
+
+    if (varray_length (tokens) < 2) {
+        set_last_error (handle, "Nothing to learn from '%s'", word);
+        return false;
+    }
+
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        array = varray_get (tokens, i);
+        for (j = 0; j < varray_length (array); j++)
+        {
+            t = varray_get (array, j);
+            if (t->match_type == VARNAM_MATCH_POSSIBILITY) continue;
+
+            if (t->type != VARNAM_TOKEN_VOWEL) all_vowels = false;
+
+            if (t->type == VARNAM_TOKEN_OTHER) {
+                unknown_tokens = true;
+                goto done;
+            }
+
+            if (last_token_id == t->id) {
+                ++repeating_tokens;
+            }
+            else {
+                repeating_tokens = 0;
+                last_token_id = t->id;
+            }
+        }
+    }
+
+done:
+    if (all_vowels) {
+        set_last_error (handle, "Word contains only vowels. Nothing to learn from '%s'", word);
+        return false;
+    }
+    else if (unknown_tokens) {
+        set_last_error (handle, "One or more characters in '%s' are not known", word);
+        return false;
+    }
+    else if (repeating_tokens >= 3) {
+        set_last_error (handle, "'%s' looks incorrect. Not learning anything", word);
+        return false;
+    }
+
+    return true;
+}
+
 int
 varnam_learn(varnam *handle, const char *word)
 {
     int rc;
-    varray *product;
+    varray *product, *tokens;
+    strbuf *sanitized_word;
 
     if (handle == NULL || word == NULL)
         return VARNAM_ARGS_ERROR;
 
-    reset_tokens_pool (handle);
+    reset_pool (handle);
 
     /* if (v_->known_words == NULL) { */
     /*     set_last_error (handle, "'words' store is not enabled."); */
     /*     return VARNAM_ERROR; */
     /* } */
 
-    rc = vst_tokenize (handle, word, VARNAM_TOKENIZER_VALUE, v_->tokens);
+    tokens = get_pooled_tokens (handle);
+
+    /* This removes all starting and trailing special characters from the word */
+    sanitized_word = sanitize_word (handle, word);
+
+    rc = vst_tokenize (handle, strbuf_to_s (sanitized_word), VARNAM_TOKENIZER_VALUE, tokens);
     if (rc) return rc;
 
-    /* find all possible combination of tokens */
-    product = product_tokens (handle, v_->tokens);
+    if (!can_learn_from_tokens (handle, tokens, word))
+        return VARNAM_ERROR;
 
+    /* find all possible combination of tokens */
+    product = product_tokens (handle, tokens);
     rc = vwt_persist_possibilities (handle, product);
 
     return VARNAM_SUCCESS;

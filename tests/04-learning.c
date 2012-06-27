@@ -20,6 +20,18 @@
 #include <string.h>
 #include "../varnam.h"
 
+int starting_and_trailing_special_chars_should_be_removed(varnam *handle)
+{
+    int rc;
+    rc = varnam_learn (handle, "''@'നവനീത്''");
+    if (rc != VARNAM_SUCCESS) {
+        printf ("Error - %s", varnam_get_last_error (handle));
+        return VARNAM_ERROR;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
 int test_varnam_learn(int argc, char **argv)
 {
     char *msg;
@@ -41,7 +53,10 @@ int test_varnam_learn(int argc, char **argv)
     /* rc = varnam_learn (handle, "ആnav"); */
 
     /*rc = varnam_learn (handle, "abcdefഅghijklmn-topqrstuvwxyz");*/
-    rc = varnam_learn (handle, "ഴിയില്‍");
+    rc = varnam_learn (handle, "‍സ്ഥാനം");
+    if (rc != VARNAM_SUCCESS) {
+        printf ("Error - %s", varnam_get_last_error (handle));
+    }
 
     /* rc = varnam_learn (handle, "ആആപ"); */
 

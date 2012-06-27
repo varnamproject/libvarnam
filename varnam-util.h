@@ -138,11 +138,11 @@ VARNAM_EXPORT int utf8_length(const char *string);
 int
 utf8_ends_with(const char *buffer, const char *tocheck);
 
-struct strbuf {
+typedef struct strbuf {
     char *buffer;          /* null terminated buffer */
     size_t length;         /* length of the string in bytes excluding null terminator */
     size_t allocated;      /* total memory allocated */
-};
+} strbuf;
 
 void varnam_debug(varnam *handle, const char *format, ...);
 void varnam_log(varnam *handle, const char *format, ...);
@@ -161,6 +161,7 @@ VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
 VARNAM_EXPORT int strbuf_is_blank(struct strbuf *string);
 VARNAM_EXPORT int strbuf_endswith(struct strbuf *string, const char *str);
 VARNAM_EXPORT void strbuf_remove_from_last(struct strbuf *string, const char *toremove);
+VARNAM_EXPORT struct strbuf* get_pooled_string(varnam *handle);
 
 VARNAM_EXPORT void *xmalloc(size_t size);
 VARNAM_EXPORT void xfree (void *ptr);

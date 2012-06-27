@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 #include "varnam-util.h"
+#include "varnam-array.h"
 
 static int grow_buffer(struct strbuf *string)
 {
@@ -255,4 +256,22 @@ char* strbuf_detach(struct strbuf *string)
 const char* strbuf_to_s(struct strbuf *string)
 {
     return string->buffer;
+}
+
+struct strbuf* get_pooled_string(varnam *handle)
+{
+    strbuf *string;
+
+    if (v_->strings_pool == NULL)
+        v_->strings_pool = vpool_init ();
+
+    string = vpool_get (v_->strings_pool);
+    if (string == NULL)
+    {
+        string = strbuf_init (20);
+        vpool_add (v_->strings_pool, string);
+    }
+
+    strbuf_clear (string);
+    return string;
 }
