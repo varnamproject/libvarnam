@@ -27,7 +27,7 @@ int
 vwt_ensure_schema_exists(varnam *handle);
 
 int
-vwt_persist_possibilities(varnam *handle, varray *tokens);
+vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word);
 
 
 #endif

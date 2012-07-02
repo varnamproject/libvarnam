@@ -160,6 +160,7 @@ int strbuf_addvf(struct strbuf *string, const char *format, va_list args)
         }
     }
 
+    strbuf_addc (string, '\n');
     return 1;
 
 }

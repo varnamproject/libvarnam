@@ -83,6 +83,9 @@ initialize_internal()
         vi->tokenize_using_value = NULL;
         vi->can_find_more_matches_using_pattern = NULL;
         vi->can_find_more_matches_using_value = NULL;
+        vi->learn_word = NULL;
+        vi->learn_pattern = NULL;
+        vi->get_word = NULL;
     }
     return vi;
 }
@@ -608,17 +611,17 @@ varnam_learn(varnam *handle, const char *word)
     if (handle == NULL || word == NULL)
         return VARNAM_ARGS_ERROR;
 
+    if (v_->known_words == NULL) {
+        set_last_error (handle, "'words' store is not enabled.");
+        return VARNAM_ERROR;
+    }
+
     if (!is_utf8 (word)) {
         set_last_error (handle, "Incorrect encoding. Expected UTF-8 string");
         return VARNAM_ERROR;
     }
 
     reset_pool (handle);
-
-    /* if (v_->known_words == NULL) { */
-    /*     set_last_error (handle, "'words' store is not enabled."); */
-    /*     return VARNAM_ERROR; */
-    /* } */
 
     tokens = get_pooled_tokens (handle);
 
@@ -633,9 +636,8 @@ varnam_learn(varnam *handle, const char *word)
 
     /* find all possible combination of tokens */
     product = product_tokens (handle, tokens);
-    rc = vwt_persist_possibilities (handle, product);
-
-    return VARNAM_SUCCESS;
+    
+    return vwt_persist_possibilities (handle, product, word);
 }
 
 int

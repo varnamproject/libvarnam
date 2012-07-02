@@ -45,6 +45,13 @@ int test_varnam_learn(int argc, char **argv)
         return 1;
     }
 
+    rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "output/04-suggestions");
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf ("Failed to enable suggestions - %s", varnam_get_last_error (handle));
+        return 1;
+    }
+
     /* rc = varnam_create_token(handle, "a", "അ", NULL, VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0); */
     /* rc = varnam_create_token(handle, "aa", "ആ", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0); */
     /* rc = varnam_create_token(handle, "*n*", "n-t", "ാ", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0); */

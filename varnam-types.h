@@ -123,6 +123,9 @@ struct varnam_internal
     sqlite3_stmt *tokenize_using_value;
     sqlite3_stmt *can_find_more_matches_using_pattern;
     sqlite3_stmt *can_find_more_matches_using_value;
+    sqlite3_stmt *learn_word;
+    sqlite3_stmt *learn_pattern;
+    sqlite3_stmt *get_word;
 };
 
 typedef struct varnam {
