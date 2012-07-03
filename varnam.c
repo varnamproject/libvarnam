@@ -374,6 +374,9 @@ varnam_create_token(
         }
     }
 
+    if (token_type == VARNAM_TOKEN_NON_JOINER)
+        value1 = value2 = ZWNJ();
+
     rc = vst_persist_token (handle, pattern, value1, value2, token_type, match_type);
     if (rc != VARNAM_SUCCESS)
     {
@@ -527,20 +530,52 @@ static char special_chars[] = {'\n', '\t', '\r', ',', '.', '/', '<', '>', '?', '
                                '"', '[', ']', '{', '}', '~', '`', '!', '@', '#', '$', '%', '^',
                                '&', '*', '(', ')', '-', '_', '+', '=', '\\', '|', ' '};
 
+static bool is_special_character(char c)
+{
+    int i;
+    for (i = 0; i < ARRAY_SIZE(special_chars); i++)
+    {
+        if (c == special_chars[i])
+            return true;
+    }
+
+    return false;
+}
+
 static strbuf*
 sanitize_word (varnam *handle, const char *word)
 {
-    char c[2];
-    int i;
-    strbuf *string = get_pooled_string (handle);
+    size_t i;
+    bool is_special = false;
+    strbuf *string, *to_remove;
+
+    string = get_pooled_string (handle);
+    to_remove = get_pooled_string (handle);
+
     strbuf_add (string, word);
 
-    for (i = 0; i < ARRAY_SIZE(special_chars); i++)
+    for (i = 0; i < string->length; i++)
     {
-        c[0] = special_chars[i];
-        c[1] = '\0';
-        strbuf_remove_from_last (string, c);
+        is_special = is_special_character (string->buffer[i]);
+        if (is_special)
+            strbuf_addc (to_remove, string->buffer[i]);
+        else
+            break;
     }
+
+    strbuf_remove_from_first (string, strbuf_to_s (to_remove));
+
+    strbuf_clear (to_remove);
+    for (i = string->length - 1; i >= 0; i--)
+    {
+        is_special = is_special_character (string->buffer[i]);
+        if (is_special)
+            strbuf_addc (to_remove, string->buffer[i]);
+        else
+            break;
+    }
+
+    strbuf_remove_from_last (string, strbuf_to_s (to_remove));
 
     return string;
 }
@@ -631,13 +666,13 @@ varnam_learn(varnam *handle, const char *word)
     rc = vst_tokenize (handle, strbuf_to_s (sanitized_word), VARNAM_TOKENIZER_VALUE, tokens);
     if (rc) return rc;
 
-    if (!can_learn_from_tokens (handle, tokens, word))
+    if (!can_learn_from_tokens (handle, tokens, strbuf_to_s (sanitized_word)))
         return VARNAM_ERROR;
 
     /* find all possible combination of tokens */
     product = product_tokens (handle, tokens);
-    
-    return vwt_persist_possibilities (handle, product, word);
+
+    return vwt_persist_possibilities (handle, product, strbuf_to_s (sanitized_word));
 }
 
 int

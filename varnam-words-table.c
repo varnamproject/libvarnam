@@ -134,7 +134,7 @@ learn_word (varnam *handle, const char *word)
 {
     int rc;
     const char *sql = "insert or replace into words (id, word, confidence, learned_on) "
-                      "select (select id from words where word = ?1), ?1, coalesce((select confidence + 1 from words where word = ?1), 1), date();;";
+                      "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date();;";
 
     assert (v_->known_words);
 

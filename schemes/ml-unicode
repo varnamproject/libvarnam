@@ -21,7 +21,6 @@ vowels "a" => "അ",
        "o" => ["ഒ", "ൊ"],
        ["O", ["o"]] => ["ഓ", "ോ"],
        ["au", "ow", "ou"]  => ["ഔ", "ൌ"],
-       "ia" => ["ഇയ", "ിയ"],
        "am" => ["അം", "ം"]
 
 consonants ["ka", "ca", "qa"] => "ക",
@@ -118,12 +117,13 @@ symbols "/" => "ഽ",
         ["H", ":"] => "ഃ"
 
 # Chillaksharams are specified as consonant because it is a special form of consonant
+# value1 = atomic chil. value2 = old style
 consonants "m" => "ം",
-           "n" => "ന്‍",
-           ["N", ["n"]] => "ണ്‍",
-           "l" => "ല്‍",
-           ["L", ["l"]] => "ള്‍",
-           ["R", ["r"]] => "ര്‍"
+           "n" => ["ൻ", "ന്‍"],
+           ["N", ["n"]] => ["ൺ", "ണ്‍"],
+           "l" => ["ൽ", "ല്‍"],
+           ["L", ["l"]] => ["ൾ", "ള്‍"],
+           ["R", ["r"]] => ["ർ", "ര്‍"]
 
 infer_dead_consonants false
 ignore_duplicates true

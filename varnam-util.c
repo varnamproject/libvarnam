@@ -259,3 +259,10 @@ bool is_utf8(const char *string)
 
     return 1;
 }
+
+const char zwnj[] = {'\xe2', '\x80', '\x8c', '\0'};
+
+const char *ZWNJ()
+{
+    return zwnj;
+}

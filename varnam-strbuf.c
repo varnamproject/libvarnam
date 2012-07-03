@@ -227,6 +227,33 @@ int strbuf_endswith(struct strbuf *string, const char *str)
     return (strcmp(substring, str) == 0 ? 1 : 0);
 }
 
+void strbuf_remove_from_first(struct strbuf *string, const char *toremove)
+{
+    size_t to_remove_len, newlen;
+    int i;
+    bool matching;
+
+    if(!toremove) return;
+    to_remove_len = strlen(toremove);
+
+    if(string->length < to_remove_len) return;
+    newlen = (string->length - to_remove_len);
+
+    matching = true;
+    for (i = 0; i < to_remove_len; i++) {
+      if (string->buffer[i] != toremove[i]) {
+          matching = false;
+            break;
+      }
+    }
+
+    if (matching) {
+      memmove (string->buffer, string->buffer + to_remove_len, newlen);
+      string->buffer[newlen] = '\0';
+      string->length = newlen;
+    }
+}
+
 void strbuf_remove_from_last(struct strbuf *string, const char *toremove)
 {
     size_t to_remove_len, newlen;

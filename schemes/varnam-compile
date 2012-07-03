@@ -472,6 +472,7 @@ end
 # Sets default symbols if user has not set overridden in the scheme file
 def set_default_symbols
   non_joiner "_" => "_"  if not $overridden_default_symbols.include?(Varnam::VARNAM_TOKEN_NON_JOINER)
+  symbols "-" => "-"
 end
 
 def start_compilation

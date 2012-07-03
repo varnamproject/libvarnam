@@ -733,7 +733,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **st
     case VARNAM_TOKENIZER_VALUE:
         if (v_->tokenize_using_value == NULL)
         {
-            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where value1 = ?1;", -1, &v_->tokenize_using_value, NULL );
+            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where value1 = ?1 or value2 = ?1;", -1, &v_->tokenize_using_value, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
                 return VARNAM_ERROR;
