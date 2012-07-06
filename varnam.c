@@ -85,6 +85,7 @@ initialize_internal()
         vi->can_find_more_matches_using_value = NULL;
         vi->learn_word = NULL;
         vi->learn_pattern = NULL;
+        vi->learn_substring = NULL;
         vi->get_word = NULL;
     }
     return vi;
@@ -479,46 +480,6 @@ varnam_config(varnam *handle, int type, ...)
     return rc;
 }
 
-static varray* product_tokens(varnam *handle, varray *tokens)
-{
-    int array_cnt, *offsets, i, last_array_offset;
-    varray *product, *array, *tmp;
-
-    array_cnt = varray_length (tokens);
-    offsets = xmalloc(sizeof(int) * (size_t) array_cnt);
-    product = get_pooled_tokens (handle);
-
-    varray_clear (product);
-    for (i = 0; i < array_cnt; i++) offsets[i] = 0;
-
-    for (;;)
-    {
-        array = get_pooled_tokens (handle);
-        for (i = 0; i < array_cnt; i++) {
-            tmp = varray_get (tokens, i);
-            varray_push (array, varray_get (tmp, offsets[i]));
-        }
-
-        varray_push (product, array);
-
-        last_array_offset = array_cnt - 1;
-        offsets[last_array_offset]++;
-
-        while (offsets[last_array_offset] == varray_length ((varray*) varray_get (tokens, last_array_offset)))
-        {
-            offsets[last_array_offset] = 0;
-
-            if (--last_array_offset < 0) goto finished;
-
-            offsets[last_array_offset]++;
-        }
-    }
-
-finished:
-    xfree (offsets);
-    return product;
-}
-
 static void
 reset_pool(varnam *handle)
 {
@@ -640,7 +601,7 @@ int
 varnam_learn(varnam *handle, const char *word)
 {
     int rc;
-    varray *product, *tokens;
+    varray *tokens;
     strbuf *sanitized_word;
 
     if (handle == NULL || word == NULL)
@@ -669,10 +630,9 @@ varnam_learn(varnam *handle, const char *word)
     if (!can_learn_from_tokens (handle, tokens, strbuf_to_s (sanitized_word)))
         return VARNAM_ERROR;
 
-    /* find all possible combination of tokens */
-    product = product_tokens (handle, tokens);
-
-    return vwt_persist_possibilities (handle, product, strbuf_to_s (sanitized_word));
+    return vwt_persist_possibilities (handle, 
+                                      tokens, 
+                                      strbuf_to_s (sanitized_word));
 }
 
 int

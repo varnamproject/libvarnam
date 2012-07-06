@@ -23,6 +23,7 @@
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
 #include "varnam-api.h"
+#include "varnam-token.h"
 
 int
 vwt_ensure_schema_exists(varnam *handle)
@@ -197,14 +198,102 @@ get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
     return VARNAM_SUCCESS;
 }
 
+static int
+persist_substring (varnam *handle, const char *substring, const char *word)
+{
+    int rc;
+
+    if (v_->learn_substring == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, "insert or ignore into words_substrings values (?1)", -1, &v_->learn_substring, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->learn_substring);
+            return VARNAM_ERROR;
+        }
+    }
+
+    sqlite3_bind_text  (v_->learn_substring, 1, substring, -1, NULL);
+
+    rc = sqlite3_step (v_->learn_substring);
+    if (rc != SQLITE_DONE) {
+        set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
+        sqlite3_reset (v_->learn_substring);
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_reset (v_->learn_substring);
+    return VARNAM_SUCCESS;
+}
+
+static varray*
+get_exact_matches (varnam *handle, varray *tokens)
+{
+    int i,j;
+    varray *array, *exact_matches;
+    vtoken *tok;
+
+    exact_matches = get_pooled_tokens (handle);
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        array = varray_get (tokens, i);
+        for (j = 0; j < varray_length (array); j++)
+        {
+            tok = varray_get (array, j);
+            if (tok->match_type == VARNAM_MATCH_EXACT) {
+                varray_push (exact_matches, tok);
+                break;
+            }
+        }
+    }
+
+    return exact_matches;
+}
+
+
+static int
+learn_all_substrings(varnam *handle, varray *tokens, const char *word)
+{
+    int rc, start = 0, i;
+    varray *exact_matches;
+    vtoken *token;
+    strbuf *substring;
+
+    /* Rather than looping through all the tokens, we will care only exact matches */
+    exact_matches = get_exact_matches (handle, tokens);
+    substring = get_pooled_string (handle);
+    for (;;)
+    {
+        for (i = start; i < varray_length (exact_matches); i++)
+        {
+            token = varray_get (exact_matches, i);
+            strbuf_add (substring, token->value1);
+            rc = persist_substring (handle, strbuf_to_s (substring), word);
+            if (rc) return rc;
+        }
+
+        ++start;
+        strbuf_clear (substring);
+
+        if (i == start) {
+            break;
+        }
+    }
+
+    return VARNAM_SUCCESS;
+}
+
 int
 vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
 {
     int i, j, rc;
-    varray *array;
+    varray *array, *possibilities;
     vtoken *token;
     sqlite3_int64 word_id;
     strbuf *pattern = get_pooled_string (handle);
+
+    /* find all possible combination of tokens */
+    possibilities = product_tokens (handle, tokens);
 
     rc = execute_sql (handle, v_->known_words, "begin;");
     if (rc) return rc;
@@ -215,9 +304,9 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
     rc = get_word_id (handle, word, &word_id);
     if (rc) return rc;
 
-    for (i = 0; i < varray_length (tokens); i++)
+    for (i = 0; i < varray_length (possibilities); i++)
     {
-        array = varray_get (tokens, i);
+        array = varray_get (possibilities, i);
         strbuf_clear (pattern);
         for (j = 0; j < varray_length (array); j++)
         {
@@ -231,6 +320,9 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
             return rc;
         }
     }
+
+    rc = learn_all_substrings (handle, tokens, word);
+    if (rc) return rc;
 
     rc = execute_sql (handle, v_->known_words, "commit;");
     if (rc) return rc;
