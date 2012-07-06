@@ -636,6 +636,31 @@ varnam_learn(varnam *handle, const char *word)
 }
 
 int
+varnam_learn_from_file(varnam *handle, const char *filepath)
+{
+    char *inname = "test.txt";
+    FILE *infile;
+    char line_buffer[100000];
+    char line_number;
+
+    infile = fopen(inname, "r");
+    if (!infile) {
+        printf("Couldn't open file %s for reading.\n", inname);
+        return 0;
+    }
+    printf("Opened file %s for reading.\n", inname);
+
+    line_number = 0;
+    while (fgets(line_buffer, sizeof(line_buffer), infile)) {
+        ++line_number;
+        /* note that the newline is in the buffer */
+        printf("%4d: %s", line_number, line_buffer);
+    }
+    printf("\nTotal number of lines = %d\n", line_number);
+    return 0;
+}
+
+int
 varnam_get_info (varnam *handle, bool detailed, vinfo **info)
 {
     /* only array details are implemeted */

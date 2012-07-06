@@ -162,6 +162,21 @@ VARNAM_EXPORT extern int
 varnam_learn(varnam *handle, const char *word);
 
 /**
+ * Varnam will learn words from the supplied file
+ *
+ * handle            - Valid varnam instance
+ * filepath          - file to read from
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS    - Upon successful execution
+ * VARNAM_ARGS_ERROR - Handle or word is NULL
+ * VARNAM_ERROR      - Any other errors
+ **/
+VARNAM_EXPORT extern int
+varnam_learn_from_file(varnam *handle, const char *filepath);
+
+/**
  * Set scheme details. This will overwrite any scheme details set before
  *
  * handle            - Valid varnam instance
