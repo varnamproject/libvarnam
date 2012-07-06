@@ -30,10 +30,10 @@
  *
  * scheme_file    - Full path to the varnam scheme file
  * handle         - If successfull, a valid instance of varnam will
-                    point here. This needs to passed to all the functions in
-                    varnam library
+ point here. This needs to passed to all the functions in
+ varnam library
  * msg            - If any error happens, this will contain the error message.
-                    User has to free this
+ User has to free this
  *
  * RETURN
  *
@@ -96,7 +96,7 @@ varnam_config(varnam *handle, int type, ...);
  * token_type - One among VARNAM_TOKEN_XXX
  * match_type - Either VARNAM_MATCH_EXACT or VARNAM_MATCH_POSSIBILITY
  * buffered   - Setting TRUE will enable buffering. If set to TRUE,
-                varnam_flush() has to be called to flush buffers.
+ varnam_flush() has to be called to flush buffers.
  *
  * NOTES
  *
@@ -119,7 +119,7 @@ VARNAM_EXPORT extern int varnam_create_token(
     int token_type,
     int match_type,
     int buffered
-);
+    );
 
 /**
  * Auto generate consonant-vowel combinations
@@ -146,7 +146,7 @@ VARNAM_EXPORT extern int
 varnam_reverse_transliterate(varnam *handle, const char *input, char **result);
 
 /**
- * Varnam will learn the supplied word. It will also learn all possible ways to write 
+ * Varnam will learn the supplied word. It will also learn all possible ways to write
  * the supplied word.
  *
  * handle            - Valid varnam instance
@@ -166,6 +166,9 @@ varnam_learn(varnam *handle, const char *word);
  *
  * handle            - Valid varnam instance
  * filepath          - file to read from
+ * status            - Instance of vlearn_status struct. Varnam will write status of learning to this.
+ * callback          - Function which will be invoked for each word
+ * object            - Any user data which will be passed in while calling callback
  *
  * RETURN
  *
@@ -174,7 +177,11 @@ varnam_learn(varnam *handle, const char *word);
  * VARNAM_ERROR      - Any other errors
  **/
 VARNAM_EXPORT extern int
-varnam_learn_from_file(varnam *handle, const char *filepath);
+varnam_learn_from_file(varnam *handle,
+                       const char *filepath,
+                       vlearn_status *status,
+                       void (*callback)(varnam *handle, const char *word, int status, void *object),
+                       void *object);
 
 /**
  * Set scheme details. This will overwrite any scheme details set before
@@ -201,7 +208,7 @@ varnam_set_scheme_details(
     const char *display_name,
     const char *author,
     const char *compiled_date
-);
+    );
 
 /**
  * Returns the language code for the current scheme.
@@ -247,7 +254,7 @@ VARNAM_EXPORT extern int
 varnam_set_metadata(
     varnam *handle,
     const char *
-);
+    );
 
 /**
  * Returns error message for the most recent failed call to varnam API functions.
@@ -261,7 +268,7 @@ varnam_get_last_error(varnam *handle);
  *
  * handle     - Valid varnam instance
  * token_type - One among VARNAM_TOKEN_XXX
- * tokens     - Output will be written here. This will be an array of tokens. 
+ * tokens     - Output will be written here. This will be an array of tokens.
  *
  * RETURN
  *
@@ -274,7 +281,7 @@ varnam_get_all_tokens(
     varnam *handle,
     int token_type,
     varray **tokens
-);
+    );
 
 /**
  * Enable logging.
@@ -296,7 +303,7 @@ VARNAM_EXPORT extern int varnam_enable_logging(
     varnam *handle,
     int log_type,
     void (*callback)(const char*)
-);
+    );
 
 /**
  * Writes changes in the buffer to the disk. Calling this function when no buffered data is available will be a no-op
@@ -315,13 +322,13 @@ VARNAM_EXPORT extern int varnam_enable_logging(
  **/
 VARNAM_EXPORT extern int varnam_flush_buffer(
     varnam *handle
-);
+    );
 
 VARNAM_EXPORT extern int varnam_get_info(
     varnam *handle,
     bool detailed,
     vinfo **info
-);
+    );
 
 VARNAM_EXPORT extern int
 varnam_destroy(varnam *handle);

@@ -170,6 +170,7 @@ VARNAM_EXPORT void xfree (void *ptr);
 void set_last_error(varnam *handle, const char *format, ...);
 bool is_utf8(const char *string);
 const char *ZWNJ();
+char *trimwhitespace(char *str);
 
 /* Constants */
 

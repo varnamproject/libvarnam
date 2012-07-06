@@ -16,7 +16,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -26,9 +25,9 @@
 #include "varnam-types.h"
 
 /**
-* substr(str,start,length,output) writes length characters of str beginning with start to substring.
-* start is is 1-indexed and string should be valid UTF8.
-**/
+ * substr(str,start,length,output) writes length characters of str beginning with start to substring.
+ * start is is 1-indexed and string should be valid UTF8.
+ **/
 void
 substr(char *substring, const char *string, int start, int len)
 {
@@ -265,4 +264,24 @@ const char zwnj[] = {'\xe2', '\x80', '\x8c', '\0'};
 const char *ZWNJ()
 {
     return zwnj;
+}
+
+char *trimwhitespace(char *str)
+{
+    char *end;
+
+    /* Trim leading space */
+    while(isspace(*str)) str++;
+
+    if(*str == 0)  /* All spaces? */
+        return str;
+
+    /* Trim trailing space */
+    end = str + strlen(str) - 1;
+    while(end > str && isspace(*end)) end--;
+
+    /* Write new null terminator */
+    *(end+1) = 0;
+
+    return str;
 }

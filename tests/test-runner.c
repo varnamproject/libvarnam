@@ -31,7 +31,8 @@ static struct tests_t tests[] = {
     { "ml-unicode", ml_unicode_transliteration },
     { "ml-unicode-reverse", ml_unicode_reverse_transliteration },
     { "test-vst-file-creation", test_vst_file_creation },
-    {"test-learning", test_varnam_learn }
+    { "test-learning", test_varnam_learn },
+    { "test-learning-from-file", test_varnam_learn_from_file }
 };
 
 #define NO_OF_TESTS (sizeof(tests)/sizeof(tests[0]))
@@ -41,9 +42,9 @@ static int execute_test(int argc, char **argv)
     const char *test_to_execute = argv[0];
     struct tests_t *test = 0;
     unsigned i;
-    for (i = 0; i < NO_OF_TESTS; i++) { 
-	struct tests_t *t  = tests + i;
-	if (strcmp(t->name, test_to_execute) == 0) {
+    for (i = 0; i < NO_OF_TESTS; i++) {
+        struct tests_t *t  = tests + i;
+        if (strcmp(t->name, test_to_execute) == 0) {
             test = t;
             break;
         }
@@ -61,8 +62,8 @@ static int execute_test(int argc, char **argv)
 static void print_all_test_names()
 {
     int i;
-    for (i = 0; i < NO_OF_TESTS; i++) { 
-	struct tests_t *t  = tests + i;
+    for (i = 0; i < NO_OF_TESTS; i++) {
+        struct tests_t *t  = tests + i;
         printf ("%s\n", t->name);
     }
 }

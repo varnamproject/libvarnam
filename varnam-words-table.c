@@ -98,6 +98,33 @@ execute_sql(varnam *handle, sqlite3 *db, const char *sql)
     return VARNAM_SUCCESS;
 }
 
+int
+vwt_start_changes(varnam *handle)
+{
+    int rc;
+
+    assert (v_->known_words);
+    return execute_sql(handle, v_->known_words, "BEGIN;");
+}
+
+int
+vwt_end_changes(varnam *handle)
+{
+    int rc;
+
+    assert (v_->known_words);
+    return execute_sql(handle, v_->known_words, "COMMIT;");
+}
+
+int
+vwt_discard_changes(varnam *handle)
+{
+    int rc;
+
+    assert (v_->known_words);
+    return execute_sql(handle, v_->known_words, "ROLLBACK;");
+}
+
 static int
 learn_pattern (varnam *handle, const char *pattern, sqlite3_int64 word_id)
 {
@@ -135,7 +162,7 @@ learn_word (varnam *handle, const char *word)
 {
     int rc;
     const char *sql = "insert or replace into words (id, word, confidence, learned_on) "
-                      "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date();;";
+        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date();;";
 
     assert (v_->known_words);
 
@@ -295,9 +322,6 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
     /* find all possible combination of tokens */
     possibilities = product_tokens (handle, tokens);
 
-    rc = execute_sql (handle, v_->known_words, "begin;");
-    if (rc) return rc;
-
     rc = learn_word (handle, word);
     if (rc) return rc;
 
@@ -316,15 +340,11 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
 
         rc = learn_pattern (handle, strbuf_to_s (pattern), word_id);
         if (rc) {
-            execute_sql (handle, v_->known_words, "rollback;");
             return rc;
         }
     }
 
     rc = learn_all_substrings (handle, tokens, word);
-    if (rc) return rc;
-
-    rc = execute_sql (handle, v_->known_words, "commit;");
     if (rc) return rc;
 
     return VARNAM_SUCCESS;

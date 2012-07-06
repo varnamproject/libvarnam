@@ -169,4 +169,9 @@ typedef struct varnam_info_t {
     int arrays_in_memory;
 } vinfo;
 
+typedef struct varnam_learn_status_t {
+    int total_words;
+    int failed;
+} vlearn_status;
+
 #endif

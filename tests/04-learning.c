@@ -32,6 +32,56 @@ int starting_and_trailing_special_chars_should_be_removed(varnam *handle)
     return VARNAM_SUCCESS;
 }
 
+static void learn_status(varnam *handle, const char *word, int rc, void *object)
+{
+    if (rc != VARNAM_SUCCESS) {
+        printf ("Error - %s\n", varnam_get_last_error (handle));
+    }
+    else {
+        printf ("Learned %s\n", word);
+    }
+}
+
+int test_varnam_learn_from_file(int argc, char **argv)
+{
+    char *msg;
+    varnam *handle;
+    int rc;
+    vinfo *info;
+    vlearn_status status;
+
+    rc = varnam_init("output/04-learn.vst", &handle, &msg);
+    if (rc != VARNAM_SUCCESS) {
+        printf ("Something failed in init\n");
+        return 1;
+    }
+
+    rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "output/04-learnings-from-file");
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf ("Failed to enable suggestions - %s", varnam_get_last_error (handle));
+        return 1;
+    }
+
+    rc = varnam_learn_from_file (handle, argv[0], &status, &learn_status, NULL);
+    if (rc != VARNAM_SUCCESS) {
+        printf ("Error - %s", varnam_get_last_error (handle));
+    }
+
+    printf ("Total words %d\n", status.total_words);
+    printf ("Failed %d\n", status.failed);
+
+    varnam_get_info (handle, true, &info);
+
+    printf ("No of in memory tokens - %d\n", info->tokens_in_memory);
+    printf ("No of in memory arrays - %d\n", info->arrays_in_memory);
+
+    return 0;
+
+
+}
+
+
 int test_varnam_learn(int argc, char **argv)
 {
     char *msg;

@@ -1,20 +1,20 @@
 /* varnam.c
 
-Copyright (C) 2010 Navaneeth.K.N
+   Copyright (C) 2010 Navaneeth.K.N
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <string.h>
@@ -597,8 +597,8 @@ done:
     return true;
 }
 
-int
-varnam_learn(varnam *handle, const char *word)
+static int
+varnam_learn_internal(varnam *handle, const char *word)
 {
     int rc;
     varray *tokens;
@@ -617,8 +617,6 @@ varnam_learn(varnam *handle, const char *word)
         return VARNAM_ERROR;
     }
 
-    reset_pool (handle);
-
     tokens = get_pooled_tokens (handle);
 
     /* This removes all starting and trailing special characters from the word */
@@ -630,34 +628,75 @@ varnam_learn(varnam *handle, const char *word)
     if (!can_learn_from_tokens (handle, tokens, strbuf_to_s (sanitized_word)))
         return VARNAM_ERROR;
 
-    return vwt_persist_possibilities (handle, 
-                                      tokens, 
+    return vwt_persist_possibilities (handle,
+                                      tokens,
                                       strbuf_to_s (sanitized_word));
 }
 
 int
-varnam_learn_from_file(varnam *handle, const char *filepath)
+varnam_learn(varnam *handle, const char *word)
 {
-    char *inname = "test.txt";
+    int rc;
+
+    reset_pool (handle);
+
+    rc = vwt_start_changes (handle);
+    if (rc != VARNAM_SUCCESS) return rc;
+
+    rc = varnam_learn_internal(handle, word);
+    if (rc != VARNAM_SUCCESS) {
+        vwt_discard_changes (handle);
+        return rc;
+    }
+
+    vwt_end_changes (handle);
+    return VARNAM_SUCCESS;
+}
+
+int
+varnam_learn_from_file(varnam *handle,
+                       const char *filepath,
+                       vlearn_status *status,
+                       void (*callback)(varnam *handle, const char *word, int status_code, void *object),
+                       void *object)
+{
+    int rc;
     FILE *infile;
-    char line_buffer[100000];
-    char line_number;
+    char line_buffer[10000];
+    char *word;
 
-    infile = fopen(inname, "r");
+    infile = fopen(filepath, "r");
     if (!infile) {
-        printf("Couldn't open file %s for reading.\n", inname);
-        return 0;
+        set_last_error (handle, "Couldn't open file '%s' for reading.\n", filepath);
+        return VARNAM_ERROR;
     }
-    printf("Opened file %s for reading.\n", inname);
 
-    line_number = 0;
-    while (fgets(line_buffer, sizeof(line_buffer), infile)) {
-        ++line_number;
-        /* note that the newline is in the buffer */
-        printf("%4d: %s", line_number, line_buffer);
+    if (status != NULL)
+    {
+        status->total_words = 0;
+        status->failed = 0;
     }
-    printf("\nTotal number of lines = %d\n", line_number);
-    return 0;
+
+    rc = vwt_start_changes (handle);
+    if (rc) {
+        fclose (infile);
+        return rc;
+    }
+
+    while (fgets(line_buffer, sizeof(line_buffer), infile))
+    {
+        reset_pool (handle);
+        word = trimwhitespace (line_buffer);
+        rc = varnam_learn_internal (handle, word);
+        if (rc) {
+            if (status != NULL) status->failed++;
+        }
+        if (status   != NULL) status->total_words++;
+        if (callback != NULL) callback (handle, word, rc, object);
+    }
+
+    fclose (infile);
+    return vwt_end_changes (handle);
 }
 
 int
