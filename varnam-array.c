@@ -158,3 +158,30 @@ vpool_free(vpool *pool)
     assert (pool);
     varray_free (pool->array, true);
 }
+
+varray*
+get_pooled_array (varnam *handle)
+{
+    varray *array;
+
+    if (v_->arrays_pool == NULL)
+        v_->arrays_pool = vpool_init ();
+
+    array = vpool_get (v_->arrays_pool);
+    if (array == NULL)
+    {
+        array = varray_init ();
+        vpool_add (v_->arrays_pool, array);
+    }
+
+    varray_clear (array);
+    return array;
+}
+
+void
+reset_pool(varnam *handle)
+{
+    vpool_reset (v_->tokens_pool);
+    vpool_reset (v_->arrays_pool);
+    vpool_reset (v_->strings_pool);
+}

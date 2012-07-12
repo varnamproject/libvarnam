@@ -69,9 +69,10 @@ initialize_internal()
         /* suggestions */
         vi->known_words = NULL;
 
-        /* tokens pool */
+        /* instance pool */
         vi->tokens_pool = NULL;
-        vi->tokens_array_pool = NULL;
+        vi->arrays_pool = NULL;
+        vi->words_pool = NULL;
 
         vi->strings_pool = NULL;
 
@@ -480,13 +481,6 @@ varnam_config(varnam *handle, int type, ...)
     return rc;
 }
 
-static void
-reset_pool(varnam *handle)
-{
-    reset_tokens_pool (handle);
-    vpool_reset (v_->strings_pool);
-}
-
 static char special_chars[] = {'\n', '\t', '\r', ',', '.', '/', '<', '>', '?', ';', '\'', ':',
                                '"', '[', ']', '{', '}', '~', '`', '!', '@', '#', '$', '%', '^',
                                '&', '*', '(', ')', '-', '_', '+', '=', '\\', '|', ' '};
@@ -617,7 +611,7 @@ varnam_learn_internal(varnam *handle, const char *word)
         return VARNAM_ERROR;
     }
 
-    tokens = get_pooled_tokens (handle);
+    tokens = get_pooled_array (handle);
 
     /* This removes all starting and trailing special characters from the word */
     sanitized_word = sanitize_word (handle, word);
@@ -709,7 +703,7 @@ varnam_get_info (varnam *handle, bool detailed, vinfo **info)
     i->words = 0;
 
     i->tokens_in_memory = varray_length (v_->tokens_pool->array);
-    i->arrays_in_memory = varray_length (v_->tokens_array_pool->array);
+    i->arrays_in_memory = varray_length (v_->arrays_pool->array);
 
     *info = i;
 

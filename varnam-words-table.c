@@ -101,8 +101,6 @@ execute_sql(varnam *handle, sqlite3 *db, const char *sql)
 int
 vwt_start_changes(varnam *handle)
 {
-    int rc;
-
     assert (v_->known_words);
     return execute_sql(handle, v_->known_words, "BEGIN;");
 }
@@ -110,8 +108,6 @@ vwt_start_changes(varnam *handle)
 int
 vwt_end_changes(varnam *handle)
 {
-    int rc;
-
     assert (v_->known_words);
     return execute_sql(handle, v_->known_words, "COMMIT;");
 }
@@ -119,8 +115,6 @@ vwt_end_changes(varnam *handle)
 int
 vwt_discard_changes(varnam *handle)
 {
-    int rc;
-
     assert (v_->known_words);
     return execute_sql(handle, v_->known_words, "ROLLBACK;");
 }
@@ -260,7 +254,7 @@ get_exact_matches (varnam *handle, varray *tokens)
     varray *array, *exact_matches;
     vtoken *tok;
 
-    exact_matches = get_pooled_tokens (handle);
+    exact_matches = get_pooled_array (handle);
     for (i = 0; i < varray_length (tokens); i++)
     {
         array = varray_get (tokens, i);

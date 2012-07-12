@@ -25,6 +25,44 @@
 #include "varnam-types.h"
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
+#include "varnam-array.h"
+
+static void
+initialize_word(vword *word, const char *text, int confidence)
+{
+    assert (word);
+    
+    word->text       = text;
+    word->confidence = confidence;
+}
+
+static vword*
+Word(const char *text, int confidence)
+{
+    vword *word = xmalloc (sizeof (vword));
+    initialize_word (word, text, confidence);
+    return word;
+}
+
+static vword*
+get_pooled_word(varnam *handle, const char *text, int confidence)
+{
+    vword *word;
+    
+    if (v_->words_pool == NULL)
+        v_->words_pool = vpool_init ();
+
+    word = vpool_get (v_->words_pool);
+    if (word == NULL)
+    {
+        word = Word (text, confidence);
+        vpool_add (v_->words_pool, word);
+    }
+    else
+        initialize_word (word, text, confidence);
+
+    return word;
+}
 
 struct varnam_token_rendering*
 get_additional_rendering_rule(varnam *handle)
@@ -49,93 +87,128 @@ get_additional_rendering_rule(varnam *handle)
     return NULL;
 }
 
-static void 
-resolve_token(varnam *handle,
-              struct token *match,
-              struct strbuf *string)
-{   
-    const char *virama = NULL;
-    struct varnam_token_rendering *rule;
-    int rc;
-    char zwnj[] = {'\xe2', '\x80', '\x8c', '\0'};
+static varray *get_required_tokens (varnam *handle, varray *tokens)
+{
+    int i, j;
+    varray *array = 0, *result;
+    vtoken *token;
 
-    assert(handle);
-    assert(match);
-    assert(string);
-
-    /* will be fixed later */
-    /* if(handle->internal->virama[0] == '\0') { */
-    /*     fill_general_values(handle, handle->internal->virama, "virama"); */
-    /* } */
-
-    virama = handle->internal->virama;
-
-    rule = get_additional_rendering_rule(handle);
-    if(rule != NULL) {
-        rc = rule->render(handle, match, string);
-        if(rc == VARNAM_SUCCESS) {
-            return;
-        }
-    }
-
-    if(strcmp(match->value1, handle->internal->virama) == 0) {
-        /* we are resolving a virama. If the output ends with a virama already, add a 
-           ZWNJ to it, so that following character will not be combined.
-           if output not ends with virama, add a virama and ZWNJ */
-        if(strbuf_endswith (string, virama)) {
-            strbuf_add (string, zwnj);
-        }
-        else {            
-            strbuf_add (string, virama);
-            strbuf_add (string, zwnj);
-        }
-        return;
-    }
-
-    if(match->type == VARNAM_TOKEN_VOWEL)
+    result = get_pooled_array (handle);
+    for (i = 0; i < varray_length (tokens); i++)
     {
-        if(strbuf_endswith(string, virama)) {
-            /* removing the virama and adding dependent vowel value */
-            strbuf_remove_from_last(string, virama);
-            if(match->value2[0] != '\0') {
-                strbuf_add(string, match->value2);
+        array = varray_get (tokens, i);
+        for (j = 0; j < varray_length (array); j++)
+        {
+            token = varray_get (array, j);
+            if (token->match_type == VARNAM_MATCH_EXACT) {
+                varray_push (result, token);
+                break;
             }
         }
-        else if(handle->internal->last_token_available) {
-            strbuf_add(string, match->value2);
+    }
+
+    return result;
+}
+
+/* Resolves the tokens. 
+ * tokens will be a multidimensional array where each array contains vtoken instances
+ */
+static int 
+resolve_tokens(varnam *handle,
+               varray *tokens,
+               varray *words)
+{
+    vtoken *virama, *token, *previous;
+    strbuf *string;
+    struct varnam_token_rendering *rule;
+    int rc, i;
+    varray *tokens_to_work;
+    vword *word;
+
+    assert(handle);
+
+    tokens_to_work = get_required_tokens (handle, tokens);
+    rc = vst_get_virama (handle, &virama);
+    if (rc)
+        return rc;
+
+    /* will be fixed after implementing register_renderer() */
+    /* rule = get_additional_rendering_rule(handle); */
+    /* if(rule != NULL) { */
+    /*     rc = rule->render(handle, match, string); */
+    /*     if(rc == VARNAM_SUCCESS) { */
+    /*         return; */
+    /*     } */
+    /* } */
+
+    string = get_pooled_string (handle);
+    for(i = 0; i < varray_length(tokens_to_work); i++)
+    {
+        token = varray_get (tokens_to_work, i);
+        if (token->type == VARNAM_TOKEN_VIRAMA) 
+        {
+            /* we are resolving a virama. If the output ends with a virama already, add a 
+               ZWNJ to it, so that following character will not be combined.
+               if output not ends with virama, add a virama and ZWNJ */
+            if(strbuf_endswith (string, virama->value1)) {
+                strbuf_add (string, ZWNJ());
+            }
+            else {            
+                strbuf_add (string, virama->value1);
+                strbuf_add (string, ZWNJ());
+            }
+        }
+        else if(token->type == VARNAM_TOKEN_VOWEL)
+        {
+            if(strbuf_endswith(string, virama->value1)) {
+                /* removing the virama and adding dependent vowel value */
+                strbuf_remove_from_last(string, virama->value1);
+                if(token->value2[0] != '\0') {
+                    strbuf_add(string, token->value2);
+                }
+            }
+            else if(previous != NULL) {
+                strbuf_add(string, token->value2);
+            }
+            else {
+                strbuf_add(string, token->value1);
+            }
         }
         else {
-            strbuf_add(string, match->value1);
+            strbuf_add(string, token->value1);
         }
+
+        previous = token;
     }
-    else {
-        strbuf_add(string, match->value1);
-    }
+
+    word = get_pooled_word (handle, strbuf_to_s (string), 1);
+    varray_push (words, word);
+    return VARNAM_SUCCESS;
 }
 
-static void
-set_last_token(varnam *handle, struct token *tok)
-{
-    struct varnam_internal *vi;
-    vi = handle->internal;
+/* static void */
+/* set_last_token(varnam *handle, struct token *tok) */
+/* { */
+/*     struct varnam_internal *vi; */
+/*     vi = handle->internal; */
 
-    if(tok == NULL) {
-        vi->last_token_available = 0;
-        return;
-    }
+/*     if(tok == NULL) { */
+/*         vi->last_token_available = 0; */
+/*         return; */
+/*     } */
 
-    if(vi->last_token == NULL) {
-        vi->last_token = (struct token *) xmalloc(sizeof (struct token));
-        assert(vi->last_token);
-    }
+/*     if(vi->last_token == NULL) { */
+/*         vi->last_token = (struct token *) xmalloc(sizeof (struct token)); */
+/*         assert(vi->last_token); */
+/*     } */
 
-    vi->last_token->type = tok->type;
-    strncpy (vi->last_token->pattern, tok->pattern, VARNAM_SYMBOL_MAX);
-    strncpy (vi->last_token->value1, tok->value1, VARNAM_SYMBOL_MAX);
-    strncpy (vi->last_token->value2, tok->value2, VARNAM_SYMBOL_MAX);
-    vi->last_token->children = tok->children;
-    vi->last_token_available = 1;
-}
+/*     vi->last_token->type = tok->type; */
+/*     strncpy (vi->last_token->pattern, tok->pattern, VARNAM_SYMBOL_MAX); */
+/*     strncpy (vi->last_token->value1, tok->value1, VARNAM_SYMBOL_MAX); */
+/*     strncpy (vi->last_token->value2, tok->value2, VARNAM_SYMBOL_MAX); */
+/*     vi->last_token->children = tok->children; */
+/*     vi->last_token_available = 1; */
+/* } */
 
 
 static void
@@ -163,57 +236,57 @@ set_last_rtl_token(varnam *handle, struct token *tok)
 }
 
 
-static int 
-tokenize(varnam *handle, 
-         const char *input, 
-         struct strbuf *string)
-{
-    const char *text,  *remaining;
-    int matchpos = 0, counter = 0;
-    struct varnam_internal *vi;       
-    struct strbuf *lookup;
-    struct token *temp = NULL, *last = NULL;
+/* static int  */
+/* tokenize(varnam *handle,  */
+/*          const char *input,  */
+/*          struct strbuf *string) */
+/* { */
+/*     const char *text,  *remaining; */
+/*     int matchpos = 0, counter = 0; */
+/*     struct varnam_internal *vi;        */
+/*     struct strbuf *lookup; */
+/*     struct token *temp = NULL, *last = NULL; */
 
-    vi = handle->internal;
-    lookup = vi->lookup;
+/*     vi = handle->internal; */
+/*     lookup = vi->lookup; */
 
-    text = input;
-    while( *text != '\0' ) 
-    {
-        strbuf_addc( lookup, *text );
-        ++counter;
+/*     text = input; */
+/*     while( *text != '\0' )  */
+/*     { */
+/*         strbuf_addc( lookup, *text ); */
+/*         ++counter; */
 
-        temp = find_token( handle, lookup->buffer );
-        if (temp) {
-            last = temp;
-            matchpos = counter;
-            if( last->children <= 0 ) break;
-        }
-        else if( !can_find_token( handle, last, lookup->buffer )) { 
-            break;
-        }
-        ++text;
-    }
+/*         temp = find_token( handle, lookup->buffer ); */
+/*         if (temp) { */
+/*             last = temp; */
+/*             matchpos = counter; */
+/*             if( last->children <= 0 ) break; */
+/*         } */
+/*         else if( !can_find_token( handle, last, lookup->buffer )) {  */
+/*             break; */
+/*         } */
+/*         ++text; */
+/*     } */
 
-    if (last) 
-    {
-        resolve_token(handle, last, string);
-        remaining = input + matchpos;
-        set_last_token (handle, last);
-    }
-    else {
-        if(lookup->buffer[0] != '_')
-            strbuf_addc( string, lookup->buffer[0] );
-        remaining = input + 1;
-        set_last_token (handle, NULL);
-    }
+/*     if (last)  */
+/*     { */
+/*         resolve_token(handle, last, string); */
+/*         remaining = input + matchpos; */
+/*         set_last_token (handle, last); */
+/*     } */
+/*     else { */
+/*         if(lookup->buffer[0] != '_') */
+/*             strbuf_addc( string, lookup->buffer[0] ); */
+/*         remaining = input + 1; */
+/*         set_last_token (handle, NULL); */
+/*     } */
 
-    strbuf_clear (lookup);
-    if( strlen( remaining ) > 0 )
-        return tokenize( handle, remaining, string );
+/*     strbuf_clear (lookup); */
+/*     if( strlen( remaining ) > 0 ) */
+/*         return tokenize( handle, remaining, string ); */
 
-    return VARNAM_SUCCESS;
-}
+/*     return VARNAM_SUCCESS; */
+/* } */
 
 static void 
 cleanup(varnam *handle)
@@ -225,22 +298,28 @@ cleanup(varnam *handle)
 }
 
 int 
-varnam_transliterate(varnam *handle, 
-                         const char *input, 
-                         char **output)
+varnam_transliterate(varnam *handle, const char *input, varray **output)
 {
     int rc;
-    struct strbuf *result;
+    varray *words = 0, *tokens = 0;
     
     if(handle == NULL || input == NULL)
-        return VARNAM_MISUSE;
+        return VARNAM_ARGS_ERROR;
 
-    cleanup(handle);
-    result = handle->internal->output;
-    rc = tokenize( handle, input, result );
-    *output = result->buffer;
+    reset_pool(handle);
 
-    return rc;
+    tokens = get_pooled_array (handle);
+    rc = vst_tokenize (handle, input, VARNAM_TOKENIZER_PATTERN, tokens);
+    if (rc)
+        return rc;
+
+    words = get_pooled_array (handle);
+    rc = resolve_tokens (handle, tokens, words);
+    if (rc)
+        return rc;
+
+    *output = words;
+    return VARNAM_SUCCESS;
 }
 
 static void 

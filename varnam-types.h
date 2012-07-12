@@ -70,7 +70,6 @@ struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
 struct token;
-struct word;
 struct vpool_t;
 
 struct varnam_internal
@@ -111,11 +110,11 @@ struct varnam_internal
     int config_use_dead_consonants;
     int config_ignore_duplicate_tokens;
 
-    /* token pool */
+    /* instance pools */
     struct vpool_t *tokens_pool;
-    struct vpool_t *tokens_array_pool;
-
+    struct vpool_t *arrays_pool;
     struct vpool_t *strings_pool;
+    struct vpool_t *words_pool;
 
     struct varray_t *tokens;
 
@@ -173,5 +172,10 @@ typedef struct varnam_learn_status_t {
     int total_words;
     int failed;
 } vlearn_status;
+
+typedef struct varnam_word_t {
+    const char *text;
+    int confidence;
+} vword;
 
 #endif

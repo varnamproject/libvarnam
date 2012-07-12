@@ -22,11 +22,13 @@
 
 #include <stddef.h>
 #include <stdarg.h>
-#include "varnam-types.h"
 
 typedef int bool;
 #define false 0
 #define true  1
+
+#include "varnam-array.h"
+#include "varnam-types.h"
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 

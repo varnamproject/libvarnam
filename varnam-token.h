@@ -37,12 +37,6 @@ get_pooled_token (
     const char* value2,
     const char* tag);
 
-varray*
-get_pooled_tokens (varnam *handle);
-
-void
-reset_tokens_pool (varnam *handle);
-
 varray* 
 product_tokens(varnam *handle, varray *tokens);
 

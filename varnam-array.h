@@ -19,6 +19,7 @@
 #ifndef VARNAM_ARRAY_H_INCLUDED_0924
 #define VARNAM_ARRAY_H_INCLUDED_0924
 
+#include "varnam-types.h"
 #include "varnam-util.h"
 
 /**
@@ -84,5 +85,11 @@ vpool_reset(vpool *pool);
  **/
 void
 vpool_free(vpool *pool);
+
+varray*
+get_pooled_array (varnam *handle);
+
+void
+reset_pool(varnam *handle);
 
 #endif

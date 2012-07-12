@@ -23,64 +23,64 @@ actual characters in the supported languages */
 #include <string.h>
 #include "../varnam.h"
 
-static int rendering_vowels(varnam *handle)
-{
-    char *output;
+/* static int rendering_vowels(varnam *handle) */
+/* { */
+/*     varray *words; */
 
-    varnam_transliterate(handle, "oof", &output);
-    printf("%s\n", output);
-    if(strcmp(output, "v-oof~") == 0) 
-        return 0;
-    return 1;
-}
+/*     varnam_transliterate(handle, "oof", &output); */
+/*     printf("%s\n", output); */
+/*     if(strcmp(output, "v-oof~") == 0)  */
+/*         return 0; */
+/*     return 1; */
+/* } */
 
-static int rendering_dependent_vowels(varnam *handle)
-{
-    char *output;
+/* static int rendering_dependent_vowels(varnam *handle) */
+/* { */
+/*     char *output; */
 
-    varnam_transliterate(handle, "foo", &output);
-    printf("%s\n", output);
-    if(strcmp(output, "fdv-oo") == 0) 
-        return 0;
-    return 1;
-}
+/*     varnam_transliterate(handle, "foo", &output); */
+/*     printf("%s\n", output); */
+/*     if(strcmp(output, "fdv-oo") == 0)  */
+/*         return 0; */
+/*     return 1; */
+/* } */
 
-static void log_fun(const char* msg)
-{
-    printf("%s\n", msg);
-}
+/* static void log_fun(const char* msg) */
+/* { */
+/*     printf("%s\n", msg); */
+/* } */
 
 int basic_transliteration(int argc, char **argv)
 {
-    varnam *handle;
-    int rc;
-    char *msg;
+    /* varnam *handle; */
+    /* int rc; */
+    /* char *msg; */
 
-    if(argc == 0) {
-        printf("no scheme file specified\n");
-        return 1;
-    }
-    printf("%s\n", argv[0]);
-    rc = varnam_init(argv[0], &handle, &msg);
-    if(rc != VARNAM_SUCCESS) {
-        printf("initialization failed - %s\n", msg);
-        return 1;
-    }
+    /* if(argc == 0) { */
+    /*     printf("no scheme file specified\n"); */
+    /*     return 1; */
+    /* } */
+    /* printf("%s\n", argv[0]); */
+    /* rc = varnam_init(argv[0], &handle, &msg); */
+    /* if(rc != VARNAM_SUCCESS) { */
+    /*     printf("initialization failed - %s\n", msg); */
+    /*     return 1; */
+    /* } */
 
-    rc = varnam_enable_logging(handle, VARNAM_LOG_DEBUG, &log_fun);
-    printf("Return code is %d", rc);
+    /* rc = varnam_enable_logging(handle, VARNAM_LOG_DEBUG, &log_fun); */
+    /* printf("Return code is %d", rc); */
 
-    rc = rendering_vowels(handle);
-    if(rc != VARNAM_SUCCESS) {
-        printf("rendering dependent vowels is not proper - \n");
-        return 1;
-    }
+    /* rc = rendering_vowels(handle); */
+    /* if(rc != VARNAM_SUCCESS) { */
+    /*     printf("rendering dependent vowels is not proper - \n"); */
+    /*     return 1; */
+    /* } */
 
-    rc = rendering_dependent_vowels(handle);
-    if(rc != VARNAM_SUCCESS) {
-        printf("rendering dependent vowels is not proper - \n");
-        return 1;
-    }
+    /* rc = rendering_dependent_vowels(handle); */
+    /* if(rc != VARNAM_SUCCESS) { */
+    /*     printf("rendering dependent vowels is not proper - \n"); */
+    /*     return 1; */
+    /* } */
 
     return 0;
 }

@@ -808,7 +808,7 @@ can_find_more_matches(varnam *handle, struct strbuf *lookup, int tokenize_using,
         if (v_->can_find_more_matches_using_pattern == NULL)
         {
             rc = sqlite3_prepare_v2( v_->db, "select count(pattern) as cnt from symbols where pattern like ?1;",
-                                     -1, &v_->can_find_more_matches_using_value, NULL );
+                                     -1, &v_->can_find_more_matches_using_pattern, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to prepare query for possible tokens detection : %s", sqlite3_errmsg(v_->db));
                 return VARNAM_ERROR;
@@ -841,7 +841,6 @@ can_find_more_matches(varnam *handle, struct strbuf *lookup, int tokenize_using,
         }
     }
 
-    sqlite3_clear_bindings (stmt);
     sqlite3_reset (stmt);
 
     return VARNAM_SUCCESS;;
@@ -870,7 +869,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *res
         strbuf_add_bytes (lookup, input, bytes_read);
 
         if (tokens == NULL)
-            tokens = get_pooled_tokens (handle);
+            tokens = get_pooled_array (handle);
 
         rc = read_all_tokens_and_add_to_array (handle, strbuf_to_s (lookup), tokenize_using, tokens, &tokens_available);
         if (rc) return rc;

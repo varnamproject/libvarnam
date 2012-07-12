@@ -31,7 +31,8 @@ int ml_unicode_transliteration(int argc, char **argv)
     varnam *handle;
     int rc;
     char *msg;
-    char *output;
+    varray *words;
+    vword *word;
     FILE *fp;   
     char line[LINE_MAX];
     char *part1, *part2;
@@ -65,14 +66,15 @@ int ml_unicode_transliteration(int argc, char **argv)
         part1 = strtok(line, " ");
         part2 = strtok(NULL, "\n");
                    
-        rc = varnam_transliterate(handle, part1, &output);
+        rc = varnam_transliterate(handle, part1, &words);
         if(rc != VARNAM_SUCCESS) {
             printf("transliteration of %s failed  - \n", part1);
             return 1;
         }            
 
-        if(strcmp(output, part2) != 0) {
-            printf("transliterating %s - expected %s, but was %s\n", part1, part2, output);
+        word = varray_get (words, 0);
+        if(strcmp(word->text, part2) != 0) {
+            printf("transliterating %s - expected %s, but was %s\n", part1, part2, word->text);
             return 1;
         }        
     }
@@ -89,61 +91,61 @@ int ml_unicode_transliteration(int argc, char **argv)
 
 int ml_unicode_reverse_transliteration(int argc, char **argv)
 {
-    varnam *handle;
-    int rc;
-    char *msg;
-    char *output;
-    FILE *fp;   
-    char line[LINE_MAX];
-    char *part1, *part2;
+    /* varnam *handle; */
+    /* int rc; */
+    /* char *msg; */
+    /* char *output; */
+    /* FILE *fp;    */
+    /* char line[LINE_MAX]; */
+    /* char *part1, *part2; */
 
-    if(argc == 0) {
-        printf("no scheme file specified\n");
-        return 1;
-    }
-    else if(argc == 1) {
-        printf("no input file specified\n");
-        return 1;
-    }
-    printf("%s\n", argv[0]);
-    printf("%s\n", argv[1]);
+    /* if(argc == 0) { */
+    /*     printf("no scheme file specified\n"); */
+    /*     return 1; */
+    /* } */
+    /* else if(argc == 1) { */
+    /*     printf("no input file specified\n"); */
+    /*     return 1; */
+    /* } */
+    /* printf("%s\n", argv[0]); */
+    /* printf("%s\n", argv[1]); */
 
-    rc = varnam_init(argv[0], &handle, &msg);
-    if(rc != VARNAM_SUCCESS) {
-        printf("initialization failed - %s\n", msg);
-        return 1;
-    }
+    /* rc = varnam_init(argv[0], &handle, &msg); */
+    /* if(rc != VARNAM_SUCCESS) { */
+    /*     printf("initialization failed - %s\n", msg); */
+    /*     return 1; */
+    /* } */
 
-    /* reads input from the supplied file and matches it with the expected string */
-    fp = fopen(argv[1], "r");
-    if(fp == NULL) {
-        printf("can't open input file\n");
-        return 1;
-    }
+    /* /\* reads input from the supplied file and matches it with the expected string *\/ */
+    /* fp = fopen(argv[1], "r"); */
+    /* if(fp == NULL) { */
+    /*     printf("can't open input file\n"); */
+    /*     return 1; */
+    /* } */
 
-    while(fgets(line, LINE_MAX, fp) != NULL) 
-    {
-        part1 = strtok(line, " ");
-        part2 = strtok(NULL, "\n");
+    /* while(fgets(line, LINE_MAX, fp) != NULL)  */
+    /* { */
+    /*     part1 = strtok(line, " "); */
+    /*     part2 = strtok(NULL, "\n"); */
                    
-        rc = varnam_reverse_transliterate(handle, part1, &output);
-        if(rc != VARNAM_SUCCESS) {
-            printf("reverse transliteration of %s failed  - \n", part1);
-            return 1;
-        }            
+    /*     rc = varnam_reverse_transliterate(handle, part1, &output); */
+    /*     if(rc != VARNAM_SUCCESS) { */
+    /*         printf("reverse transliteration of %s failed  - \n", part1); */
+    /*         return 1; */
+    /*     }             */
 
-        if(strcmp(output, part2) != 0) {
-            printf("reverse transliterating %s - expected %s, but was %s\n", part1, part2, output);
-            return 1;
-        }        
-    }
+    /*     if(strcmp(output, part2) != 0) { */
+    /*         printf("reverse transliterating %s - expected %s, but was %s\n", part1, part2, output); */
+    /*         return 1; */
+    /*     }         */
+    /* } */
 
-    fclose(fp);
-    rc = varnam_destroy(handle);
-    if(rc != VARNAM_SUCCESS) {
-        printf("destruction failed\n");
-        return 1;
-    }
+    /* fclose(fp); */
+    /* rc = varnam_destroy(handle); */
+    /* if(rc != VARNAM_SUCCESS) { */
+    /*     printf("destruction failed\n"); */
+    /*     return 1; */
+    /* } */
 
     return 0;
 }

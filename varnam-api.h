@@ -140,7 +140,7 @@ VARNAM_EXPORT extern int
 varnam_generate_cv_combinations(varnam* handle);
 
 VARNAM_EXPORT extern int
-varnam_transliterate(varnam *handle, const char *input, char **result);
+varnam_transliterate(varnam *handle, const char *input, varray **output);
 
 VARNAM_EXPORT extern int
 varnam_reverse_transliterate(varnam *handle, const char *input, char **result);

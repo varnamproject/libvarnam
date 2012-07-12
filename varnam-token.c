@@ -86,32 +86,6 @@ get_pooled_token (
     return tok;
 }
 
-varray*
-get_pooled_tokens (varnam *handle)
-{
-    varray *array;
-
-    if (v_->tokens_array_pool == NULL)
-        v_->tokens_array_pool = vpool_init ();
-
-    array = vpool_get (v_->tokens_array_pool);
-    if (array == NULL)
-    {
-        array = varray_init ();
-        vpool_add (v_->tokens_array_pool, array);
-    }
-
-    varray_clear (array);
-    return array;
-}
-
-void
-reset_tokens_pool (varnam *handle)
-{
-    vpool_reset (v_->tokens_pool);
-    vpool_reset (v_->tokens_array_pool);
-}
-
 varray* 
 product_tokens(varnam *handle, varray *tokens)
 {
@@ -120,14 +94,14 @@ product_tokens(varnam *handle, varray *tokens)
 
     array_cnt = varray_length (tokens);
     offsets = xmalloc(sizeof(int) * (size_t) array_cnt);
-    product = get_pooled_tokens (handle);
+    product = get_pooled_array (handle);
 
     varray_clear (product);
     for (i = 0; i < array_cnt; i++) offsets[i] = 0;
 
     for (;;)
     {
-        array = get_pooled_tokens (handle);
+        array = get_pooled_array (handle);
         for (i = 0; i < array_cnt; i++) {
             tmp = varray_get (tokens, i);
             varray_push (array, varray_get (tmp, offsets[i]));
