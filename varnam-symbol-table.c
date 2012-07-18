@@ -497,7 +497,7 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
         rc = sqlite3_step( stmt );
         if( rc == SQLITE_ROW )
         {
-            tok = get_pooled_token (handle, (int) sqlite3_column_int(stmt, 0), 
+            tok = get_pooled_token (handle, (int) sqlite3_column_int(stmt, 0),
                                     (int) sqlite3_column_int(stmt, 1),
                                     (int) sqlite3_column_int(stmt, 2),
                                     (const char*) sqlite3_column_text(stmt, 3),
@@ -722,7 +722,8 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **st
     case VARNAM_TOKENIZER_PATTERN:
         if (v_->tokenize_using_pattern == NULL)
         {
-            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where pattern = ?1;", -1, &v_->tokenize_using_pattern, NULL );
+            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where pattern = ?1 and match_type = 1;",
+                                     -1, &v_->tokenize_using_pattern, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
                 return VARNAM_ERROR;

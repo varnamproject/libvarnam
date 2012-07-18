@@ -46,6 +46,9 @@ varray_init();
 void
 varray_push(varray *array, void *data);
 
+void
+varray_remove_at(varray *array, int index);
+
 int
 varray_length(varray *array);
 

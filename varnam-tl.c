@@ -26,6 +26,7 @@
 #include "varnam-result-codes.h"
 #include "varnam-symbol-table.h"
 #include "varnam-array.h"
+#include "varnam-token.h"
 
 static void
 initialize_word(vword *word, const char *text, int confidence)
@@ -87,47 +88,21 @@ get_additional_rendering_rule(varnam *handle)
     return NULL;
 }
 
-static varray *get_required_tokens (varnam *handle, varray *tokens)
-{
-    int i, j;
-    varray *array = 0, *result;
-    vtoken *token;
-
-    result = get_pooled_array (handle);
-    for (i = 0; i < varray_length (tokens); i++)
-    {
-        array = varray_get (tokens, i);
-        for (j = 0; j < varray_length (array); j++)
-        {
-            token = varray_get (array, j);
-            if (token->match_type == VARNAM_MATCH_EXACT) {
-                varray_push (result, token);
-                break;
-            }
-        }
-    }
-
-    return result;
-}
-
 /* Resolves the tokens. 
- * tokens will be a multidimensional array where each array contains vtoken instances
+ * tokens will be a single dimensional array where each item is vtoken instances
  */
 static int 
 resolve_tokens(varnam *handle,
                varray *tokens,
-               varray *words)
+               vword **word)
 {
     vtoken *virama, *token, *previous;
     strbuf *string;
     struct varnam_token_rendering *rule;
     int rc, i;
-    varray *tokens_to_work;
-    vword *word;
 
     assert(handle);
 
-    tokens_to_work = get_required_tokens (handle, tokens);
     rc = vst_get_virama (handle, &virama);
     if (rc)
         return rc;
@@ -142,9 +117,9 @@ resolve_tokens(varnam *handle,
     /* } */
 
     string = get_pooled_string (handle);
-    for(i = 0; i < varray_length(tokens_to_work); i++)
+    for(i = 0; i < varray_length(tokens); i++)
     {
-        token = varray_get (tokens_to_work, i);
+        token = varray_get (tokens, i);
         if (token->type == VARNAM_TOKEN_VIRAMA) 
         {
             /* we are resolving a virama. If the output ends with a virama already, add a 
@@ -181,8 +156,7 @@ resolve_tokens(varnam *handle,
         previous = token;
     }
 
-    word = get_pooled_word (handle, strbuf_to_s (string), 1);
-    varray_push (words, word);
+    *word = get_pooled_word (handle, strbuf_to_s (string), 1);
     return VARNAM_SUCCESS;
 }
 
@@ -297,27 +271,56 @@ cleanup(varnam *handle)
     handle->internal->last_rtl_token_available = 0;
 }
 
+/* Flattens the multi dimensional array all_tokens */
+static varray*
+flatten(varnam *handle, varray *all_tokens)
+{
+    int i, j;
+    varray *tmp;
+    vtoken *token;
+    varray *tokens = get_pooled_array (handle);
+
+    for (i = 0; i < varray_length (all_tokens); i++)
+    {
+        tmp = varray_get (all_tokens, i);
+        for (j = 0; j < varray_length (tmp); j++)
+        {
+            token = varray_get (tmp, j);
+            varray_push (tokens, token);
+        }
+    }
+
+    return tokens;
+}
+
 int 
 varnam_transliterate(varnam *handle, const char *input, varray **output)
 {
     int rc;
     varray *words = 0, *tokens = 0;
+    varray *all_tokens = 0; /* This will be multidimensional array */
+    vword *word;
     
     if(handle == NULL || input == NULL)
         return VARNAM_ARGS_ERROR;
 
     reset_pool(handle);
 
-    tokens = get_pooled_array (handle);
-    rc = vst_tokenize (handle, input, VARNAM_TOKENIZER_PATTERN, tokens);
+    all_tokens = get_pooled_array (handle);
+    rc = vst_tokenize (handle, input, VARNAM_TOKENIZER_PATTERN, all_tokens);
     if (rc)
         return rc;
 
-    words = get_pooled_array (handle);
-    rc = resolve_tokens (handle, tokens, words);
+    /* all_tokens will be a multidimensional array. Flattening it before resolving */
+    tokens = flatten (handle, all_tokens);
+    rc = resolve_tokens (handle, tokens, &word);
     if (rc)
         return rc;
 
+    if (words == NULL) {
+        words = get_pooled_array (handle);
+    }
+    varray_push (words, word);
     *output = words;
     return VARNAM_SUCCESS;
 }

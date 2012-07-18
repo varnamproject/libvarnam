@@ -53,6 +53,24 @@ varray_push(varray *array, void *data)
     array->used = array->used + size;
 }
 
+void
+varray_remove_at(varray *array, int index)
+{
+    int i, len;
+
+    if (index < 0 || index > array->index)
+        return;
+
+    len = varray_length(array);
+    for(i = index; (i + 1) < len; i++)
+    {
+        array->memory[index] = array->memory[index + 1];
+    }
+
+    array->used = array->used - sizeof(void*);
+    array->index--;
+}
+
 int
 varray_length(varray *array)
 {
