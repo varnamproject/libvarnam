@@ -173,6 +173,7 @@ void set_last_error(varnam *handle, const char *format, ...);
 bool is_utf8(const char *string);
 const char *ZWNJ();
 char *trimwhitespace(char *str);
+bool is_special_character(char c);
 
 /* Constants */
 

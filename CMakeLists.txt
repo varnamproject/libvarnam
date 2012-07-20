@@ -24,7 +24,7 @@ IF(MSVC)
 ENDIF()
 
 add_definitions(-DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF -DNEED_ASPRINTF)
-    
+
 # Append the source files here
 list (APPEND VARNAM_SOURCES
   varnam-util.c
@@ -35,17 +35,20 @@ list (APPEND VARNAM_SOURCES
   varnam-words-table.c
   varnam-array.c
   varnam-token.c
+  vword.c
+  learn.c
+  rendering.c
   rendering/ml_unicode.c
   varnam.c
   )
 
 # Append the header files here. this will get copied to include directory
 list (APPEND VARNAM_INCLUDE_FILES
-  varnam.h  
-  varnam-api.h  
-  varnam-result-codes.h  
-  varnam-trie.h  
-  varnam-types.h  
+  varnam.h
+  varnam-api.h
+  varnam-result-codes.h
+  varnam-trie.h
+  varnam-types.h
   varnam-util.h
   varnam-symbol-table.h
   )
@@ -55,12 +58,12 @@ add_subdirectory(foreign)
 
 # Build tests
 add_subdirectory(tests)
-        
-# Create a shared library libvarnam     
+
+# Create a shared library libvarnam
 add_library (${VARNAM_LIBRARY_NAME} SHARED ${VARNAM_SOURCES})
 
-SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES 
-                                             VERSION ${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH} 
+SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
+                                             VERSION ${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
@@ -76,6 +79,6 @@ IF(MSVC)
         target_link_libraries(${VARNAM_LIBRARY_NAME} ${FOREIGN_LIBRARY_NAME})
 ENDIF()
 
-add_custom_target(vstfiles 
+add_custom_target(vstfiles
                            COMMAND varnam-cli compile vsf/ml-unicode.vsf
                            COMMAND varnam-cli compile tests/td-01.vsf)

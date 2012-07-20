@@ -24,13 +24,13 @@
 
 int strbuf_formatted_strings()
 {
+    const char *expected = "Character a, Integer 10, String Navaneeth";
     struct strbuf *buffer = strbuf_init(100);
-    strbuf_addf(buffer, "Character %c, Integer %d, String %s\n", 'a', 10, "Navaneth");
-    printf("%s", buffer->buffer);
+    strbuf_addf(buffer, "Character %c, Integer %d, String %s", 'a', 10, "Navaneeth");
 
-    if (strcmp("Character a, Integer 10, String Navaneth\n", buffer->buffer) != 0)
+    if (strcmp(expected, strbuf_to_s (buffer)) != 0)
     {
-        printf ("Formatting is incorrect");
+        printf ("Incorrect formatting. Expected '%s', but was '%s'\n", expected, strbuf_to_s(buffer));
         return 1;
     }
 

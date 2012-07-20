@@ -20,6 +20,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "varnam-util.h"
 #include "varnam-types.h"
@@ -284,5 +285,21 @@ char *trimwhitespace(char *str)
     *(end+1) = 0;
 
     return str;
+}
+
+static char special_chars[] = {'\n', '\t', '\r', ',', '.', '/', '<', '>', '?', ';', '\'', ':',
+                               '"', '[', ']', '{', '}', '~', '`', '!', '@', '#', '$', '%', '^',
+                               '&', '*', '(', ')', '-', '_', '+', '=', '\\', '|', ' '};
+
+bool is_special_character(char c)
+{
+    int i;
+    for (i = 0; i < ARRAY_SIZE(special_chars); i++)
+    {
+        if (c == special_chars[i])
+            return true;
+    }
+
+    return false;
 }
 
