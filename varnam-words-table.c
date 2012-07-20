@@ -24,6 +24,7 @@
 #include "varnam-result-codes.h"
 #include "varnam-api.h"
 #include "varnam-token.h"
+#include "rendering.h"
 
 int
 vwt_ensure_schema_exists(varnam *handle)
@@ -37,8 +38,7 @@ vwt_ensure_schema_exists(varnam *handle)
         "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned_on date);"
         "create         table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));"
-        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer);"
-        "create virtual table if not exists words_substrings using fts4(word text unique);";
+        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer);";
 
     const char *triggers1 =
         "create trigger if not exists pc_bu before update on patterns_content begin delete from patterns where docid = old.rowid; end;"
@@ -120,7 +120,7 @@ vwt_discard_changes(varnam *handle)
 }
 
 static int
-learn_pattern (varnam *handle, const char *pattern, sqlite3_int64 word_id)
+persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
 {
     int rc;
     const char *sql = "insert or ignore into patterns_content (pattern, word_id) values (trim(lower(?1)), ?2)";
@@ -148,40 +148,6 @@ learn_pattern (varnam *handle, const char *pattern, sqlite3_int64 word_id)
     }
 
     sqlite3_reset (v_->learn_pattern);
-    return VARNAM_SUCCESS;
-}
-
-static int
-learn_word (varnam *handle, const char *word)
-{
-    int rc;
-    const char *sql = "insert or replace into words (id, word, confidence, learned_on) "
-        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date();;";
-
-    assert (v_->known_words);
-
-    if (v_->learn_word == NULL)
-    {
-        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->learn_word, NULL );
-        if (rc != SQLITE_OK) {
-            set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
-            sqlite3_reset (v_->learn_word);
-            return VARNAM_ERROR;
-        }
-    }
-
-    sqlite3_bind_text (v_->learn_word, 1, word, -1, NULL);
-
-    rc = sqlite3_step (v_->learn_word);
-    if (rc != SQLITE_DONE) {
-        set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_reset (v_->learn_word);
-        return VARNAM_ERROR;
-    }
-
-    sqlite3_reset (v_->learn_word);
-    varnam_log (handle, "Learned word %s", word);
-
     return VARNAM_SUCCESS;
 }
 
@@ -220,84 +186,113 @@ get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
 }
 
 static int
-persist_substring (varnam *handle, const char *substring, const char *word)
+learn_patterns_from_flattened_tokens (varnam *handle, varray *tokens, const char *word)
+{
+    int rc, i;
+    sqlite3_int64 word_id;
+    vtoken *token;
+    strbuf *pattern = get_pooled_string (handle);
+
+    rc = get_word_id (handle, word, &word_id);
+    if (rc) return rc;
+
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        token = varray_get (tokens, i);
+        strbuf_add (pattern, token->pattern);
+    }
+
+    rc = persist_pattern (handle, strbuf_to_s (pattern), word_id);
+    if (rc)
+        return rc;
+
+    return VARNAM_SUCCESS;
+}
+
+static int
+learn_patterns_from_all_possibilities (varnam *handle, varray *possibilities, const char *word)
+{
+    int rc, i;
+    varray *array;
+    
+    for (i = 0; i < varray_length (possibilities); i++)
+    {
+        array = varray_get (possibilities, i);
+        rc = learn_patterns_from_flattened_tokens (handle, array, word);
+        if (rc)
+            return rc;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
+static int
+learn_word (varnam *handle, const char *word)
 {
     int rc;
+    const char *sql = "insert or replace into words (id, word, confidence, learned_on) "
+        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date();;";
 
-    if (v_->learn_substring == NULL)
+    assert (v_->known_words);
+
+    if (v_->learn_word == NULL)
     {
-        rc = sqlite3_prepare_v2( v_->known_words, "insert or ignore into words_substrings values (?1)", -1, &v_->learn_substring, NULL );
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->learn_word, NULL );
         if (rc != SQLITE_OK) {
             set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
-            sqlite3_reset (v_->learn_substring);
+            sqlite3_reset (v_->learn_word);
             return VARNAM_ERROR;
         }
     }
 
-    sqlite3_bind_text  (v_->learn_substring, 1, substring, -1, NULL);
+    sqlite3_bind_text (v_->learn_word, 1, word, -1, NULL);
 
-    rc = sqlite3_step (v_->learn_substring);
+    rc = sqlite3_step (v_->learn_word);
     if (rc != SQLITE_DONE) {
         set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_reset (v_->learn_substring);
+        sqlite3_reset (v_->learn_word);
         return VARNAM_ERROR;
     }
 
-    sqlite3_reset (v_->learn_substring);
+    sqlite3_reset (v_->learn_word);
+    varnam_log (handle, "Learned word %s", word);
+
     return VARNAM_SUCCESS;
 }
 
-static varray*
-get_exact_matches (varnam *handle, varray *tokens)
-{
-    int i,j;
-    varray *array, *exact_matches;
-    vtoken *tok;
-
-    exact_matches = get_pooled_array (handle);
-    for (i = 0; i < varray_length (tokens); i++)
-    {
-        array = varray_get (tokens, i);
-        for (j = 0; j < varray_length (array); j++)
-        {
-            tok = varray_get (array, j);
-            if (tok->match_type == VARNAM_MATCH_EXACT) {
-                varray_push (exact_matches, tok);
-                break;
-            }
-        }
-    }
-
-    return exact_matches;
-}
-
-
 static int
-learn_all_substrings(varnam *handle, varray *tokens, const char *word)
+learn_suffixes(varnam *handle, varray *possibilities)
 {
-    int rc, start = 0, i;
-    varray *exact_matches;
+    int i, j, rc;
+    vword *word;
+    varray *tokens, *subarray; /* Single dimensional array contains vtoken instances */
     vtoken *token;
-    strbuf *substring;
 
-    /* Rather than looping through all the tokens, we will care only exact matches */
-    exact_matches = get_exact_matches (handle, tokens);
-    substring = get_pooled_string (handle);
-    for (;;)
+    tokens = get_pooled_array (handle);
+    for (i = 0; i < varray_length (possibilities); i++)
     {
-        for (i = start; i < varray_length (exact_matches); i++)
+        subarray = varray_get (possibilities, i);
+        assert (subarray);
+        for (j = 0; j < varray_length (subarray); j++)
         {
-            token = varray_get (exact_matches, i);
-            strbuf_add (substring, token->value1);
-            rc = persist_substring (handle, strbuf_to_s (substring), word);
-            if (rc) return rc;
-        }
+            token = varray_get (subarray, j);
+            assert (token);
+            varray_push (tokens, token);
 
-        ++start;
-        strbuf_clear (substring);
+            if (varray_length (tokens) > 1 && varray_length (tokens) < varray_length (subarray))
+            {
+                rc = resolve_tokens (handle, tokens, &word);
+                if (rc)
+                    return rc;
 
-        if (i == start) {
-            break;
+                rc = learn_word (handle, word->text);
+                if (rc)
+                    return rc;
+
+                rc = learn_patterns_from_flattened_tokens (handle, tokens, word->text);
+                if (rc)
+                    return rc;
+            }
         }
     }
 
@@ -307,11 +302,8 @@ learn_all_substrings(varnam *handle, varray *tokens, const char *word)
 int
 vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
 {
-    int i, j, rc;
-    varray *array, *possibilities;
-    vtoken *token;
-    sqlite3_int64 word_id;
-    strbuf *pattern = get_pooled_string (handle);
+    int rc;
+    varray *possibilities;
 
     /* find all possible combination of tokens */
     possibilities = product_tokens (handle, tokens);
@@ -319,26 +311,10 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
     rc = learn_word (handle, word);
     if (rc) return rc;
 
-    rc = get_word_id (handle, word, &word_id);
+    rc = learn_patterns_from_all_possibilities (handle, possibilities, word);
     if (rc) return rc;
 
-    for (i = 0; i < varray_length (possibilities); i++)
-    {
-        array = varray_get (possibilities, i);
-        strbuf_clear (pattern);
-        for (j = 0; j < varray_length (array); j++)
-        {
-            token = varray_get (array, j);
-            strbuf_add (pattern, token->pattern);
-        }
-
-        rc = learn_pattern (handle, strbuf_to_s (pattern), word_id);
-        if (rc) {
-            return rc;
-        }
-    }
-
-    rc = learn_all_substrings (handle, tokens, word);
+    rc = learn_suffixes (handle, possibilities);
     if (rc) return rc;
 
     return VARNAM_SUCCESS;

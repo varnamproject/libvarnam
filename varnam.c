@@ -86,7 +86,6 @@ initialize_internal()
         vi->can_find_more_matches_using_value = NULL;
         vi->learn_word = NULL;
         vi->learn_pattern = NULL;
-        vi->learn_substring = NULL;
         vi->get_word = NULL;
     }
     return vi;
