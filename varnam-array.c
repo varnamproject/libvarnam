@@ -53,6 +53,14 @@ varray_push(varray *array, void *data)
     array->used = array->used + size;
 }
 
+void*
+varray_get_last_item(varray *array)
+{
+    assert (array);
+
+    return varray_get (array, array->index);
+}
+
 void
 varray_remove_at(varray *array, int index)
 {
@@ -69,6 +77,19 @@ varray_remove_at(varray *array, int index)
 
     array->used = array->used - sizeof(void*);
     array->index--;
+}
+
+void*
+varray_pop_last_item(varray *array)
+{
+    void *item;
+    assert (array);
+
+    item = varray_get_last_item (array);
+    if (item != NULL)
+        varray_remove_at (array, array->index);
+
+    return item;
 }
 
 int
@@ -114,6 +135,8 @@ varray_get(varray *array, int index)
     if (index < 0 || index > array->index)
         return NULL;
 
+    assert(array->memory);
+
     return array->memory[index];
 }
 
@@ -136,8 +159,11 @@ vpool*
 vpool_init()
 {
     vpool *pool = (vpool*) malloc (sizeof(vpool));
+
     pool->array = varray_init();
+    pool->free_pool = varray_init();
     pool->next_slot = 0;
+
     return pool;
 }
 
@@ -147,9 +173,14 @@ vpool_get(vpool *pool)
     void *item;
     assert (pool);
 
-    item = varray_get (pool->array, pool->next_slot);
-    if (item != NULL)
-        ++pool->next_slot;
+    /* First try to get from the free pool if there are any */
+    item = varray_pop_last_item (pool->free_pool);
+    if (item == NULL)
+    {
+        item = varray_get (pool->array, pool->next_slot);
+        if (item != NULL)
+            ++pool->next_slot;
+    }
 
     return item;
 }
@@ -164,10 +195,21 @@ vpool_add(vpool *pool, void *item)
 }
 
 void
+vpool_return(vpool *pool, void *item)
+{
+    assert (pool);
+    assert (item);
+    varray_push (pool->free_pool, item);
+}
+
+void
 vpool_reset(vpool *pool)
 {
-    if (pool != NULL)
+    if (pool != NULL) 
+    {
         pool->next_slot = 0;
+        varray_clear (pool->free_pool);
+    }
 }
 
 void
@@ -175,6 +217,7 @@ vpool_free(vpool *pool)
 {
     assert (pool);
     varray_free (pool->array, true);
+    /* Clean up free pool instance here */
 }
 
 varray*
@@ -194,6 +237,15 @@ get_pooled_array (varnam *handle)
 
     varray_clear (array);
     return array;
+}
+
+void
+return_array_to_pool (varnam *handle, varray *array)
+{
+    if (v_->arrays_pool == NULL)
+        return;
+
+    vpool_return (v_->arrays_pool, array);
 }
 
 void

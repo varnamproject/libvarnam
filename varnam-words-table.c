@@ -1,4 +1,4 @@
-/* <file-name>
+/* Functions to handle the words store
  *
  * Copyright (C) Navaneeth K N
  *
@@ -119,6 +119,24 @@ vwt_discard_changes(varnam *handle)
     return execute_sql(handle, v_->known_words, "ROLLBACK;");
 }
 
+int
+vwt_optimize_for_huge_transaction(varnam *handle)
+{
+    assert (handle);
+    assert (v_->known_words);
+
+    return execute_sql (handle, v_->known_words, "pragma journal_mode=memory;pragma synchronous=off;");
+}
+
+int
+vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
+{
+    assert (handle);
+    assert (v_->known_words);
+
+    return execute_sql (handle, v_->known_words, "pragma journal_mode=wal;pragma synchronous=full;");
+}
+
 static int
 persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
 {
@@ -185,17 +203,19 @@ get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
     return VARNAM_SUCCESS;
 }
 
+/* Learns the pattern. strbuf* is passed in because of memory optimizations.
+ * See comments in the learn_suffixes() function */
 static int
-learn_patterns_from_flattened_tokens (varnam *handle, varray *tokens, const char *word)
+learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern)
 {
     int rc, i;
     sqlite3_int64 word_id;
     vtoken *token;
-    strbuf *pattern = get_pooled_string (handle);
 
     rc = get_word_id (handle, word, &word_id);
     if (rc) return rc;
 
+    strbuf_clear (pattern);
     for (i = 0; i < varray_length (tokens); i++)
     {
         token = varray_get (tokens, i);
@@ -205,23 +225,6 @@ learn_patterns_from_flattened_tokens (varnam *handle, varray *tokens, const char
     rc = persist_pattern (handle, strbuf_to_s (pattern), word_id);
     if (rc)
         return rc;
-
-    return VARNAM_SUCCESS;
-}
-
-static int
-learn_patterns_from_all_possibilities (varnam *handle, varray *possibilities, const char *word)
-{
-    int rc, i;
-    varray *array;
-    
-    for (i = 0; i < varray_length (possibilities); i++)
-    {
-        array = varray_get (possibilities, i);
-        rc = learn_patterns_from_flattened_tokens (handle, array, word);
-        if (rc)
-            return rc;
-    }
 
     return VARNAM_SUCCESS;
 }
@@ -260,61 +263,118 @@ learn_word (varnam *handle, const char *word)
     return VARNAM_SUCCESS;
 }
 
+/* Learns all the suffixes. This won't learn single tokens and the word itself
+ * tokens_tmp - Is passed is for memory usage optimization. This function gets
+ * called inside a cartesion product finder which means there will be a lot of
+ * instances of array required. To optimize this, we pass in this array which
+ * will be allocated from cartesian product finder */
 static int
-learn_suffixes(varnam *handle, varray *possibilities)
+learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern)
 {
-    int i, j, rc;
+    int i, rc, tokens_len = 0;
     vword *word;
-    varray *tokens, *subarray; /* Single dimensional array contains vtoken instances */
     vtoken *token;
 
-    tokens = get_pooled_array (handle);
-    for (i = 0; i < varray_length (possibilities); i++)
+    varray *tokens_tmp = get_pooled_array (handle);
+    for (i = 0; i < varray_length (tokens); i++)
     {
-        subarray = varray_get (possibilities, i);
-        assert (subarray);
-        for (j = 0; j < varray_length (subarray); j++)
+        token = varray_get (tokens, i);
+        assert (token != NULL);
+
+        varray_push (tokens_tmp, token);
+
+        tokens_len = varray_length (tokens_tmp);
+        /* We don't learn if it is only one token.
+         * We don't learn the full word here because it would have already learned before this method is called */
+        if (tokens_len > 1 && tokens_len != varray_length(tokens))
         {
-            token = varray_get (subarray, j);
-            assert (token);
-            varray_push (tokens, token);
+            rc = resolve_tokens (handle, tokens_tmp, &word);
+            if (rc) {
+                return_array_to_pool (handle, tokens_tmp);
+                return rc;
+            }
 
-            if (varray_length (tokens) > 1 && varray_length (tokens) < varray_length (subarray))
-            {
-                rc = resolve_tokens (handle, tokens, &word);
-                if (rc)
-                    return rc;
+            rc = learn_word (handle, word->text);
+            if (rc) {
+                return_array_to_pool (handle, tokens_tmp);
+                return rc;
+            }
 
-                rc = learn_word (handle, word->text);
-                if (rc)
-                    return rc;
-
-                rc = learn_patterns_from_flattened_tokens (handle, tokens, word->text);
-                if (rc)
-                    return rc;
+            rc = learn_pattern (handle, tokens_tmp, word->text, pattern);
+            if (rc) {
+                return_array_to_pool (handle, tokens_tmp);
+                return rc;
             }
         }
     }
 
+    return_array_to_pool (handle, tokens_tmp);
     return VARNAM_SUCCESS;
+}
+
+/* This function learns all possibilities of writing the word and it's suffixes.
+ * It finds cartesian product of the tokens passed in and process each product.
+ * tokens will be a multidimensional array */
+static int
+learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
+{
+    int rc, array_cnt, *offsets, i, last_array_offset;
+    varray *array, *tmp;
+    strbuf *pattern;
+
+    array_cnt = varray_length (tokens);
+    offsets = xmalloc(sizeof(int) * (size_t) array_cnt);
+
+    for (i = 0; i < array_cnt; i++) offsets[i] = 0;
+
+    array = get_pooled_array (handle);
+    pattern = get_pooled_string (handle);
+
+    for (;;)
+    {
+        varray_clear (array);
+        for (i = 0; i < array_cnt; i++)
+        {
+            tmp = varray_get (tokens, i);
+            assert (tmp);
+            varray_push (array, varray_get (tmp, offsets[i]));
+        }
+
+        rc = learn_pattern (handle, array, word, pattern);
+        if (rc)
+            goto finished;
+
+        rc = learn_suffixes (handle, array, pattern);
+        if (rc)
+            goto finished;
+
+        last_array_offset = array_cnt - 1;
+        offsets[last_array_offset]++;
+
+        while (offsets[last_array_offset] == varray_length ((varray*) varray_get (tokens, last_array_offset)))
+        {
+            offsets[last_array_offset] = 0;
+
+            if (--last_array_offset < 0) goto finished;
+
+            offsets[last_array_offset]++;
+        }
+    }
+
+finished:
+    xfree (offsets);
+    return rc;
 }
 
 int
 vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
 {
     int rc;
-    varray *possibilities;
-
-    /* find all possible combination of tokens */
-    possibilities = product_tokens (handle, tokens);
 
     rc = learn_word (handle, word);
     if (rc) return rc;
 
-    rc = learn_patterns_from_all_possibilities (handle, possibilities, word);
-    if (rc) return rc;
-
-    rc = learn_suffixes (handle, possibilities);
+    rc = learn_all_possibilities (handle, tokens, word);
     if (rc) return rc;
 
     return VARNAM_SUCCESS;

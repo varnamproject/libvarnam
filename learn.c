@@ -198,8 +198,15 @@ varnam_learn_from_file(varnam *handle,
         status->failed = 0;
     }
 
+    rc = vwt_optimize_for_huge_transaction(handle);
+    if (rc) {
+        fclose (infile);
+        return rc;
+    }
+
     rc = vwt_start_changes (handle);
     if (rc) {
+        vwt_turn_off_optimization_for_huge_transaction(handle);
         fclose (infile);
         return rc;
     }
@@ -216,6 +223,7 @@ varnam_learn_from_file(varnam *handle,
         if (callback != NULL) callback (handle, word, rc, object);
     }
 
+    vwt_turn_off_optimization_for_huge_transaction(handle);
     fclose (infile);
     return vwt_end_changes (handle);
 }

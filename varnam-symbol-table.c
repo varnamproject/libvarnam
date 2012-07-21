@@ -772,6 +772,7 @@ read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokeni
                                     (const char*) sqlite3_column_text( stmt, 3 ),
                                     (const char*) sqlite3_column_text( stmt, 4 ),
                                     (const char*) sqlite3_column_text( stmt, 5 ), "");
+            assert (tok);
 
             if (!cleared) {
                 /* We have new set of tokens and we don't care about previous match */
@@ -853,6 +854,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *res
     int rc, bytes_read = 0, matchpos = 0;
     const unsigned char *ustring; const char *inputcopy;
     struct strbuf *lookup;
+    vtoken *token;
     varray *tokens = NULL;
     bool possibility, tokens_available = false;
 
@@ -881,10 +883,12 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *res
         if (varray_is_empty (tokens))
         {
             /* We couldn't find any tokens. So adding lookup as the match */
-            varray_push (tokens, get_pooled_token (handle, -99,
-                                                   VARNAM_TOKEN_OTHER,
-                                                   VARNAM_MATCH_EXACT,
-                                                   strbuf_to_s (lookup), "", "", ""));
+            token = get_pooled_token (handle, -99,
+                                      VARNAM_TOKEN_OTHER,
+                                      VARNAM_MATCH_EXACT,
+                                      strbuf_to_s (lookup), "", "", "");
+            assert (token);
+            varray_push (tokens, token);
             matchpos = (int) lookup->length;
         }
         rc = can_find_more_matches (handle, lookup, tokenize_using, &possibility);

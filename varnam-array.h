@@ -38,6 +38,7 @@ typedef struct vpool_t
 {
     varray *array;
     int next_slot;
+    varray *free_pool;
 } vpool;
 
 varray*
@@ -61,6 +62,12 @@ varray_clear(varray *array);
 void*
 varray_get(varray *array, int index);
 
+void*
+varray_get_last_item(varray *array);
+
+void*
+varray_pop_last_item(varray *array);
+
 void
 varray_insert(varray *array, int index, void *data);
 
@@ -79,6 +86,12 @@ vpool_get(vpool *pool);
 void
 vpool_add(vpool *pool, void *item);
 
+/**
+ * Returns the element back to the pool
+ */
+void
+vpool_return(vpool *pool, void *item);
+
 void
 vpool_reset(vpool *pool);
 
@@ -91,6 +104,9 @@ vpool_free(vpool *pool);
 
 varray*
 get_pooled_array (varnam *handle);
+
+void
+return_array_to_pool (varnam *handle, varray *array);
 
 void
 reset_pool(varnam *handle);

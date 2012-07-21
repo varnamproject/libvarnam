@@ -38,4 +38,10 @@ vwt_end_changes(varnam *handle);
 int
 vwt_discard_changes(varnam *handle);
 
+int
+vwt_optimize_for_huge_transaction(varnam *handle);
+
+int
+vwt_turn_off_optimization_for_huge_transaction(varnam *handle);
+
 #endif
