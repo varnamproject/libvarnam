@@ -38,7 +38,7 @@ vwt_ensure_schema_exists(varnam *handle)
         "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned_on date);"
         "create         table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));"
-        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer);";
+        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"2,4,6,8,10\");";
 
     const char *triggers1 =
         "create trigger if not exists pc_bu before update on patterns_content begin delete from patterns where docid = old.rowid; end;"
@@ -125,7 +125,7 @@ vwt_optimize_for_huge_transaction(varnam *handle)
     assert (handle);
     assert (v_->known_words);
 
-    return execute_sql (handle, v_->known_words, "pragma journal_mode=memory;pragma synchronous=off;");
+    return execute_sql (handle, v_->known_words, "pragma journal_mode=delete;pragma synchronous=off;");
 }
 
 int
@@ -134,6 +134,7 @@ vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
     assert (handle);
     assert (v_->known_words);
 
+    vwt_ensure_schema_exists (handle);
     return execute_sql (handle, v_->known_words, "pragma journal_mode=wal;pragma synchronous=full;");
 }
 
@@ -269,7 +270,7 @@ learn_word (varnam *handle, const char *word)
  * instances of array required. To optimize this, we pass in this array which
  * will be allocated from cartesian product finder */
 static int
-learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern)
+learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_already_learned)
 {
     int i, rc, tokens_len = 0;
     vword *word;
@@ -294,10 +295,13 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern)
                 return rc;
             }
 
-            rc = learn_word (handle, word->text);
-            if (rc) {
-                return_array_to_pool (handle, tokens_tmp);
-                return rc;
+            if (!word_already_learned)
+            {
+                rc = learn_word (handle, word->text);
+                if (rc) {
+                    return_array_to_pool (handle, tokens_tmp);
+                    return rc;
+                }
             }
 
             rc = learn_pattern (handle, tokens_tmp, word->text, pattern);
@@ -321,6 +325,7 @@ learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
     int rc, array_cnt, *offsets, i, last_array_offset;
     varray *array, *tmp;
     strbuf *pattern;
+    bool word_already_learned = false;
 
     array_cnt = varray_length (tokens);
     offsets = xmalloc(sizeof(int) * (size_t) array_cnt);
@@ -344,9 +349,10 @@ learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
         if (rc)
             goto finished;
 
-        rc = learn_suffixes (handle, array, pattern);
+        rc = learn_suffixes (handle, array, pattern, word_already_learned);
         if (rc)
             goto finished;
+        word_already_learned = true;
 
         last_array_offset = array_cnt - 1;
         offsets[last_array_offset]++;
