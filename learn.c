@@ -22,6 +22,7 @@
 #include "varnam-array.h"
 #include "varnam-util.h"
 #include "varnam-result-codes.h"
+#include "varnam-symbol-table.h"
 #include "varnam-words-table.h"
 
 static strbuf*
@@ -204,6 +205,7 @@ varnam_learn_from_file(varnam *handle,
         return rc;
     }
 
+    varnam_log (handle, "Starting to learn from %s", filepath);
     rc = vwt_start_changes (handle);
     if (rc) {
         vwt_turn_off_optimization_for_huge_transaction(handle);
@@ -223,7 +225,18 @@ varnam_learn_from_file(varnam *handle,
         if (callback != NULL) callback (handle, word, rc, object);
     }
 
-    vwt_turn_off_optimization_for_huge_transaction(handle);
+    varnam_log (handle, "Writing changes to disk");
+    rc = vwt_end_changes (handle);
+    if (rc) {
+        varnam_log (handle, "Writing changes to disk failed");
+    }
+
+    varnam_log (handle, "Ensuring file integrity");
+    rc = vwt_turn_off_optimization_for_huge_transaction(handle);
+    if (rc) {
+        varnam_log (handle, "Failed to check file integrity");
+    }
+
     fclose (infile);
-    return vwt_end_changes (handle);
+    return rc;
 }

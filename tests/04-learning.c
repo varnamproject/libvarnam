@@ -32,13 +32,16 @@ int starting_and_trailing_special_chars_should_be_removed(varnam *handle)
     return VARNAM_SUCCESS;
 }
 
+static int counter = 1;
+
 static void learn_status(varnam *handle, const char *word, int rc, void *object)
 {
+
     if (rc != VARNAM_SUCCESS) {
         printf ("Error - %s\n", varnam_get_last_error (handle));
     }
     else {
-        printf ("Learned %s\n", word);
+        printf ("%d - Learned %s\n", counter++, word);
     }
 }
 

@@ -26,6 +26,8 @@
 #include "varnam-token.h"
 #include "rendering.h"
 
+#define MAXIMUM_PATTERNS_TO_LEARN 150
+
 int
 vwt_ensure_schema_exists(varnam *handle)
 {
@@ -38,7 +40,7 @@ vwt_ensure_schema_exists(varnam *handle)
         "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned_on date);"
         "create         table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));"
-        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"2,4,6,8,10\");";
+        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"1,2,3,4,5,6,7,8,9,10,11,12,13,14,15\");";
 
     const char *triggers1 =
         "create trigger if not exists pc_bu before update on patterns_content begin delete from patterns where docid = old.rowid; end;"
@@ -122,20 +124,25 @@ vwt_discard_changes(varnam *handle)
 int
 vwt_optimize_for_huge_transaction(varnam *handle)
 {
+    const char *sql =
+        "pragma journal_mode=delete;";
+
     assert (handle);
     assert (v_->known_words);
 
-    return execute_sql (handle, v_->known_words, "pragma journal_mode=delete;pragma synchronous=off;");
+    return execute_sql (handle, v_->known_words, sql);
 }
 
 int
 vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
 {
+    const char *sql =
+        "pragma journal_mode=wal;";
+
     assert (handle);
     assert (v_->known_words);
 
-    vwt_ensure_schema_exists (handle);
-    return execute_sql (handle, v_->known_words, "pragma journal_mode=wal;pragma synchronous=full;");
+    return execute_sql (handle, v_->known_words, sql);
 }
 
 static int
@@ -322,7 +329,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
 static int
 learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
 {
-    int rc, array_cnt, *offsets, i, last_array_offset;
+    int rc, array_cnt, *offsets, i, last_array_offset, total = 0;
     varray *array, *tmp;
     strbuf *pattern;
     bool word_already_learned = false;
@@ -352,7 +359,11 @@ learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
         rc = learn_suffixes (handle, array, pattern, word_already_learned);
         if (rc)
             goto finished;
+
         word_already_learned = true;
+        if (++total == MAXIMUM_PATTERNS_TO_LEARN) {
+            goto finished;
+        }
 
         last_array_offset = array_cnt - 1;
         offsets[last_array_offset]++;
