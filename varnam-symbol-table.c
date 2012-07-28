@@ -27,55 +27,6 @@
 #include "varnam-token.h"
 
 struct token*
-find_token(varnam *handle, const char *lookup)
-{
-    /* struct varnam_internal *internal; */
-    /* struct token *tok = NULL; */
-    /* char sql[500]; */
-    /* const char *pattern, *value1, *value2, *tag; */
-    /* sqlite3_stmt *stmt; sqlite3 *db; */
-    /* int rc, type, has_children; */
-
-    /* assert( handle ); assert( lookup ); */
-
-    /* internal = handle->internal; */
-    /* db = internal->db; */
-
-    /* snprintf( sql, 500, "select type, pattern, value1, value2, children, tag from symbols where pattern = ?1;"); */
-    /* rc = sqlite3_prepare_v2( db, sql, 500, &stmt, NULL ); */
-    /* if( rc == SQLITE_OK ) */
-    /* { */
-    /*     sqlite3_bind_text (stmt, 1, lookup, (int) strlen(lookup), NULL); */
-    /*     rc = sqlite3_step (stmt); */
-    /*     if( rc == SQLITE_ROW ) */
-    /*     { */
-    /*         type = sqlite3_column_int( stmt, 0 ); */
-    /*         pattern = (const char*) sqlite3_column_text( stmt, 1 ); */
-    /*         value1 = (const char*) sqlite3_column_text( stmt, 2 ); */
-    /*         value2 = (const char*) sqlite3_column_text( stmt, 3 ); */
-    /*         has_children = sqlite3_column_int( stmt, 4 ); */
-    /*         tag = (const char*) sqlite3_column_text( stmt, 5 ); */
-
-    /*         if(internal->current_token == NULL) { */
-    /*             internal->current_token = (struct token *) xmalloc(sizeof (struct token)); */
-    /*             assert( internal->current_token ); */
-    /*         } */
-
-    /*         tok = internal->current_token; */
-    /*         tok->type = type; */
-    /*         strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX); */
-    /*         strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX); */
-    /*         strncpy( tok->value2, value2, VARNAM_SYMBOL_MAX); */
-    /*         strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX); */
-    /*         tok->children = has_children; */
-    /*     } */
-    /* } */
-
-    /* sqlite3_finalize( stmt ); */
-    /* return tok; */
-}
-
-struct token*
 find_rtl_token(varnam *handle, const char *lookup)
 {
     struct varnam_internal *internal;
@@ -713,7 +664,7 @@ vst_get_metadata (varnam *handle, const char* key, struct strbuf *output)
 }
 
 static int
-prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **stmt)
+prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, sqlite3_stmt **stmt)
 {
     int rc;
 
@@ -732,15 +683,32 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **st
         *stmt = v_->tokenize_using_pattern;
         break;
     case VARNAM_TOKENIZER_VALUE:
-        if (v_->tokenize_using_value == NULL)
+        if (match_type == VARNAM_MATCH_ALL)
         {
-            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where value1 = ?1 or value2 = ?1;", -1, &v_->tokenize_using_value, NULL );
-            if (rc != SQLITE_OK) {
-                set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
-                return VARNAM_ERROR;
+            if (v_->tokenize_using_value == NULL)
+            {
+                rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where value1 = ?1 or value2 = ?1;",
+                                         -1, &v_->tokenize_using_value, NULL );
+                if (rc != SQLITE_OK) {
+                    set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
+                    return VARNAM_ERROR;
+                }
             }
+            *stmt = v_->tokenize_using_value;
         }
-        *stmt = v_->tokenize_using_value;
+        else
+        {
+            if (v_->tokenize_using_value_and_match_type == NULL)
+            {
+                rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2 from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2;",
+                                         -1, &v_->tokenize_using_value_and_match_type, NULL );
+                if (rc != SQLITE_OK) {
+                    set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
+                    return VARNAM_ERROR;
+                }
+            }
+            *stmt = v_->tokenize_using_value_and_match_type;
+        }
         break;
     }
 
@@ -748,18 +716,22 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, sqlite3_stmt **st
 }
 
 static int
-read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokenize_using, varray *tokens, bool *tokens_available)
+read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokenize_using, int match_type, varray *tokens, bool *tokens_available)
 {
     vtoken *tok = 0;
     bool cleared = false;
     int rc;
     sqlite3_stmt *stmt = 0;
 
-    rc = prepare_tokenization_stmt (handle, tokenize_using, &stmt);
+    rc = prepare_tokenization_stmt (handle, tokenize_using, match_type, &stmt);
     if (rc) return rc;
 
     *tokens_available = false;
     sqlite3_bind_text (stmt, 1, lookup, -1, NULL);
+    if (match_type != VARNAM_MATCH_ALL)
+    {
+        sqlite3_bind_int (stmt, 2, match_type);
+    }
     while (true)
     {
         rc = sqlite3_step (stmt);
@@ -849,7 +821,7 @@ can_find_more_matches(varnam *handle, struct strbuf *lookup, int tokenize_using,
 }
 
 int
-vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *result)
+vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_type, varray *result)
 {
     int rc, bytes_read = 0, matchpos = 0;
     const unsigned char *ustring; const char *inputcopy;
@@ -874,7 +846,12 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *res
         if (tokens == NULL)
             tokens = get_pooled_array (handle);
 
-        rc = read_all_tokens_and_add_to_array (handle, strbuf_to_s (lookup), tokenize_using, tokens, &tokens_available);
+        rc = read_all_tokens_and_add_to_array (handle,
+                                               strbuf_to_s (lookup),
+                                               tokenize_using,
+                                               match_type,
+                                               tokens,
+                                               &tokens_available);
         if (rc) return rc;
 
         if (tokens_available)

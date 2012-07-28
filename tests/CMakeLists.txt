@@ -28,7 +28,7 @@ add_test(cleanup ruby test_output_cleanup.rb)
 
 add_test(initialization ${test_executable_name} test-varnam-initialization td-00.vst)
 add_test(transliteration ${test_executable_name} basic-transliteration td-01.vst)
-add_test(ml-unicode ${test_executable_name} ml-unicode ../vsf/ml-unicode.vst ml-unicode-input.txt)
-add_test(ml-unicode-reverse ${test_executable_name} ml-unicode-reverse ../vsf/ml-unicode.vst ml-unicode-reverse-input.txt)
+add_test(ml-unicode ${test_executable_name} ml-unicode ../schemes/ml-unicode.vst ml-unicode-input.txt)
+add_test(ml-unicode-reverse ${test_executable_name} ml-unicode-reverse ../schemes/ml-unicode.vst ml-unicode-reverse-input.txt)
 add_test(test-vst-file-creation ${test_executable_name} test-vst-file-creation)
     

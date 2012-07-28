@@ -144,7 +144,7 @@ varnam_learn_internal(varnam *handle, const char *word)
     /* This removes all starting and trailing special characters from the word */
     sanitized_word = sanitize_word (handle, word);
 
-    rc = vst_tokenize (handle, strbuf_to_s (sanitized_word), VARNAM_TOKENIZER_VALUE, tokens);
+    rc = vst_tokenize (handle, strbuf_to_s (sanitized_word), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_ALL, tokens);
     if (rc) return rc;
 
     if (!can_learn_from_tokens (handle, tokens, strbuf_to_s (sanitized_word)))

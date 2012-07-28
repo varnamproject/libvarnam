@@ -33,6 +33,7 @@
 /* pattern matching */
 #define VARNAM_MATCH_EXACT       1
 #define VARNAM_MATCH_POSSIBILITY 2
+#define VARNAM_MATCH_ALL         3
 
 /* allowed runtime functions */
 #define VARNAM_RULE_FN_INITIALS "if_initials"
@@ -120,6 +121,7 @@ struct varnam_internal
 
     sqlite3_stmt *tokenize_using_pattern;
     sqlite3_stmt *tokenize_using_value;
+    sqlite3_stmt *tokenize_using_value_and_match_type;
     sqlite3_stmt *can_find_more_matches_using_pattern;
     sqlite3_stmt *can_find_more_matches_using_value;
     sqlite3_stmt *learn_word;

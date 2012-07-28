@@ -119,6 +119,6 @@ vst_get_metadata (varnam *handle, const char* key, struct strbuf *output);
 /* Tokenizes the input and add the tokens into result. Result will point to a multidimensional array
  * where each element will be an array of vtoken* */
 int
-vst_tokenize (varnam *handle, const char *input, int tokenize_using, varray *result);
+vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_type, varray *result);
 
 #endif

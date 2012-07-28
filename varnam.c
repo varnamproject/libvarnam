@@ -82,6 +82,7 @@ initialize_internal()
         /* Prepared statements */
         vi->tokenize_using_pattern = NULL;
         vi->tokenize_using_value = NULL;
+        vi->tokenize_using_value_and_match_type = NULL;
         vi->can_find_more_matches_using_pattern = NULL;
         vi->can_find_more_matches_using_value = NULL;
         vi->learn_word = NULL;
