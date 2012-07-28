@@ -34,6 +34,8 @@ Usage
 ------
 
 ```c
+#include "varnam.h"
+
 int main(int args, char **argv)
 {
   int rc, i;
