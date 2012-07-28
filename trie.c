@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "varnam-util.h"
-#include "varnam-trie.h"
-#include "varnam-result-codes.h"
+#include "util.h"
+#include "trie.h"
+#include "result-codes.h"
 
 static struct trie *trie_new(const char *label, void *value)
 {

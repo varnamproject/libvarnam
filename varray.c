@@ -20,8 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "varnam-array.h"
-#include "varnam-util.h"
+#include "varray.h"
+#include "util.h"
 
 varray*
 varray_init()

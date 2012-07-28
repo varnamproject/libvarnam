@@ -19,8 +19,8 @@
 #include <assert.h>
 
 #include "vword.h"
-#include "varnam-types.h"
-#include "varnam-array.h"
+#include "vtypes.h"
+#include "varray.h"
 
 static void
 initialize_word(vword *word, const char *text, int confidence)

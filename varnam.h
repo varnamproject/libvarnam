@@ -22,9 +22,9 @@
 
 #include <stdlib.h>
 
-#include "varnam-util.h"
-#include "varnam-types.h"
-#include "varnam-result-codes.h"
-#include "varnam-api.h"
+#include "util.h"
+#include "vtypes.h"
+#include "result-codes.h"
+#include "api.h"
 
 #endif

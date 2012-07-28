@@ -19,14 +19,14 @@
 #include <string.h>
 #include <assert.h>
 
-#include "foreign/sqlite3.h"
-#include "varnam-api.h"
-#include "varnam-util.h"
-#include "varnam-types.h"
-#include "varnam-result-codes.h"
-#include "varnam-symbol-table.h"
-#include "varnam-array.h"
-#include "varnam-token.h"
+#include "deps/sqlite3.h"
+#include "api.h"
+#include "util.h"
+#include "vtypes.h"
+#include "result-codes.h"
+#include "symbol-table.h"
+#include "varray.h"
+#include "token.h"
 #include "vword.h"
 #include "rendering.h"
 

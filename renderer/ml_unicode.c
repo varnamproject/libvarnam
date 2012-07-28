@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 
 #include "renderers.h"
-#include "../varnam-util.h"
-#include "../varnam-types.h"
-#include "../varnam-result-codes.h"
-#include "../varnam-symbol-table.h"
+#include "../util.h"
+#include "../vtypes.h"
+#include "../result-codes.h"
+#include "../symbol-table.h"
 
 #define RENDER_VALUE2_TAG "render_value2"
 #define CHIL_TAG "chill"

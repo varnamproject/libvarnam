@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-project (foreign_functions)
+project (deps)
 message ("Generating project ${PROJECT_NAME}")
 
 # This builds the 3rd party code that we uses. It uses very less level of warnings 
@@ -20,9 +20,9 @@ ENDIF()
 
 add_definitions(-DSQLITE_CASE_SENSITIVE_LIKE -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS)
 
-list (APPEND FOREIGN_SOURCES
+list (APPEND DEPS_SOURCES
   snprintf.c
   sqlite3.c
   )
 
-add_library (${FOREIGN_LIBRARY_NAME} STATIC ${FOREIGN_SOURCES})
+add_library (${DEPS_LIBRARY_NAME} STATIC ${DEPS_SOURCES})

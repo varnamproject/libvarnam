@@ -1,4 +1,4 @@
-/* strbuf.c - dynamically growing string buffer
+/* Dynamically growing string buffer
  *
  * Copyright (C) Navaneeth.K.N
  *
@@ -22,8 +22,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "varnam-util.h"
-#include "varnam-array.h"
+#include "util.h"
+#include "varray.h"
 
 static int grow_buffer(struct strbuf *string)
 {

@@ -1,4 +1,4 @@
-/* util.c
+/* Utility functions
  *
  * Copyright (C) 2010 Navaneeth.K.N
  *
@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "varnam-util.h"
-#include "varnam-types.h"
+#include "util.h"
+#include "vtypes.h"
 
 /**
  * substr(str,start,length,output) writes length characters of str beginning with start to substring.

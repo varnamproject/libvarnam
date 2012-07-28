@@ -27,8 +27,8 @@ typedef int bool;
 #define false 0
 #define true  1
 
-#include "varnam-array.h"
-#include "varnam-types.h"
+#include "varray.h"
+#include "vtypes.h"
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 

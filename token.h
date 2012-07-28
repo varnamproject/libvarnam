@@ -20,8 +20,8 @@
 #ifndef VARNAM_TOKEN_H_INCLUDED_090112
 #define VARNAM_TOKEN_H_INCLUDED_090112
 
-#include "varnam-types.h"
-#include "varnam-array.h"
+#include "vtypes.h"
+#include "varray.h"
 
 struct token*
 Token(int id, int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* tag);

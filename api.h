@@ -21,9 +21,9 @@
 #define VARNAM_API_H_INCLUDED_093510
 
 #include <stdlib.h>
-#include "varnam-types.h"
-#include "varnam-util.h"
-#include "varnam-array.h"
+#include "vtypes.h"
+#include "util.h"
+#include "varray.h"
 
 /**
  * Initializes the varnam library.

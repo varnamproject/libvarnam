@@ -19,14 +19,13 @@
 #include <assert.h>
 #include <string.h>
 
-#include "varnam-symbol-table.h"
-#include "varnam-result-codes.h"
-#include "varnam-array.h"
-#include "varnam-types.h"
+#include "symbol-table.h"
+#include "result-codes.h"
+#include "varray.h"
+#include "vtypes.h"
 #include "rendering.h"
 #include "vword.h"
-#include "varnam-api.h"
-#include "varnam-array.h"
+#include "api.h"
 
 static vtoken_renderer*
 get_renderer(varnam *handle)

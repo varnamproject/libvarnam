@@ -19,8 +19,8 @@
 #ifndef VARNAM_ARRAY_H_INCLUDED_0924
 #define VARNAM_ARRAY_H_INCLUDED_0924
 
-#include "varnam-types.h"
-#include "varnam-util.h"
+#include "vtypes.h"
+#include "util.h"
 
 /**
  * Array to hold pointers. This expands automatically.

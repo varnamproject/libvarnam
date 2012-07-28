@@ -20,7 +20,7 @@
 #ifndef TRIE_H_INCLUDED_095519
 #define TRIE_H_INCLUDED_095519
 
-#include "varnam-util.h"
+#include "util.h"
 
 struct trie {
     int root; /* if 1, then this is root */

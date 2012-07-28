@@ -17,11 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 #include <string.h>
-#include "varnam-token.h"
-#include "varnam-types.h"
-#include "varnam-util.h"
-#include "varnam-array.h"
-#include "varnam-result-codes.h"
+#include "token.h"
+#include "vtypes.h"
+#include "util.h"
+#include "varray.h"
+#include "result-codes.h"
 
 static void
 initialize_token (vtoken *tok,

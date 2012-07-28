@@ -20,8 +20,8 @@
 #ifndef VARNAM_SYMBOL_TABLE_H_INCLUDED_120215
 #define VARNAM_SYMBOL_TABLE_H_INCLUDED_120215
 
-#include "varnam-types.h"
-#include "varnam-array.h"
+#include "vtypes.h"
+#include "varray.h"
 
 /**
  * checks the schema availability. this function will create it when necessary

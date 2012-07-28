@@ -17,13 +17,13 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "varnam-api.h"
-#include "varnam-types.h"
-#include "varnam-array.h"
-#include "varnam-util.h"
-#include "varnam-result-codes.h"
-#include "varnam-symbol-table.h"
-#include "varnam-words-table.h"
+#include "api.h"
+#include "vtypes.h"
+#include "varray.h"
+#include "util.h"
+#include "result-codes.h"
+#include "symbol-table.h"
+#include "words-table.h"
 
 static strbuf*
 sanitize_word (varnam *handle, const char *word)

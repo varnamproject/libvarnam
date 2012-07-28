@@ -20,14 +20,14 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "varnam-array.h"
-#include "varnam-api.h"
-#include "varnam-types.h"
-#include "varnam-util.h"
-#include "varnam-result-codes.h"
-#include "varnam-symbol-table.h"
-#include "varnam-words-table.h"
-#include "varnam-token.h"
+#include "varray.h"
+#include "api.h"
+#include "vtypes.h"
+#include "util.h"
+#include "result-codes.h"
+#include "symbol-table.h"
+#include "words-table.h"
+#include "token.h"
 #include "renderer/renderers.h"
 
 static struct varnam_internal*

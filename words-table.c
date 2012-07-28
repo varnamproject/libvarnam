@@ -18,13 +18,14 @@
 
 #include <assert.h>
 
-#include "varnam-symbol-table.h"
-#include "varnam-util.h"
-#include "varnam-types.h"
-#include "varnam-result-codes.h"
-#include "varnam-api.h"
-#include "varnam-token.h"
+#include "symbol-table.h"
+#include "util.h"
+#include "vtypes.h"
+#include "result-codes.h"
+#include "api.h"
+#include "token.h"
 #include "rendering.h"
+#include "varray.h"
 
 #define MAXIMUM_PATTERNS_TO_LEARN 150
 

@@ -284,7 +284,7 @@
 /* NO USER SERVICABLE PARTS FOLLOWING THIS POINT */
 /* ============================================= */
 
-#include "../varnam-util.h"
+#include "../util.h"
 
 #define PORTABLE_SNPRINTF_VERSION_MAJOR 2
 #define PORTABLE_SNPRINTF_VERSION_MINOR 2

@@ -20,7 +20,7 @@
 #ifndef VWORD_H_INCLUDED_0631
 #define VWORD_H_INCLUDED_0631
 
-#include "varnam-types.h"
+#include "vtypes.h"
 
 /*
  * Constructor for vword

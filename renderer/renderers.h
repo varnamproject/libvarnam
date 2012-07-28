@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef RENDERING_RENDERERS_H_INCLUDED_105305
 #define RENDERING_RENDERERS_H_INCLUDED_105305
 
-#include "../varnam-types.h"
-#include "../varnam-util.h"
+#include "../vtypes.h"
+#include "../util.h"
 
 int
 ml_unicode_renderer(varnam *handle,

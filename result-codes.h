@@ -1,6 +1,6 @@
-/* varnam-words-table.h
+/* Specifies the return codes
  *
- * Copyright (C) Navaneeth K N
+ * Copyright (C) Navaneeth.K.N
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,31 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 
-#ifndef VARNAM_WORDS_TABLE_H_INCLUDED
-#define VARNAM_WORDS_TABLE_H_INCLUDED
+#ifndef VARANAM_RESULT_CODES_INCLUDED_103446
+#define VARANAM_RESULT_CODES_INCLUDED_103446
 
-#include "varnam-types.h"
-#include "varnam-array.h"
-
-int
-vwt_ensure_schema_exists(varnam *handle);
-
-int
-vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word);
-
-int
-vwt_start_changes(varnam *handle);
-
-int
-vwt_end_changes(varnam *handle);
-
-int
-vwt_discard_changes(varnam *handle);
-
-int
-vwt_optimize_for_huge_transaction(varnam *handle);
-
-int
-vwt_turn_off_optimization_for_huge_transaction(varnam *handle);
+#define VARNAM_SUCCESS                    0
+#define VARNAM_MISUSE                     1
+#define VARNAM_ERROR                      2
+#define VARNAM_ARGS_ERROR                 3
+#define VARNAM_MEMORY_ERROR               4
+#define VARNAM_PARTIAL_RENDERING          5
+#define VARNAM_STORAGE_ERROR              6
+#define VARNAM_INVALID_CONFIG             7
 
 #endif

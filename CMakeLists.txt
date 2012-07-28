@@ -5,7 +5,7 @@ project(varnam)
 message ("Generating project ${PROJECT_NAME}")
 
 set(VARNAM_LIBRARY_NAME "varnam")
-set(FOREIGN_LIBRARY_NAME "foreign-functions")
+set(DEPS_LIBRARY_NAME "deps")
 
 set(VARNAM_VERSION_MAJOR 1)
 set(VARNAM_VERSION_MINOR 0)
@@ -27,14 +27,14 @@ add_definitions(-DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF -DNEED_ASPRINTF)
 
 # Append the source files here
 list (APPEND VARNAM_SOURCES
-  varnam-util.c
-  varnam-trie.c
-  varnam-strbuf.c
-  varnam-tl.c
-  varnam-symbol-table.c
-  varnam-words-table.c
-  varnam-array.c
-  varnam-token.c
+  util.c
+  trie.c
+  strbuf.c
+  transliterate.c
+  symbol-table.c
+  words-table.c
+  varray.c
+  token.c
   vword.c
   learn.c
   rendering.c
@@ -45,16 +45,15 @@ list (APPEND VARNAM_SOURCES
 # Append the header files here. this will get copied to include directory
 list (APPEND VARNAM_INCLUDE_FILES
   varnam.h
-  varnam-api.h
-  varnam-result-codes.h
-  varnam-trie.h
-  varnam-types.h
-  varnam-util.h
-  varnam-symbol-table.h
+  api.h
+  result-codes.h
+  vtypes.h
+  util.h
+  varray.h
   )
 
-# Build foreign functions
-add_subdirectory(foreign)
+# Build dependencies
+add_subdirectory(deps)
 
 # Build tests
 add_subdirectory(tests)
@@ -68,15 +67,15 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
 
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME})
-INSTALL ( FILES foreign/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/foreign)
+INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
         # sqlite requires pthread and dl
-        target_link_libraries(${VARNAM_LIBRARY_NAME} ${FOREIGN_LIBRARY_NAME} pthread dl)
+        target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME} pthread dl)
 ENDIF()
 
 IF(MSVC)
-        target_link_libraries(${VARNAM_LIBRARY_NAME} ${FOREIGN_LIBRARY_NAME})
+        target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME})
 ENDIF()
 
 add_custom_target(vstfiles
