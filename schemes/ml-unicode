@@ -27,14 +27,12 @@ consonants ["ka", "ca", "qa"] => "ക",
            ["kha", ["gha"]] => "ഖ",
            "ga"  => "ഗ",
            ["gha", ["kha"]] => "ഘ",
-           "nga" => "ങ",
            ["NGa", ["nga"]] =>  "ങ്ങ",
            "cha" => "ച",
            ["CHa", ["cha"]] => "ഛ",
            [["cha"]] => "ച്ഛ",
            "ja"  => "ജ",
-           ["jha", "JHa"] => "ഝ",
-           "nja" => "ഞ",
+           ["jha", "JHa"] => "ഝ",           
            ["NJa", ["nja"]] => "ഞ്ഞ",
            ["ta", ["tta"]] => "റ്റ",
            ["Ta", ["ta", "da"]] => "ട",
@@ -59,6 +57,11 @@ consonants ["ka", "ca", "qa"] => "ക",
            "zha" => "ഴ",
            "xa" => "ക്സ",
            ["ksha", "Xa"] => "ക്ഷ"
+           
+tag "render_value2" do
+   consonants "nja" => ["ഞ", "ഞ്ഞ"],
+              "nga" => ["ങ", "ങ്ങ"]
+end           
 
 consonants "nka" => "ങ്ക",
            ["ncha", ["nja"]] => "ഞ്ച",
@@ -118,12 +121,14 @@ symbols "/" => "ഽ",
 
 # Chillaksharams are specified as consonant because it is a special form of consonant
 # value1 = atomic chil. value2 = old style
-consonants "m" => "ം",
-           "n" => ["ൻ", "ന്‍"],
-           ["N", ["n"]] => ["ൺ", "ണ്‍"],
-           "l" => ["ൽ", "ല്‍"],
-           ["L", ["l"]] => ["ൾ", "ള്‍"],
-           ["R", ["r"]] => ["ർ", "ര്‍"]
+tag "chill" do
+   consonants "m" => "ം",
+              "n" => ["ൻ", "ന്‍"],
+              ["N", ["n"]] => ["ൺ", "ണ്‍"],
+              "l" => ["ൽ", "ല്‍"],
+              ["L", ["l"]] => ["ൾ", "ള്‍"],
+              ["R", ["r"]] => ["ർ", "ര്‍"]
+end
 
 infer_dead_consonants false
 ignore_duplicates true

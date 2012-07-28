@@ -27,7 +27,9 @@ resolve_tokens(varnam *handle,
                varray *tokens,
                vword **word);
 
-struct varnam_token_rendering*
-get_additional_rendering_rule(varnam *handle);
+int
+resolve_rtl_tokens(varnam *handle,
+                  varray *tokens,
+                  char **output);
 
 #endif

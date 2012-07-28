@@ -89,33 +89,22 @@ varnam_reverse_transliterate(varnam *handle,
                              const char *input,
                              char **output)
 {
-    int rc, i, j;
-    varray *result, *tokens;
-    strbuf *rtl;
-    vtoken *token;
+    int rc;
+    varray *result;
 
     if(handle == NULL || input == NULL)
         return VARNAM_ARGS_ERROR;
 
+    reset_pool (handle);
+
     result = get_pooled_array (handle);
     rc = vst_tokenize (handle, input, VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, result);
-    if (rc) return rc;
+    if (rc)
+        return rc;
 
-    rtl = get_pooled_string (handle);
-    assert (rtl);
-    for (i = 0; i < varray_length (result); i++)
-    {
-        tokens = varray_get (result, i);
-        assert (tokens);
-        for (j = 0; j < varray_length (tokens); j++)
-        {
-            token = varray_get (tokens, j);
-            assert (token);
-            strbuf_add (rtl, token->pattern);
-            break; /* We only care about first element in each array */
-        }
-    }
+    rc = resolve_rtl_tokens (handle, result, output);
+    if (rc)
+        return rc;
 
-    *output = rtl->buffer;
     return VARNAM_SUCCESS;
 }

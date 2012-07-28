@@ -46,6 +46,14 @@
 VARNAM_EXPORT extern int
 varnam_init(const char *scheme_file, varnam **handle, char **msg);
 
+VARNAM_EXPORT extern int
+varnam_register_renderer(
+    varnam *handle,
+    const char *scheme_id,
+    int (*tl)(varnam *handle, vtoken *previous, vtoken *current,  strbuf *output),
+    int (*rtl)(varnam *handle, vtoken *previous, vtoken *current,  strbuf *output)
+);
+
 /**
  * Configure varnam library.
  *
@@ -116,6 +124,7 @@ VARNAM_EXPORT extern int varnam_create_token(
     const char *pattern,
     const char *value1,
     const char *value2,
+    const char *tag,
     int token_type,
     int match_type,
     int buffered

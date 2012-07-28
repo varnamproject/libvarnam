@@ -17,12 +17,22 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "../varnam-types.h"
-
 #ifndef RENDERING_RENDERERS_H_INCLUDED_105305
 #define RENDERING_RENDERERS_H_INCLUDED_105305
 
-int ml_unicode_renderer(varnam*, struct token*, struct strbuf*);
-int ml_unicode_rtl_renderer(varnam*, struct token*, struct strbuf*);
+#include "../varnam-types.h"
+#include "../varnam-util.h"
+
+int
+ml_unicode_renderer(varnam *handle,
+                    vtoken *previous,
+                    vtoken *current,
+                    strbuf *output);
+
+int
+ml_unicode_rtl_renderer(varnam *handle,
+                        vtoken *previous,
+                        vtoken *current,
+                        strbuf *output);
 
 #endif

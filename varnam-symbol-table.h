@@ -24,38 +24,6 @@
 #include "varnam-array.h"
 
 /**
-* This function will try to get a token for the lookup text provided.
-* search will be done directly on the symbol table.
-* A valid instance of token will returned upon success.
-* NULL value indicates a failure to get the token
-**/
-struct token*
-find_token(varnam *handle, const char *lookup);
-
-/**
-* This function will try to get a token for the lookup text provided.
-* search will be done directly on the symbol table on value1 and value2 fields.
-* A valid instance of token will returned upon success.
-* NULL value indicates a failure to get the token
-**/
-struct token*
-find_rtl_token(varnam *handle, const char *lookup);
-
-/**
-* Does a search in the symbol table and retrns a boolean value indicating
-* the possibility of finding a token for the lookup text.
-**/
-int
-can_find_token(varnam *handle, struct token *last, const char *lookup);
-
-/**
-* Does a search in the symbol table and retrns a boolean value indicating
-* the possibility of finding a rtl token for the lookup text.
-**/
-int
-can_find_rtl_token(varnam *handle, struct token *last, const char *lookup);
-
-/**
  * checks the schema availability. this function will create it when necessary
  **/
 int
@@ -76,6 +44,7 @@ vst_persist_token(
     const char *pattern,
     const char *value1,
     const char *value2,
+    const char *tag,
     int token_type,
     int match_type);
 

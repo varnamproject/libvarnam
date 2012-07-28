@@ -38,7 +38,7 @@ list (APPEND VARNAM_SOURCES
   vword.c
   learn.c
   rendering.c
-  rendering/ml_unicode.c
+  renderer/ml_unicode.c
   varnam.c
   )
 

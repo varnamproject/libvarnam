@@ -28,11 +28,7 @@
 #include "varnam-symbol-table.h"
 #include "varnam-words-table.h"
 #include "varnam-token.h"
-#include "rendering/renderers.h"
-
-static struct varnam_token_rendering renderers[] = {
-    { "ml-unicode", ml_unicode_renderer, ml_unicode_rtl_renderer }
-};
+#include "renderer/renderers.h"
 
 static struct varnam_internal*
 initialize_internal()
@@ -41,6 +37,7 @@ initialize_internal()
     vi = (struct varnam_internal *) xmalloc(sizeof (struct varnam_internal));
     if(vi) {
         vi->virama = NULL;
+        vi->renderers = NULL;
         vi->last_token_available = 0;
         vi->last_rtl_token_available = 0;
         vi->last_token = NULL;
@@ -128,14 +125,44 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
         return VARNAM_MEMORY_ERROR;
 
     strncpy(c->scheme_file, scheme_file, filename_length + 1);
-    vi->renderers = renderers;
     c->internal = vi;
 
     rc = ensure_schema_exists(c, msg);
     if (rc != VARNAM_SUCCESS)
         return rc;
 
+    rc = varnam_register_renderer (c, "ml-unicode", &ml_unicode_renderer, &ml_unicode_rtl_renderer);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
+
     *handle = c;
+    return VARNAM_SUCCESS;
+}
+
+int
+varnam_register_renderer(
+    varnam *handle,
+    const char *scheme_id,
+    int (*tl)(varnam *handle, vtoken *previous, vtoken *current,  strbuf *output),
+    int (*rtl)(varnam *handle, vtoken *previous, vtoken *current,  strbuf *output))
+{
+    vtoken_renderer *r;
+    
+    if (handle == NULL)
+        return VARNAM_ARGS_ERROR;
+
+    if (v_->renderers == NULL)
+        v_->renderers = varray_init();
+
+    r = xmalloc (sizeof (vtoken_renderer));
+    if (r == NULL)
+        return VARNAM_ERROR;
+
+    r->scheme_id = scheme_id;
+    r->tl = tl;
+    r->rtl = rtl;
+
+    varray_push (v_->renderers, r);
     return VARNAM_SUCCESS;
 }
 
@@ -303,6 +330,7 @@ varnam_create_token(
     const char *pattern,
     const char *value1,
     const char *value2,
+    const char *tag,
     int token_type,
     int match_type,
     int buffered)
@@ -319,9 +347,10 @@ varnam_create_token(
 
     if (strlen(pattern) > VARNAM_SYMBOL_MAX ||
         strlen(value1) > VARNAM_SYMBOL_MAX  ||
-        (value2 != NULL && strlen(value2) > VARNAM_SYMBOL_MAX))
+        (value2 != NULL && strlen(value2) > VARNAM_SYMBOL_MAX) ||
+        (tag != NULL && strlen(tag) > VARNAM_SYMBOL_MAX))
     {
-        set_last_error (handle, "Length of pattern, value1 or value2 should be less than VARNAM_SYMBOL_MAX");
+        set_last_error (handle, "Length of pattern, tag, value1 or value2 should be less than VARNAM_SYMBOL_MAX");
         return VARNAM_ARGS_ERROR;
     }
 
@@ -366,7 +395,7 @@ varnam_create_token(
             else
                 v2[0] = '\0';
 
-            rc = vst_persist_token (handle, p, v1, v2, VARNAM_TOKEN_DEAD_CONSONANT, match_type);
+            rc = vst_persist_token (handle, p, v1, v2, tag, VARNAM_TOKEN_DEAD_CONSONANT, match_type);
             if (rc != VARNAM_SUCCESS)
             {
                 if (buffered) vst_discard_changes(handle);
@@ -379,7 +408,7 @@ varnam_create_token(
     if (token_type == VARNAM_TOKEN_NON_JOINER)
         value1 = value2 = ZWNJ();
 
-    rc = vst_persist_token (handle, pattern, value1, value2, token_type, match_type);
+    rc = vst_persist_token (handle, pattern, value1, value2, tag, token_type, match_type);
     if (rc != VARNAM_SUCCESS)
     {
         if (buffered) vst_discard_changes(handle);

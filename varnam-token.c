@@ -45,7 +45,7 @@ initialize_token (vtoken *tok,
         tok->value2[0] = '\0';
 
     if (tag != NULL)
-        strncpy( tok->tag, tag, VARNAM_TOKEN_TAG_MAX);
+        strncpy( tok->tag, tag, VARNAM_SYMBOL_MAX);
     else
         tok->tag[0] = '\0';
 }

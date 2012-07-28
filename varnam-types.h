@@ -22,7 +22,6 @@
 #include "foreign/sqlite3.h"
 
 #define VARNAM_SYMBOL_MAX           30
-#define VARNAM_TOKEN_TAG_MAX        15
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
 #define VARNAM_WORD_MAX             25
 
@@ -77,8 +76,8 @@ struct varnam_internal
 {
     sqlite3 *db, *known_words;
     char *message;
-    struct varnam_token_rendering *renderers;
-
+    struct varray_t *renderers;
+    
     struct token *virama;
 
     struct strbuf *output;
@@ -136,7 +135,7 @@ typedef struct varnam {
 
 typedef struct token {
     int id, type, match_type;
-    char tag[VARNAM_TOKEN_TAG_MAX];
+    char tag[VARNAM_SYMBOL_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];
@@ -154,11 +153,11 @@ struct varnam_rule {
     struct varnam_rule *next;
 };
 
-struct varnam_token_rendering {
-    const char *scheme_identifier;
-    int (*render)(varnam *handle, struct token *match,  struct strbuf *output);
-    int (*render_rtl)(varnam *handle, struct token *match,  struct strbuf *output);
-};
+typedef struct varnam_token_rendering {
+    const char *scheme_id;
+    int (*tl)(varnam *handle, vtoken *previous, vtoken *current,  struct strbuf *output);
+    int (*rtl)(varnam *handle, vtoken *previous, vtoken *current,  struct strbuf *output);
+} vtoken_renderer;
 
 typedef struct varnam_info_t {
     const char *scheme_file;
