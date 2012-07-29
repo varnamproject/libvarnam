@@ -210,6 +210,7 @@ vst_flush_changes(varnam *handle)
     if (!handle->internal->vst_buffering)
         return VARNAM_SUCCESS;
 
+    varnam_log (handle, "Writing changes to file...");
     rc = sqlite3_exec(handle->internal->db, sql, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK )
     {
@@ -217,8 +218,17 @@ vst_flush_changes(varnam *handle)
         sqlite3_free(zErrMsg);
         return VARNAM_STORAGE_ERROR;
     }
-
     handle->internal->vst_buffering = 0;
+
+    varnam_log (handle, "Compacting file...");
+    rc = sqlite3_exec(handle->internal->db, "VACUUM;", NULL, 0, &zErrMsg);
+    if( rc != SQLITE_OK )
+    {
+        set_last_error (handle, "Failed to compact file : %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return VARNAM_STORAGE_ERROR;
+    }
+
     return VARNAM_SUCCESS;
 }
 
