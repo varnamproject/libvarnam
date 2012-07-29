@@ -44,4 +44,10 @@ vwt_optimize_for_huge_transaction(varnam *handle);
 int
 vwt_turn_off_optimization_for_huge_transaction(varnam *handle);
 
+/**
+ * Gets the suggestions for input and store it in words array
+ **/
+int
+vwt_get_suggestions (varnam *handle, const char *input, varray *words);
+
 #endif

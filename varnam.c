@@ -85,6 +85,7 @@ initialize_internal()
         vi->learn_word = NULL;
         vi->learn_pattern = NULL;
         vi->get_word = NULL;
+        vi->get_suggestions = NULL;
     }
     return vi;
 }

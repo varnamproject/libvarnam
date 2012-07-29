@@ -23,19 +23,24 @@
 #include "varray.h"
 
 static void
-initialize_word(vword *word, const char *text, int confidence)
+initialize_word(varnam *handle, vword *word, const char *text, int confidence)
 {
+    strbuf *w;
+
     assert (word);
-    
-    word->text       = text;
+
+    w = get_pooled_string (handle);
+    strbuf_add (w, text);
+
+    word->text       = strbuf_to_s (w);
     word->confidence = confidence;
 }
 
 vword*
-Word(const char *text, int confidence)
+Word(varnam *handle, const char *text, int confidence)
 {
     vword *word = xmalloc (sizeof (vword));
-    initialize_word (word, text, confidence);
+    initialize_word (handle, word, text, confidence);
     return word;
 }
 
@@ -43,18 +48,18 @@ vword*
 get_pooled_word(varnam *handle, const char *text, int confidence)
 {
     vword *word;
-    
+
     if (v_->words_pool == NULL)
         v_->words_pool = vpool_init ();
 
     word = vpool_get (v_->words_pool);
     if (word == NULL)
     {
-        word = Word (text, confidence);
+        word = Word (handle, text, confidence);
         vpool_add (v_->words_pool, word);
     }
     else
-        initialize_word (word, text, confidence);
+        initialize_word (handle, word, text, confidence);
 
     return word;
 }

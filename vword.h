@@ -26,7 +26,7 @@
  * Constructor for vword
  */
 vword*
-Word(const char *text, int confidence);
+Word(varnam *handle, const char *text, int confidence);
 
 /*
  * Gets a pooled instance of vword. If no free instances are available, one will be created

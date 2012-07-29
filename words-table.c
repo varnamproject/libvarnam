@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 #include <assert.h>
+#include <string.h>
 
 #include "symbol-table.h"
 #include "util.h"
@@ -26,8 +27,10 @@
 #include "token.h"
 #include "rendering.h"
 #include "varray.h"
+#include "vword.h"
 
 #define MAXIMUM_PATTERNS_TO_LEARN 150
+#define MINIMUM_CHARACTER_LENGTH_FOR_SUGGESTION 3
 
 int
 vwt_ensure_schema_exists(varnam *handle)
@@ -37,7 +40,6 @@ vwt_ensure_schema_exists(varnam *handle)
         "pragma journal_mode=wal;";
 
     const char *tables =
-
         "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned_on date);"
         "create         table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));"
@@ -56,28 +58,28 @@ vwt_ensure_schema_exists(varnam *handle)
 
     rc = sqlite3_exec(v_->known_words, pragmas, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to initialize file for storing known words : %s", zErrMsg);
+        set_last_error (handle, "Failed to initialize file for storing known words. Pragma setting failed. : %s", zErrMsg);
         sqlite3_free(zErrMsg);
         return VARNAM_ERROR;
     }
 
     rc = sqlite3_exec(v_->known_words, tables, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to initialize file for storing known words : %s", zErrMsg);
+        set_last_error (handle, "Failed to initialize file for storing known words. Schema creation failed. : %s", zErrMsg);
         sqlite3_free(zErrMsg);
         return VARNAM_ERROR;
     }
 
     rc = sqlite3_exec(v_->known_words, triggers1, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to initialize file for storing known words : %s", zErrMsg);
+        set_last_error (handle, "Failed to initialize file for storing known words. First set of triggers failed. : %s", zErrMsg);
         sqlite3_free(zErrMsg);
         return VARNAM_ERROR;
     }
 
     rc = sqlite3_exec(v_->known_words, triggers2, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to initialize file for storing known words : %s", zErrMsg);
+        set_last_error (handle, "Failed to initialize file for storing known words. Second set of triggers failed. : %s", zErrMsg);
         sqlite3_free(zErrMsg);
         return VARNAM_ERROR;
     }
@@ -395,5 +397,64 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
     rc = learn_all_possibilities (handle, tokens, word);
     if (rc) return rc;
 
+    return VARNAM_SUCCESS;
+}
+
+int
+vwt_get_suggestions (varnam *handle, const char *input, varray *words)
+{
+    int rc;
+    vword *word;
+    strbuf *parameter;
+    const char *sql = "select word,confidence from words where rowid in (SELECT word_id FROM patterns where pattern match ?1 limit 10) order by confidence desc";
+
+    assert (handle);
+    assert (words);
+
+    if (v_->known_words == NULL)
+        return VARNAM_SUCCESS;
+
+    if (strlen(input) < MINIMUM_CHARACTER_LENGTH_FOR_SUGGESTION)
+        return VARNAM_SUCCESS;
+
+    if (v_->get_suggestions == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->get_suggestions, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to get suggestions : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->get_suggestions);
+            return VARNAM_ERROR;
+        }
+    }
+
+    parameter = get_pooled_string (handle);
+    strbuf_add (parameter, input);
+    strbuf_add (parameter, "*");
+    sqlite3_bind_text (v_->get_suggestions, 1, strbuf_to_s (parameter), -1, NULL);
+
+    for (;;)
+    {
+        rc = sqlite3_step (v_->get_suggestions);
+        if (rc == SQLITE_ROW)
+        {
+            word = get_pooled_word (handle,
+                                    (const char*) sqlite3_column_text(v_->get_suggestions, 0),
+                                    (int) sqlite3_column_int(v_->get_suggestions, 1));
+            varray_push (words, word);
+        }
+        else if (rc == SQLITE_DONE)
+        {
+            break;
+        }
+        else
+        {
+            set_last_error (handle, "Failed to get suggestions : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->get_suggestions);
+            return VARNAM_ERROR;
+        }
+    }
+
+    sqlite3_clear_bindings (v_->get_suggestions);
+    sqlite3_reset (v_->get_suggestions);
     return VARNAM_SUCCESS;
 }

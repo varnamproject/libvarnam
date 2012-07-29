@@ -25,6 +25,7 @@
 #include "vtypes.h"
 #include "result-codes.h"
 #include "symbol-table.h"
+#include "words-table.h"
 #include "varray.h"
 #include "token.h"
 #include "vword.h"
@@ -79,7 +80,13 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
     if (words == NULL) {
         words = get_pooled_array (handle);
     }
+
+    rc = vwt_get_suggestions (handle, input, words);
+    if (rc)
+        return rc;
+
     varray_push (words, word);
+
     *output = words;
     return VARNAM_SUCCESS;
 }
