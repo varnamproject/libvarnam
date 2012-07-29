@@ -247,6 +247,12 @@ vst_get_virama(varnam* handle, struct token **output)
     int rc;
     sqlite3 *db; sqlite3_stmt *stmt;
 
+    if (v_->virama != NULL)
+    {
+        *output = v_->virama;
+        return VARNAM_SUCCESS;
+    }
+
     db = handle->internal->db;
 
     rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, tag from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
@@ -263,14 +269,16 @@ vst_get_virama(varnam* handle, struct token **output)
     rc = sqlite3_step( stmt );
     if( rc == SQLITE_ROW )
     {
-        *output = get_pooled_token(handle,
-                                   (int) sqlite3_column_int(stmt, 0),
-                                   (int) sqlite3_column_int(stmt, 1),
-                                   (int) sqlite3_column_int(stmt, 2),
-                                   (const char*) sqlite3_column_text(stmt, 3),
-                                   (const char*) sqlite3_column_text(stmt, 4),
-                                   (const char*) sqlite3_column_text(stmt, 5),
-                                   (const char*) sqlite3_column_text(stmt, 6));
+        /* Not using pooled token here because we need to cache this in v_->virama */
+        *output = Token((int) sqlite3_column_int(stmt, 0),
+                        (int) sqlite3_column_int(stmt, 1),
+                        (int) sqlite3_column_int(stmt, 2),
+                        (const char*) sqlite3_column_text(stmt, 3),
+                        (const char*) sqlite3_column_text(stmt, 4),
+                        (const char*) sqlite3_column_text(stmt, 5),
+                        (const char*) sqlite3_column_text(stmt, 6));
+
+        v_->virama = *output;
     }
     else if ( rc == SQLITE_DONE )
     {
