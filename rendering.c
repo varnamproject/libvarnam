@@ -77,7 +77,7 @@ resolve_tokens(varnam *handle,
         r = get_renderer (handle);
         if (r != NULL)
         {
-            rc = r->rtl (handle, previous, token, string);
+            rc = r->tl (handle, previous, token, string);
             if (rc == VARNAM_ERROR)
                 return rc;
             if (rc == VARNAM_SUCCESS)

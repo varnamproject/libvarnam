@@ -65,6 +65,7 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
         return VARNAM_ARGS_ERROR;
 
     reset_pool(handle);
+    varnam_debug (handle, "Transliterating %s", input);
 
     all_tokens = get_pooled_array (handle);
     rc = vst_tokenize (handle, input, VARNAM_TOKENIZER_PATTERN, VARNAM_MATCH_EXACT, all_tokens);
@@ -112,6 +113,8 @@ varnam_reverse_transliterate(varnam *handle,
     rc = resolve_rtl_tokens (handle, result, output);
     if (rc)
         return rc;
+
+    varnam_debug (handle, "Reverse transliterating %s = %s", input, *output);
 
     return VARNAM_SUCCESS;
 }

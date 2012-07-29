@@ -302,7 +302,7 @@ varnam_get_all_tokens(
  * USAGE
  *
  * varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, func) - Enables default logging
- * varnam_enable_logging (handle, VARNAM_LOG_DBUG, func)    - Enables debug level logging
+ * varnam_enable_logging (handle, VARNAM_LOG_DEBUG, func)    - Enables debug level logging
  * varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, NULL) - Disables logging
  *
  * Logging is hierarchical. So enabling debug level logging will generate all the log messages
