@@ -43,7 +43,7 @@ vwt_ensure_schema_exists(varnam *handle)
         "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned_on date);"
         "create         table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));"
-        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"1,2,3,4,5,6,7,8,9,10,11,12,13,14,15\");";
+        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"3,4,5,6,7,8,9,10\");";
 
     const char *triggers1 =
         "create trigger if not exists pc_bu before update on patterns_content begin delete from patterns where docid = old.rowid; end;"
