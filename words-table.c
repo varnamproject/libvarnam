@@ -29,7 +29,7 @@
 #include "varray.h"
 #include "vword.h"
 
-#define MAXIMUM_PATTERNS_TO_LEARN 150
+#define MAXIMUM_PATTERNS_TO_LEARN 20
 #define MINIMUM_CHARACTER_LENGTH_FOR_SUGGESTION 3
 
 int
@@ -406,7 +406,7 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
     int rc;
     vword *word;
     strbuf *parameter;
-    const char *sql = "select word,confidence from words where rowid in (SELECT word_id FROM patterns where pattern match ?1 limit 10) order by confidence desc";
+    const char *sql = "select word,confidence from words where rowid in (SELECT distinct(word_id) FROM patterns where pattern match ?1 limit 20) order by confidence desc";
 
     assert (handle);
     assert (words);
@@ -458,3 +458,82 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
     sqlite3_reset (v_->get_suggestions);
     return VARNAM_SUCCESS;
 }
+
+/**
+ * Tokenize supplied pattern based on words available.
+ *
+ * This tokenization is done against patterns table. Like symbols tokenization,
+ * this also does the tokenization based on longest prefix match. But this method does
+ * it in a different way. Patterns is a prefix array of all available patterns.
+ *
+ * This method tries to find a match until it gets the first match. It will accept this match
+ * if the next match attempt fails. This is safe since patterns table is prefix array and when a
+ * prefix lookup fails, there won't be anymore matches.
+ *
+ * This function works in the above way because patterns table doesn't keep all the prefixes. It discards
+ * small prefixes to save space. So this alogorithm doesn't know about the smallest prefix available
+ *
+ * This will populate vtoken instances into result array. 
+ **/
+/* int */
+/* vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result) */
+/* { */
+/*     int rc, matchpos = 0, pos = 0; */
+/*     struct strbuf *lookup, *match; */
+/*     vtoken *token; */
+/*     bool found = false; */
+/*     const char *pc;     */
+    
+/*     if (pattern == NULL || *pattern == '\0') */
+/*         return VARNAM_SUCCESS; */
+
+/*     varray_clear (result); */
+/*     pc = pattern; */
+/*     lookup = get_pooled_string (handle); */
+/*     match = get_pooled_string (handle); */
+
+/*     while (*pc != '\0') */
+/*     { */
+/*         ++pos; */
+/*         strbuf_add_c (lookup, *pc++); */
+/*         rc = get_match (handle, lookup, match, &found); */
+/*         if (rc != VARNAM_SUCCESS) */
+/*             return rc; */
+
+/*         if (found) */
+/*         { */
+/*             matchpos = pos; */
+/*             continue; */
+/*         } */
+
+
+/*         if (rc) return rc; */
+
+/*         if (tokens_available) */
+/*             matchpos = bytes_read; */
+
+/*         if (varray_is_empty (tokens)) */
+/*         { */
+/*             /\* We couldn't find any tokens. So adding lookup as the match *\/ */
+/*             token = get_pooled_token (handle, -99, */
+/*                                       VARNAM_TOKEN_OTHER, */
+/*                                       VARNAM_MATCH_EXACT, */
+/*                                       strbuf_to_s (lookup), "", "", ""); */
+/*             assert (token); */
+/*             varray_push (tokens, token); */
+/*             matchpos = (int) lookup->length; */
+/*         } */
+/*         rc = can_find_more_matches (handle, lookup, tokenize_using, &possibility); */
+/*         if (rc) return rc; */
+/*         if (possibility && *inputcopy != '\0') continue; */
+
+/*         varray_push (result, tokens); */
+/*         bytes_read = 0; */
+/*         tokens = NULL; */
+
+/*         input = input + matchpos; */
+/*         inputcopy = input; */
+/*     } */
+
+/*     return VARNAM_SUCCESS; */
+/* } */
