@@ -15,3 +15,4 @@ install_manifest.txt
 Testing/
 TAGS
 tests/output
+tmp/

@@ -405,8 +405,7 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
 {
     int rc;
     vword *word;
-    strbuf *parameter;
-    const char *sql = "select word,confidence from words where rowid in (SELECT distinct(word_id) FROM patterns where pattern match ?1 limit 20) order by confidence desc";
+    const char *sql = "select word, confidence from words where rowid in (SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= ?1 and pc.pattern <= ?1 || 'z' limit 10) order by confidence desc";
 
     assert (handle);
     assert (words);
@@ -427,10 +426,7 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
         }
     }
 
-    parameter = get_pooled_string (handle);
-    strbuf_add (parameter, input);
-    strbuf_add (parameter, "*");
-    sqlite3_bind_text (v_->get_suggestions, 1, strbuf_to_s (parameter), -1, NULL);
+    sqlite3_bind_text (v_->get_suggestions, 1, input, -1, NULL);
 
     for (;;)
     {
