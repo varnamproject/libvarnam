@@ -50,4 +50,10 @@ vwt_turn_off_optimization_for_huge_transaction(varnam *handle);
 int
 vwt_get_suggestions (varnam *handle, const char *input, varray *words);
 
+/**
+ * Tokenizes the pattern based on words table. Result will be multidimensional
+ * array where each sub array containing vtoken instances. */
+int
+vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result);
+
 #endif

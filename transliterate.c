@@ -56,10 +56,10 @@ flatten(varnam *handle, varray *all_tokens)
 int
 varnam_transliterate(varnam *handle, const char *input, varray **output)
 {
-    int rc;
+    int rc, i;
     varray *words = 0, *tokens = 0;
     varray *all_tokens = 0; /* This will be multidimensional array */
-    vword *word;
+    vword *word, *word1;
 
     if(handle == NULL || input == NULL)
         return VARNAM_ARGS_ERROR;
@@ -85,6 +85,22 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
     rc = vwt_get_suggestions (handle, input, words);
     if (rc)
         return rc;
+
+    if (varray_is_empty (words))
+    {
+        /* We don't have any suggestions for the input. In this case, varnam does
+         * it's best to provide suggestions by doing a tokenization on words table */
+        rc = vwt_tokenize_pattern (handle, input, all_tokens);
+        if (rc) return rc;
+
+        for (i = 0; i < varray_length (all_tokens); i++)
+        {
+            tokens = varray_get (all_tokens, i);
+            rc = resolve_tokens (handle, tokens, &word1);
+            if (rc) return rc;
+            varray_push (words, word1);
+        }
+    }
 
     varray_push (words, word);
 

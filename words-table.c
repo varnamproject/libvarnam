@@ -455,81 +455,253 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
     return VARNAM_SUCCESS;
 }
 
-/**
- * Tokenize supplied pattern based on words available.
- *
- * This tokenization is done against patterns table. Like symbols tokenization,
- * this also does the tokenization based on longest prefix match. But this method does
- * it in a different way. Patterns is a prefix array of all available patterns.
- *
- * This method tries to find a match until it gets the first match. It will accept this match
- * if the next match attempt fails. This is safe since patterns table is prefix array and when a
- * prefix lookup fails, there won't be anymore matches.
- *
- * This function works in the above way because patterns table doesn't keep all the prefixes. It discards
- * small prefixes to save space. So this alogorithm doesn't know about the smallest prefix available
- *
- * This will populate vtoken instances into result array. 
- **/
-/* int */
-/* vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result) */
-/* { */
-/*     int rc, matchpos = 0, pos = 0; */
-/*     struct strbuf *lookup, *match; */
-/*     vtoken *token; */
-/*     bool found = false; */
-/*     const char *pc;     */
-    
-/*     if (pattern == NULL || *pattern == '\0') */
-/*         return VARNAM_SUCCESS; */
+static int
+get_matches (varnam *handle, strbuf *lookup, varray *matches, bool *found)
+{
+    int rc;
+    const char *sql = "select word from words where rowid in (select distinct(word_id) from patterns_content where pattern = ?1 limit 3);";
+    strbuf *word;
+    bool cleared = false;
 
-/*     varray_clear (result); */
-/*     pc = pattern; */
-/*     lookup = get_pooled_string (handle); */
-/*     match = get_pooled_string (handle); */
+    assert (v_->known_words);
 
-/*     while (*pc != '\0') */
-/*     { */
-/*         ++pos; */
-/*         strbuf_add_c (lookup, *pc++); */
-/*         rc = get_match (handle, lookup, match, &found); */
-/*         if (rc != VARNAM_SUCCESS) */
-/*             return rc; */
+    if (v_->get_matches_for_word == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->get_matches_for_word, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to get matches : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->get_matches_for_word);
+            return VARNAM_ERROR;
+        }
+    }
 
-/*         if (found) */
-/*         { */
-/*             matchpos = pos; */
-/*             continue; */
-/*         } */
+    sqlite3_bind_text (v_->get_matches_for_word, 1, strbuf_to_s(lookup), -1, NULL);
+    *found = false;
+    for (;;)
+    {
+        rc = sqlite3_step (v_->get_matches_for_word);
+        if (rc == SQLITE_ROW)
+        {
+            if (!cleared) {
+                varray_clear (matches);
+                cleared = true;
+            }
+            word = get_pooled_string (handle);
+            strbuf_add (word, (const char*) sqlite3_column_text(v_->get_matches_for_word, 0));
+            varray_push (matches, word);
+            *found = true;
+        }
+        else if (rc == SQLITE_DONE)
+        {
+            break;
+        }
+        else
+        {
+            set_last_error (handle, "Failed to get matches : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->get_matches_for_word);
+            return VARNAM_ERROR;
+        }
+    }
 
+    sqlite3_clear_bindings (v_->get_matches_for_word);
+    sqlite3_reset (v_->get_matches_for_word);
 
-/*         if (rc) return rc; */
+    return VARNAM_SUCCESS;
+}
 
-/*         if (tokens_available) */
-/*             matchpos = bytes_read; */
+static int
+can_find_possible_matches (varnam *handle, strbuf *lookup, bool *possible)
+{
+    int rc;
+    const char *sql = "SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern > ?1 and pc.pattern <= ?1 || 'z'  limit 1;";
 
-/*         if (varray_is_empty (tokens)) */
-/*         { */
-/*             /\* We couldn't find any tokens. So adding lookup as the match *\/ */
-/*             token = get_pooled_token (handle, -99, */
-/*                                       VARNAM_TOKEN_OTHER, */
-/*                                       VARNAM_MATCH_EXACT, */
-/*                                       strbuf_to_s (lookup), "", "", ""); */
-/*             assert (token); */
-/*             varray_push (tokens, token); */
-/*             matchpos = (int) lookup->length; */
-/*         } */
-/*         rc = can_find_more_matches (handle, lookup, tokenize_using, &possibility); */
-/*         if (rc) return rc; */
-/*         if (possibility && *inputcopy != '\0') continue; */
+    assert (v_->known_words);
 
-/*         varray_push (result, tokens); */
-/*         bytes_read = 0; */
-/*         tokens = NULL; */
+    if (v_->possible_to_find_matches == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->possible_to_find_matches, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to check for possible matches : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->possible_to_find_matches);
+            return VARNAM_ERROR;
+        }
+    }
 
-/*         input = input + matchpos; */
-/*         inputcopy = input; */
-/*     } */
+    sqlite3_bind_text (v_->possible_to_find_matches, 1, strbuf_to_s(lookup), -1, NULL);
+    *possible = false;
+    rc = sqlite3_step (v_->possible_to_find_matches);
+    if (rc == SQLITE_ROW)
+    {
+        *possible = true;
+    }
+    else if (rc != SQLITE_DONE)
+    {
+        set_last_error (handle, "Failed to check for possible matches : %s", sqlite3_errmsg(v_->known_words));
+        sqlite3_reset (v_->possible_to_find_matches);
+        return VARNAM_ERROR;
+    }
 
-/*     return VARNAM_SUCCESS; */
-/* } */
+    sqlite3_clear_bindings (v_->possible_to_find_matches);
+    sqlite3_reset (v_->possible_to_find_matches);
+
+    return VARNAM_SUCCESS;
+}
+
+/* Gets the first element of each array in the specified multidimensional array */
+static varray*
+get_first_elements(varnam *handle, varray *source)
+{
+    int i, j;
+    varray *a;
+    varray *result = get_pooled_array (handle);
+
+    for (i = 0; i < varray_length (source); i++)
+    {
+        a = varray_get (source, i);
+        for (j = 0; j < varray_length (a); j++)
+        {
+            varray_push (result, varray_get (a, j));
+            break;
+        }
+    }
+
+    return result;
+}
+
+/* tokens will be a multidimensional array */
+static void
+add_tokens (varnam *handle, varray *tokens, varray *result, bool first_match)
+{
+    varray *tmp, *item;
+    int j , k;
+
+    tmp = get_first_elements (handle, tokens);
+    if (first_match) {
+        varray_push (result, tmp);
+    }
+    else
+    {
+        /* Append tokens to each element in the result */
+        for (j = 0; j < varray_length (result); j++)
+        {
+            item = varray_get (result, j);
+            for (k = 0; k < varray_length (tmp); k++)
+            {
+                varray_push (item, varray_get (tmp, k));
+            }
+        }
+    }
+}
+
+static int
+symbols_tokenize_add_to_result(varnam *handle, strbuf *lookup, varray *result)
+{
+    int rc;
+    varray *tokens;
+
+    tokens = get_pooled_array (handle);
+    if (!strbuf_is_blank (lookup))
+    {
+        rc = vst_tokenize (handle, strbuf_to_s (lookup), VARNAM_TOKENIZER_PATTERN, VARNAM_MATCH_EXACT, tokens);
+        if (rc) return rc;
+
+        add_tokens (handle, tokens, result, false);
+        strbuf_clear (lookup);
+    }
+
+    return_array_to_pool (handle, tokens);
+    return VARNAM_SUCCESS;
+}
+
+int
+vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
+{
+    int rc, matchpos = 0, pos = 0, i;
+    strbuf *lookup, *for_symbols_tokenization, *match;
+    varray *matches;  /* contains strbuf* instances */
+    varray *tokens;   /* Contains arrays that contains vtoken* instances */
+    bool found = false, possible = false, first_match = true;
+    const char *pc;
+
+    if (pattern == NULL || *pattern == '\0')
+        return VARNAM_SUCCESS;
+
+    varray_clear (result);
+
+    lookup                   = get_pooled_string (handle);
+    for_symbols_tokenization = get_pooled_string (handle);
+    matches                  = get_pooled_array (handle);
+    tokens                   = get_pooled_array (handle);
+
+    pc = pattern;
+    while (*pc != '\0')
+    {
+        strbuf_addc (lookup, *pc);
+        strbuf_addc (for_symbols_tokenization, *pc);
+        ++pos; ++pc;
+
+        rc = get_matches (handle, lookup, matches, &found);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
+        if (found) {
+            matchpos = pos;
+        }
+
+        rc = can_find_possible_matches (handle, lookup, &possible);
+        if (rc)
+            return rc;
+        if (possible)
+            continue;
+
+        /* At this point we will have the longest possible match. If nothing is available,
+         * there is no words that matches the prefix. In that case, exiting early */
+        if (varray_length (matches) == 0 && varray_length(result) == 0) {
+            return VARNAM_SUCCESS;
+        }
+
+        if (varray_length (matches) > 0)
+        {
+            /* for_symbols_tokenization will have currently matched lookup also. Removing this will give us
+             * text which needs to symbols tokenized */
+            strbuf_remove_from_last (for_symbols_tokenization, strbuf_to_s (lookup));
+            rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result);
+            if (rc) return rc;
+
+            for(i = 0; i < varray_length (matches); i++)
+            {
+                /* Tokenize the match */
+                match = varray_get (matches, i);
+                assert (match);
+                rc = vst_tokenize (handle, strbuf_to_s(match), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, tokens);
+                if (rc) return rc;
+
+                add_tokens (handle, tokens, result, first_match);
+                varray_clear (tokens);
+            }
+            first_match = false;
+            strbuf_clear (for_symbols_tokenization);
+            varray_clear (matches);
+        }
+        else
+        {
+            matchpos = 1;
+        }
+        pattern = pattern + matchpos;
+        pc = pattern;
+        pos = 0;
+        matchpos = 0;
+        strbuf_clear (lookup);
+    }
+
+    /* Tokenize the remaining text if we have any */
+    rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result);
+    if (rc) return rc;
+
+    strbuf_clear (lookup);
+    strbuf_clear (for_symbols_tokenization);
+
+    /* At this point, result will look like
+     * [[t1,t2,t3], [t4,t5,t6]]*/
+
+    return VARNAM_SUCCESS;
+}

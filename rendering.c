@@ -179,6 +179,8 @@ resolve_rtl_tokens(varnam *handle,
         }
     }
 
+    strbuf_remove_from_last (rtl, "_");
+
     *output = rtl->buffer;
     return VARNAM_SUCCESS;
 }
