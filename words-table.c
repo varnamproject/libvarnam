@@ -633,11 +633,12 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
     matches                  = get_pooled_array (handle);
     tokens                   = get_pooled_array (handle);
 
+    varnam_debug (handle, "Tokenizing '%s' with words tokenizer", pattern);
+
     pc = pattern;
     while (*pc != '\0')
     {
         strbuf_addc (lookup, *pc);
-        strbuf_addc (for_symbols_tokenization, *pc);
         ++pos; ++pc;
 
         rc = get_matches (handle, lookup, matches, &found);
@@ -661,11 +662,9 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
 
         if (varray_length (matches) > 0)
         {
-            /* for_symbols_tokenization will have currently matched lookup also. Removing this will give us
-             * text which needs to symbols tokenized */
-            strbuf_remove_from_last (for_symbols_tokenization, strbuf_to_s (lookup));
             rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result);
             if (rc) return rc;
+            strbuf_clear (for_symbols_tokenization);
 
             for(i = 0; i < varray_length (matches); i++)
             {
@@ -679,12 +678,14 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
                 varray_clear (tokens);
             }
             first_match = false;
-            strbuf_clear (for_symbols_tokenization);
             varray_clear (matches);
         }
         else
         {
             matchpos = 1;
+            /* Remembering the failed portion as we will be using this later to do the symbols
+             * tokenization */
+            strbuf_addc (for_symbols_tokenization, strbuf_to_s(lookup)[0]);
         }
         pattern = pattern + matchpos;
         pc = pattern;
@@ -693,7 +694,13 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
         strbuf_clear (lookup);
     }
 
-    /* Tokenize the remaining text if we have any */
+    /* If we still have text remaining in this buffer, means that the tokenization ended without
+     * getting any more matches after it failed last time to find a match
+     * if it would have got a match, it would have tokenized the items in the buffer.
+     *
+     * Loop above might have completed before it records failed characters for symbols tokenization.
+     * So adding remaining items in the lookup for tokenization */
+    strbuf_add (for_symbols_tokenization, strbuf_to_s (lookup));
     rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result);
     if (rc) return rc;
 
