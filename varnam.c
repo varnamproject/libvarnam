@@ -38,15 +38,7 @@ initialize_internal()
     if(vi) {
         vi->virama = NULL;
         vi->renderers = NULL;
-        vi->last_token_available = 0;
-        vi->last_rtl_token_available = 0;
-        vi->last_token = NULL;
-        vi->last_rtl_token = NULL;
-        vi->current_rtl_token = NULL;
-        vi->output = strbuf_init(100);
-        vi->rtl_output = strbuf_init(100);
         vi->last_error = strbuf_init(100);
-        vi->lookup = strbuf_init(10);
         vi->log_level = VARNAM_LOG_DEFAULT;
         vi->log_callback = NULL;
         vi->log_message = strbuf_init(100);
@@ -542,9 +534,6 @@ varnam_destroy(varnam *handle)
     vi = handle->internal;
 
     xfree(vi->message);
-    strbuf_destroy (vi->output);
-    strbuf_destroy (vi->rtl_output);
-    strbuf_destroy (vi->lookup);
     strbuf_destroy (vi->last_error);
 
     strbuf_destroy (vi->scheme_language_code);
@@ -553,9 +542,6 @@ varnam_destroy(varnam *handle)
     strbuf_destroy (vi->scheme_author);
     strbuf_destroy (vi->scheme_compiled_date);
 
-    xfree(vi->last_token);
-    xfree(vi->last_rtl_token);
-    xfree(vi->current_rtl_token);
     rc = sqlite3_close(handle->internal->db);
     if (rc != SQLITE_OK) {
         return VARNAM_ERROR;

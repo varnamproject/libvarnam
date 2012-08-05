@@ -34,10 +34,6 @@
 #define VARNAM_MATCH_POSSIBILITY 2
 #define VARNAM_MATCH_ALL         3
 
-/* allowed runtime functions */
-#define VARNAM_RULE_FN_INITIALS "if_initials"
-#define VARNAM_RULE_FN_BEGINS_WITH "begins_with"
-
 /* available type of tokens */
 #define VARNAM_TOKEN_VOWEL             1
 #define VARNAM_TOKEN_CONSONANT         2
@@ -74,25 +70,16 @@ struct vpool_t;
 
 struct varnam_internal
 {
-    sqlite3 *db, *known_words;
+    /* file handles */
+    sqlite3 *db;
+    sqlite3 *known_words;
     char *message;
-    struct varray_t *renderers;
-    
-    struct token *virama;
 
-    struct strbuf *output;
-    struct strbuf *rtl_output;
-    struct strbuf *lookup;
+    struct varray_t *renderers;
+    struct token *virama;
     struct strbuf *last_error;
 
-    struct token *current_rtl_token;
-
-    struct token *last_token;
-    struct token *last_rtl_token;
-
-    int last_token_available;
-    int last_rtl_token_available;
-
+    /* Logging related */
     int log_level;
     void (*log_callback)(const char*);
     struct strbuf *log_message;
@@ -118,6 +105,7 @@ struct varnam_internal
 
     struct varray_t *tokens;
 
+    /* Prepared statements */
     sqlite3_stmt *tokenize_using_pattern;
     sqlite3_stmt *tokenize_using_value;
     sqlite3_stmt *tokenize_using_value_and_match_type;

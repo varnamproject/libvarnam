@@ -719,7 +719,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
 
     varray_clear (result);
     inputcopy = input;
-    lookup = v_->lookup;
+    lookup = get_pooled_string (handle);
 
     while (*inputcopy != '\0')
     {
