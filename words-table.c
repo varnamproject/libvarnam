@@ -29,7 +29,7 @@
 #include "varray.h"
 #include "vword.h"
 
-#define MAXIMUM_PATTERNS_TO_LEARN 20
+#define MAXIMUM_PATTERNS_TO_LEARN 64
 #define MINIMUM_CHARACTER_LENGTH_FOR_SUGGESTION 3
 
 int
