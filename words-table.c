@@ -245,7 +245,8 @@ learn_word (varnam *handle, const char *word, bool learned)
 {
     int rc;
     const char *sql = "insert or replace into words (id, word, confidence, learned_on, learned) "
-        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date(), ?2;";
+        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date(), "
+        "coalesce((select learned from words where word = trim(?1) and learned = 1), ?2);";
 
     assert (v_->known_words);
 
@@ -408,7 +409,7 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
     vword *word;
     const char *sql = "select word, confidence from words where rowid in "
                       "(SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= lower(?1) and pc.pattern <= lower(?1) || 'z' limit 10) "
-                      "order by confidence,learned desc";
+                      "order by confidence desc,learned desc";
 
     assert (handle);
     assert (words);
