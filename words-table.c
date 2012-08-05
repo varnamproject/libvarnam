@@ -41,7 +41,7 @@ vwt_ensure_schema_exists(varnam *handle)
 
     const char *tables =
         "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned_on date);"
+        "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned integer default 1, learned_on date);"
         "create         table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));"
         "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"3,4,5,6,7,8,9,10\");";
 
@@ -241,11 +241,11 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
 }
 
 static int
-learn_word (varnam *handle, const char *word)
+learn_word (varnam *handle, const char *word, bool learned)
 {
     int rc;
-    const char *sql = "insert or replace into words (id, word, confidence, learned_on) "
-        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date();;";
+    const char *sql = "insert or replace into words (id, word, confidence, learned_on, learned) "
+        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date(), ?2;";
 
     assert (v_->known_words);
 
@@ -260,6 +260,7 @@ learn_word (varnam *handle, const char *word)
     }
 
     sqlite3_bind_text (v_->learn_word, 1, word, -1, NULL);
+    sqlite3_bind_int (v_->learn_word, 2, learned);
 
     rc = sqlite3_step (v_->learn_word);
     if (rc != SQLITE_DONE) {
@@ -307,7 +308,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
 
             if (!word_already_learned)
             {
-                rc = learn_word (handle, word->text);
+                rc = learn_word (handle, word->text, false);
                 if (rc) {
                     return_array_to_pool (handle, tokens_tmp);
                     return rc;
@@ -391,7 +392,7 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
 {
     int rc;
 
-    rc = learn_word (handle, word);
+    rc = learn_word (handle, word, true);
     if (rc) return rc;
 
     rc = learn_all_possibilities (handle, tokens, word);
@@ -405,7 +406,9 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
 {
     int rc;
     vword *word;
-    const char *sql = "select word, confidence from words where rowid in (SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= ?1 and pc.pattern <= ?1 || 'z' limit 10) order by confidence desc";
+    const char *sql = "select word, confidence from words where rowid in "
+                      "(SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= lower(?1) and pc.pattern <= lower(?1) || 'z' limit 10) "
+                      "order by confidence,learned desc";
 
     assert (handle);
     assert (words);
