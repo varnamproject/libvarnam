@@ -159,6 +159,9 @@ int
 varnam_learn(varnam *handle, const char *word)
 {
     int rc;
+#ifdef RECORD_EXEC_TIME
+    V_BEGIN_TIMING
+#endif
 
     reset_pool (handle);
 
@@ -172,6 +175,10 @@ varnam_learn(varnam *handle, const char *word)
     }
 
     vwt_end_changes (handle);
+
+#ifdef RECORD_EXEC_TIME
+    V_REPORT_TIME_TAKEN("varnam_learn")
+#endif
     return VARNAM_SUCCESS;
 }
 

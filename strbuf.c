@@ -121,6 +121,7 @@ int strbuf_addvf(struct strbuf *string, const char *format, va_list args)
     char *s;
     char c;
     int i;
+    double f;
 
     for(p = format; *p != '\0'; p++)
     {
@@ -143,6 +144,13 @@ int strbuf_addvf(struct strbuf *string, const char *format, va_list args)
         case 'd':
             i = va_arg(args, int);
             snprintf(fmtbuf, 256, "%d", i);
+            if(!strbuf_add(string, fmtbuf))
+                return 0;
+            break;
+
+        case 'f':
+            f = va_arg(args, double);
+            snprintf(fmtbuf, 256, "%f", f);
             if(!strbuf_add(string, fmtbuf))
                 return 0;
             break;

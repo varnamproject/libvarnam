@@ -61,6 +61,10 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
     varray *all_tokens = 0; /* This will be multidimensional array */
     vword *word, *word1;
 
+#ifdef RECORD_EXEC_TIME
+    V_BEGIN_TIMING
+#endif
+
     if(handle == NULL || input == NULL)
         return VARNAM_ARGS_ERROR;
 
@@ -103,8 +107,11 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
     }
 
     varray_push (words, word);
-
     *output = words;
+
+#ifdef RECORD_EXEC_TIME
+    V_REPORT_TIME_TAKEN("varnam_transliterate")
+#endif
     return VARNAM_SUCCESS;
 }
 
@@ -115,6 +122,10 @@ varnam_reverse_transliterate(varnam *handle,
 {
     int rc;
     varray *result;
+
+#ifdef RECORD_EXEC_TIME
+    V_BEGIN_TIMING
+#endif
 
     if(handle == NULL || input == NULL)
         return VARNAM_ARGS_ERROR;
@@ -131,6 +142,10 @@ varnam_reverse_transliterate(varnam *handle,
         return rc;
 
     varnam_debug (handle, "Reverse transliterating %s = %s", input, *output);
+
+#ifdef RECORD_EXEC_TIME
+    V_REPORT_TIME_TAKEN("varnam_reverse_transliterate")
+#endif
 
     return VARNAM_SUCCESS;
 }

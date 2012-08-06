@@ -56,6 +56,18 @@ typedef int bool;
     while(head != NULL) {                                          \
         current = head->next; free(head); head = current;}         \
 
+#ifdef RECORD_EXEC_TIME
+    #include <time.h>
+#endif
+
+#define V_BEGIN_TIMING \
+    clock_t start; double diff;                   \
+    start = clock();                              \
+
+#define V_REPORT_TIME_TAKEN(s) \
+    diff = (double)(clock() - start) / (double) CLOCKS_PER_SEC;         \
+    printf ("%s - %f secs\n", s, diff);                                 \
+
 /* Cmake will define varnam_EXPORTS on Windows when it
 configures to build a shared library. If you are going to use
 another build system on windows or create the visual studio
