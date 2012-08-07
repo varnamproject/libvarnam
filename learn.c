@@ -244,6 +244,10 @@ varnam_learn_from_file(varnam *handle,
         varnam_log (handle, "Failed to check file integrity");
     }
 
+    varnam_log (handle, "Compacting file");
+    rc = vwt_compact_file (handle);
+    if (rc) return rc;
+
     fclose (infile);
     return rc;
 }

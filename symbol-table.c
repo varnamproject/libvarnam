@@ -30,6 +30,7 @@ int
 ensure_schema_exists(varnam *handle, char **msg)
 {
     const char *sql =
+        "pragma page_size=4096;"
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create table if not exists symbols (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, tag TEXT, match_type INTEGER);"
         "create index if not exists index_metadata on metadata (key);"

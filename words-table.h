@@ -56,4 +56,7 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words);
 int
 vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result);
 
+int
+vwt_compact_file (varnam *handle);
+
 #endif

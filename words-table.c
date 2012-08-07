@@ -40,18 +40,18 @@ vwt_ensure_schema_exists(varnam *handle)
         "pragma journal_mode=wal;";
 
     const char *tables =
-        "create         table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create         table if not exists words (id integer primary key, word text unique, confidence integer, learned integer default 1, learned_on date);"
-        "create         table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));"
-        "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"3,4,5,6,7,8,9,10\");";
+        "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
+        "create table if not exists words (id integer primary key, word text unique, confidence integer, learned integer default 1, learned_on date);"
+        "create table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));";
+        /* "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"3,4,5,6,7,8,9,10\");"; */
 
-    const char *triggers1 =
-        "create trigger if not exists pc_bu before update on patterns_content begin delete from patterns where docid = old.rowid; end;"
-        "create trigger if not exists pc_bd before delete on patterns_content begin delete from patterns where docid = old.rowid; end;";
+    /* const char *triggers1 = */
+    /*     "create trigger if not exists pc_bu before update on patterns_content begin delete from patterns where docid = old.rowid; end;" */
+    /*     "create trigger if not exists pc_bd before delete on patterns_content begin delete from patterns where docid = old.rowid; end;"; */
 
-    const char *triggers2 =
-        "create trigger if not exists pc_au after  update on patterns_content begin insert into patterns (docid, pattern, word_id) values (new.rowid, new.pattern, new.word_id); end;"
-        "create trigger if not exists pc_ai after  insert on patterns_content begin insert into patterns (docid, pattern, word_id) values (new.rowid, new.pattern, new.word_id); end;";
+    /* const char *triggers2 = */
+    /*     "create trigger if not exists pc_au after  update on patterns_content begin insert into patterns (docid, pattern, word_id) values (new.rowid, new.pattern, new.word_id); end;" */
+    /*     "create trigger if not exists pc_ai after  insert on patterns_content begin insert into patterns (docid, pattern, word_id) values (new.rowid, new.pattern, new.word_id); end;"; */
 
     char *zErrMsg = 0;
     int rc;
@@ -70,19 +70,19 @@ vwt_ensure_schema_exists(varnam *handle)
         return VARNAM_ERROR;
     }
 
-    rc = sqlite3_exec(v_->known_words, triggers1, NULL, 0, &zErrMsg);
-    if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to initialize file for storing known words. First set of triggers failed. : %s", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return VARNAM_ERROR;
-    }
+    /* rc = sqlite3_exec(v_->known_words, triggers1, NULL, 0, &zErrMsg); */
+    /* if( rc != SQLITE_OK ){ */
+    /*     set_last_error (handle, "Failed to initialize file for storing known words. First set of triggers failed. : %s", zErrMsg); */
+    /*     sqlite3_free(zErrMsg); */
+    /*     return VARNAM_ERROR; */
+    /* } */
 
-    rc = sqlite3_exec(v_->known_words, triggers2, NULL, 0, &zErrMsg);
-    if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to initialize file for storing known words. Second set of triggers failed. : %s", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return VARNAM_ERROR;
-    }
+    /* rc = sqlite3_exec(v_->known_words, triggers2, NULL, 0, &zErrMsg); */
+    /* if( rc != SQLITE_OK ){ */
+    /*     set_last_error (handle, "Failed to initialize file for storing known words. Second set of triggers failed. : %s", zErrMsg); */
+    /*     sqlite3_free(zErrMsg); */
+    /*     return VARNAM_ERROR; */
+    /* } */
 
     return VARNAM_SUCCESS;
 }
@@ -141,6 +141,18 @@ vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
 {
     const char *sql =
         "pragma journal_mode=wal;";
+
+    assert (handle);
+    assert (v_->known_words);
+
+    return execute_sql (handle, v_->known_words, sql);
+}
+
+int
+vwt_compact_file (varnam *handle)
+{
+    const char *sql =
+        "VACUUM;";
 
     assert (handle);
     assert (v_->known_words);
