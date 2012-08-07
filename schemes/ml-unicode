@@ -148,6 +148,8 @@ get_dead_consonants(:exact => true).each do |dc|
                [["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"]] => "#{dc.value1}വ#{vowel.value2}" ,
                [["#{dc.pattern}y#{vowel.pattern}"]] => "#{dc.value1}യ#{vowel.value2}"
   end
+
+  consonant_vowel_combinations [["#{dc.pattern}ri"]] => "#{dc.value1.sub($virama, '')}ൃ"
 end
 
 get_dead_consonants(:possibility => true).each do |dc|
