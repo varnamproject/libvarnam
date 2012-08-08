@@ -130,7 +130,7 @@ typedef struct token {
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];
     char value2[VARNAM_SYMBOL_MAX];
-    int children;
+    char value3[VARNAM_SYMBOL_MAX];
 } vtoken;
 
 struct varnam_rule {

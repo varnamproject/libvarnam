@@ -124,6 +124,7 @@ VARNAM_EXPORT extern int varnam_create_token(
     const char *pattern,
     const char *value1,
     const char *value2,
+    const char *value3,
     const char *tag,
     int token_type,
     int match_type,

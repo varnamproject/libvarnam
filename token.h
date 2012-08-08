@@ -24,7 +24,7 @@
 #include "varray.h"
 
 struct token*
-Token(int id, int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* tag);
+Token(int id, int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* value3, const char* tag);
 
 struct token*
 get_pooled_token (
@@ -35,6 +35,7 @@ get_pooled_token (
     const char* pattern,
     const char* value1,
     const char* value2,
+    const char* value3,
     const char* tag);
 
 varray* 

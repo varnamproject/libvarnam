@@ -325,6 +325,7 @@ varnam_create_token(
     const char *pattern,
     const char *value1,
     const char *value2,
+    const char *value3,
     const char *tag,
     int token_type,
     int match_type,
@@ -332,7 +333,7 @@ varnam_create_token(
 {
     int rc;
     size_t pattern_len;
-    char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX];
+    char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX], v3[VARNAM_SYMBOL_MAX];
     struct token *virama;
 
     set_last_error (handle, NULL);
@@ -343,9 +344,10 @@ varnam_create_token(
     if (strlen(pattern) > VARNAM_SYMBOL_MAX ||
         strlen(value1) > VARNAM_SYMBOL_MAX  ||
         (value2 != NULL && strlen(value2) > VARNAM_SYMBOL_MAX) ||
+        (value3 != NULL && strlen(value3) > VARNAM_SYMBOL_MAX) ||
         (tag != NULL && strlen(tag) > VARNAM_SYMBOL_MAX))
     {
-        set_last_error (handle, "Length of pattern, tag, value1 or value2 should be less than VARNAM_SYMBOL_MAX");
+        set_last_error (handle, "Length of pattern, tag, value1 or value2, value3 should be less than VARNAM_SYMBOL_MAX");
         return VARNAM_ARGS_ERROR;
     }
 
@@ -390,7 +392,7 @@ varnam_create_token(
             else
                 v2[0] = '\0';
 
-            rc = vst_persist_token (handle, p, v1, v2, tag, VARNAM_TOKEN_DEAD_CONSONANT, match_type);
+            rc = vst_persist_token (handle, p, v1, v2, value3, tag, VARNAM_TOKEN_DEAD_CONSONANT, match_type);
             if (rc != VARNAM_SUCCESS)
             {
                 if (buffered) vst_discard_changes(handle);
@@ -403,7 +405,7 @@ varnam_create_token(
     if (token_type == VARNAM_TOKEN_NON_JOINER)
         value1 = value2 = ZWNJ();
 
-    rc = vst_persist_token (handle, pattern, value1, value2, tag, token_type, match_type);
+    rc = vst_persist_token (handle, pattern, value1, value2, value3, tag, token_type, match_type);
     if (rc != VARNAM_SUCCESS)
     {
         if (buffered) vst_discard_changes(handle);
