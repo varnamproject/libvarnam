@@ -27,6 +27,8 @@ module VarnamLibrary
   attach_function :varnam_init, [:string, :pointer, :pointer], :int
   attach_function :varnam_transliterate, [:pointer, :string, :pointer], :int
   attach_function :varnam_reverse_transliterate, [:pointer, :string, :pointer], :int
+  attach_function :varnam_learn, [:pointer, :string], :int
+  attach_function :varnam_learn_from_file, [:pointer, :string, :pointer, :pointer, :pointer], :int
   attach_function :varnam_create_token, [:pointer, :string, :string, :string, :string, :string, :int, :int, :int], :int
   attach_function :varnam_generate_cv_combinations, [:pointer], :int
   attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
@@ -60,6 +62,7 @@ module Varnam
 
   VARNAM_CONFIG_USE_DEAD_CONSONANTS    = 100
   VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN = 101
+  VARNAM_CONFIG_ENABLE_SUGGESTIONS = 102
 
   class RuntimeContext
     include Singleton

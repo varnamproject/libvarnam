@@ -9,6 +9,7 @@ libvarnam's fatures.
 Usage - varnamrc options <args>
 =end
 
+$VERSION = '1.0.0'
 $LOAD_PATH << './scripts'
 
 def gem_available?(name)
@@ -64,6 +65,15 @@ optparse = OptionParser.new do |opts|
     set_action('reverse-transliterate')
   end
 
+  opts.on('-n', '--learn [TEXT]', 'Learn given text. Use --files option together with this to learn from file') do |text|
+    $options[:text_to_learn] = text
+    set_action('learn')
+  end
+
+  opts.on('-f', '--files files', Array, 'Reads from the specified files') do |list|
+    $options[:files] = list
+  end
+
   $options[:symbols_file] = nil
   opts.on('-s', '--symbols VALUE', 'Sets the symbols file') do |value|
     if File.exist?(value)
@@ -98,6 +108,15 @@ optparse = OptionParser.new do |opts|
     end
     $options[:file_to_compile] = file
     set_action('compile')
+  end
+
+  $options[:output_directory] = '.'
+  opts.on('-d', '--output-dir dir', 'Sets the output directory') do |directory|
+    if not Dir.exist?(directory)
+      puts "#{directory} is not a directory"
+      exit(1)
+    end
+    $options[:output_directory] = directory
   end
 
   # help screen
@@ -152,6 +171,11 @@ require 'varnamruby.rb'
 def initialize_varnam_handle
   if $options[:action] == 'compile'
     $vst_file_name = $options[:file_to_compile].sub(File.extname($options[:file_to_compile]), "") + ".vst"
+
+    if not $options[:output_directory] == ''
+      $vst_file_name = File.join($options[:output_directory], File.basename($vst_file_name))
+    end
+
     if File.exists?($vst_file_name)
       File.delete($vst_file_name)
     end
@@ -160,7 +184,7 @@ def initialize_varnam_handle
   end
 
   if $vst_file_name.nil?
-    puts "Can't load symbols file"
+    puts "varnamc : Can't load symbols file. Use --symbols option to specify the symbols file"
     exit(1)
   end
 
@@ -170,8 +194,18 @@ def initialize_varnam_handle
   initialized = VarnamLibrary.varnam_init($vst_file_name, $varnam_handle, init_error_msg)
   if (initialized != 0)
     ptr = init_error_msg.read_pointer()
-    msg = msg.nil? ? "" : msg.read_string
+    msg = ptr.nil? ? "" : ptr.read_string
     puts "Varnam initialization failed #{msg}"
+    exit(1)
+  end
+
+  # Configuring suggestions
+  suggestions_file = File.join($options[:output_directory], "varnamc-learnings.varnam")
+  configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
+    Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, suggestions_file)
+  if configured != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    error error_message
     exit(1)
   end
 end
@@ -186,6 +220,9 @@ def do_action
   end
   if $options[:action] == 'compile'
     start_compilation
+  end
+  if $options[:action] == 'learn'
+    learn_text
   end
 end
 
@@ -517,12 +554,20 @@ def start_compilation
   exit(returncode)
 end
 
+def ensure_single_word(text)
+  if text.split(' ').length > 1
+    puts "varnamc : Expected a single word."
+    exit(1)
+  end
+end
+
 def transliterate
   if $options[:text_to_transliterate].nil?
     puts "Nothing to transliterate"
     exit 1
   end
   totl = $options[:text_to_transliterate]
+  ensure_single_word totl
 
   puts "Transliterating '#{totl}'"
 
@@ -549,6 +594,7 @@ def reverse_transliterate
     exit 1
   end
   tortl = $options[:text_to_reverse_transliterate]
+  ensure_single_word tortl
 
   puts "Reverse transliterating '#{tortl}'"
 
@@ -563,6 +609,60 @@ def reverse_transliterate
   ptr = output_ptr.read_pointer()
   output = ptr.nil? ? "" : ptr.read_string
   puts output
+end
+
+def learn_text
+  if $options[:text_to_learn].nil? and $options[:files].nil?
+    puts "Nothing to learn"
+    exit 1
+  end
+
+  if not $options[:files].nil?
+    $options[:files].each do |fname|
+      learn_from_file fname
+    end
+    puts "Processed #{$learn_counter} word(s). #{$learn_passed_counter} word(s) passed. #{$learn_failed_counter} word(s) failed."
+  else
+    text = $options[:text_to_learn]
+    learn text
+  end
+end
+
+def learn(text)
+  ensure_single_word text
+  done = VarnamLibrary.varnam_learn($varnam_handle.get_pointer(0), text);
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    puts error_message
+    exit(1)
+  end
+  puts "Learned #{text}"
+end
+
+$learn_counter = 0
+$learn_passed_counter = 0
+$learn_failed_counter = 0
+
+LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do |handle, word, status, data|
+  if status == 0
+    puts "(#{$learn_counter}) Learned #{word}"
+    $learn_passed_counter += 1
+  else
+    puts "Failed to learn #{word}"
+    $learn_failed_counter += 1
+  end
+  $learn_counter += 1
+end
+
+def learn_from_file(fname)
+
+  done = VarnamLibrary.varnam_learn_from_file($varnam_handle.get_pointer(0), fname, nil, LearnCallback, nil);
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    puts error_message
+    exit(1)
+  end
+  puts "Processed #{fname}"
 end
 
 do_action
