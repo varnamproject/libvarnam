@@ -643,10 +643,13 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
     bool found = false, possible = false, first_match = true;
     const char *pc;
 
-    if (pattern == NULL || *pattern == '\0')
+    varray_clear (result);
+
+    if (v_->known_words == NULL)
         return VARNAM_SUCCESS;
 
-    varray_clear (result);
+    if (pattern == NULL || *pattern == '\0')
+        return VARNAM_SUCCESS;
 
     lookup                   = get_pooled_string (handle);
     for_symbols_tokenization = get_pooled_string (handle);

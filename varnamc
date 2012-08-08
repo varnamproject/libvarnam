@@ -2,27 +2,102 @@
 
 # encoding: utf-8
 
-require 'singleton'
-require 'ffi'
+=begin
+'varnamrc' is a command line client to libvarnam. It allows you to quickly try
+libvarnam's fatures.
+
+Usage - varnamrc options <args>
+=end
+
+$LOAD_PATH << './scripts'
+
+def gem_available?(name)
+   Gem::Specification.find_by_name(name)
+rescue Gem::LoadError
+   false
+end
+
+if not gem_available?('ffi')
+  puts "Can't find gem - ffi. To install run '[sudo] gem install ffi'"
+  exit(1)
+end
+
 require 'optparse'
 
 # Defining command line options
-
 $options = {}
+$options[:action] = nil
+def set_action(a)
+  if $options[:action].nil?
+    $options[:action] = a
+  else
+    puts "varnamrc : #{$options[:action]} and #{a} are mutually exclusive options. Only one action is allowed"
+    exit(1)
+  end
+end
 
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: varnam-compile [options] file1 file2 ..."
+  opts.banner = "Usage: varnamrc [options] language_code args"
 
   # ability to provide varnam library name
-  $options[:library] = 'libvarnam'
-  $options[:library] = 'varnam' if RUBY_PLATFORM.downcase.include?('mswin')
+  $options[:library] = nil
   opts.on('-l', '--library FILE', 'Sets the varnam library') do |file|
+    if not File.exist?(file)
+      puts "varnamrc : Can't find #{file}"
+      exit 1
+    end
     $options[:library] = file
   end
 
   $options[:verbose] = false
   opts.on('-v', '--verbose', 'Enable verbose output') do
     $options[:verbose] = true
+  end
+
+  opts.on('-t', '--transliterate TEXT', 'Transliterate the given text') do |text|
+    set_action('transliterate')
+    $options[:text_to_transliterate] = text
+  end
+
+  opts.on('-r', '--reverse-transliterate TEXT', 'Reverse transliterate the given text') do |text|
+    $options[:text_to_reverse_transliterate] = text
+    set_action('reverse-transliterate')
+  end
+
+  $options[:symbols_file] = nil
+  opts.on('-s', '--symbols VALUE', 'Sets the symbols file') do |value|
+    if File.exist?(value)
+      $options[:symbols_file] = value
+    else
+      # When no file name is provided, varnamrc searches in predefined locations
+      # for a symbols file
+        symbols_search_path = ['./schemes', '/usr/local/share/varnam', '/usr/share/varnam']
+        symbols_search_path.each do |path|
+        file = File.join(path, "#{value}-unicode.vst")
+        if File.exist?(file)
+          $options[:symbols_file] = file
+          puts "Using #{file}"
+          break
+        end
+      end
+
+      if $options[:symbols_file].nil?
+        puts "Failed to load #{value}-unicode.vst."
+        puts "Search paths - #{$symbols_search_path.to_s}"
+        puts "If symbols file is in a non-standard path, you can specify full path to the symbols file"
+        exit(1)
+      end
+    end
+  end
+
+  $options[:file_to_compile] = nil
+  opts.on('-c', '--compile FILE', 'Compile symbols file') do |file|
+    if not File.exist?(file)
+      puts "Can't find #{file}"
+      exit(1)
+    end
+    $options[:file_to_compile] = file
+    set_action('compile')
   end
 
   # help screen
@@ -32,156 +107,91 @@ optparse = OptionParser.new do |opts|
   end
 end
 
-optparse.parse!
-
-# Ensure we have files available to process
-if ARGV.size == 0
-  puts "No files specified"
+begin
+  optparse.parse!
+rescue
+  puts "varnamc : incorrect arguments"
   puts optparse
   exit(1)
+end
+
+if $options[:action].nil?
+  puts "varnamc : no actions specified"
+  puts optparse
+  exit(1)
+end
+
+def find_libvarnam
+  return $options[:library] if not $options[:library].nil?
+
+  # Trying to find out libvarnam in the predefined locations if
+  # absolute path to the library is not specified
+  libvarnam_search_paths = ['.', '/usr/local/lib', '/usr/lib']
+  libvarnam_names = ['libvarnam.so', 'libvarnam.dylib', 'varnam.dll']
+  libvarnam_search_paths.each do |path|
+    libvarnam_names.each do |fname|
+      fullpath = File.join(path, fname)
+      if File.exists?(fullpath)
+        return fullpath
+      end
+    end
+  end
+  return nil
+end
+
+$options[:library] = find_libvarnam
+if $options[:library].nil?
+  puts "varnamc - Can't find varnam shared library. Try specifying the full path using -l option"
+  puts optparse
+else
+  puts "Using #{$options[:library]}"
+end
+
+require 'varnamruby.rb'
+
+def initialize_varnam_handle
+  if $options[:action] == 'compile'
+    $vst_file_name = $options[:file_to_compile].sub(File.extname($options[:file_to_compile]), "") + ".vst"
+    if File.exists?($vst_file_name)
+      File.delete($vst_file_name)
+    end
+  else
+    $vst_file_name = $options[:symbols_file]
+  end
+
+  if $vst_file_name.nil?
+    puts "Can't load symbols file"
+    exit(1)
+  end
+
+  $varnam_handle = FFI::MemoryPointer.new :pointer
+  init_error_msg = FFI::MemoryPointer.new(:pointer, 1)
+
+  initialized = VarnamLibrary.varnam_init($vst_file_name, $varnam_handle, init_error_msg)
+  if (initialized != 0)
+    ptr = init_error_msg.read_pointer()
+    msg = msg.nil? ? "" : msg.read_string
+    puts "Varnam initialization failed #{msg}"
+    exit(1)
+  end
+end
+
+def do_action
+  initialize_varnam_handle
+  if $options[:action] == 'transliterate'
+    transliterate
+  end
+  if $options[:action] == 'reverse-transliterate'
+    reverse_transliterate
+  end
+  if $options[:action] == 'compile'
+    start_compilation
+  end
 end
 
 # this contains default symbols key overridden in the scheme file
 # key will be the token type
 $overridden_default_symbols = []
-
-# Ruby wrapper for libvarnam
-module VarnamLibrary
-  extend FFI::Library
-  ffi_lib $options[:library]
-
-  VARNAM_SYMBOL_MAX      = 30
-
-  class Token < FFI::Struct
-    layout :id, :int,
-    :type, :int,
-    :match_type, :int,
-    :tag, [:char, VARNAM_SYMBOL_MAX],
-    :pattern, [:char, VARNAM_SYMBOL_MAX],
-    :value1, [:char, VARNAM_SYMBOL_MAX],
-    :value2, [:char, VARNAM_SYMBOL_MAX],
-    :value3, [:char, VARNAM_SYMBOL_MAX]
-  end
-
-  attach_function :varnam_init, [:string, :pointer, :pointer], :int
-  attach_function :varnam_create_token, [:pointer, :string, :string, :string, :string, :string, :int, :int, :int], :int
-  attach_function :varnam_generate_cv_combinations, [:pointer], :int
-  attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
-  attach_function :varnam_get_last_error, [:pointer], :string
-  attach_function :varnam_flush_buffer, [:pointer], :int
-  attach_function :varnam_config, [:pointer, :int, :varargs], :int
-  attach_function :varnam_get_all_tokens, [:pointer, :int, :pointer], :int
-  attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
-  attach_function :varray_get, [:pointer, :int], :pointer
-  attach_function :varray_length, [:pointer], :int
-end
-
-if not File.exists?(ARGV[0]) or not File.file?(ARGV[0])
-  puts "#{ARGV[0]} is not a valid file"
-  exit(1)
-end
-
-$source_file_name = ARGV[0]
-$vst_file_name = ARGV[0].sub(File.extname(ARGV[0]), "") + ".vst"
-
-if File.exists?($vst_file_name)
-  File.delete($vst_file_name)
-end
-
-$varnam_handle = FFI::MemoryPointer.new :pointer
-init_error_msg = FFI::MemoryPointer.new(:pointer, 1)
-
-initialized = VarnamLibrary.varnam_init($vst_file_name, $varnam_handle, init_error_msg)
-if (initialized != 0)
-  ptr = init_error_msg.read_pointer()
-  msg = msg.nil? ? "" : msg.read_string
-  puts "Varnam initialization failed #{msg}"
-  exit(1)
-end
-
-VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type)
-
-module Varnam
-  VARNAM_TOKEN_VOWEL           = 1
-  VARNAM_TOKEN_CONSONANT       = 2
-  VARNAM_TOKEN_DEAD_CONSONANT  = 3
-  VARNAM_TOKEN_CONSONANT_VOWEL = 4
-  VARNAM_TOKEN_NUMBER          = 5
-  VARNAM_TOKEN_SYMBOL          = 6
-  VARNAM_TOKEN_ANUSVARA        = 7
-  VARNAM_TOKEN_VISARGA         = 8
-  VARNAM_TOKEN_VIRAMA          = 9
-  VARNAM_TOKEN_OTHER           = 10
-  VARNAM_TOKEN_NON_JOINER      = 11
-
-  VARNAM_MATCH_EXACT           = 1
-  VARNAM_MATCH_POSSIBILITY     = 2
-
-  VARNAM_CONFIG_USE_DEAD_CONSONANTS    = 100
-  VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN = 101
-
-  class RuntimeContext
-    include Singleton
-
-    def initialize
-      @errors = 0
-      @warnings = 0
-      @tokens = {}
-      @current_expression = ""
-      @error_messages = []
-      @warning_messages = []
-      @current_tag = nil
-    end
-
-    def errored
-      @errors += 1
-    end
-
-    def warned
-      @warnings += 1
-    end
-
-    def errors
-      @errors
-    end
-
-    def warnings
-      @warnings
-    end
-
-    attr_accessor :tokens, :current_expression, :error_messages, :warning_messages, :current_tag
-  end
-end
-
-def _context
-  return Varnam::RuntimeContext.instance
-end
-
-def get_source_file_with_linenum
-  Kernel::caller.last.sub(":in `<main>'", "")  # We don't need :in `<main>' to appear and make confusion
-end
-
-def inform(message)
-  puts "   #{message}"
-end
-
-def warn(message)
-  if _context.current_expression.nil?
-    _context.warning_messages.push "#{get_source_file_with_linenum} : WARNING: #{message}"
-  else
-    _context.warning_messages.push "#{get_source_file_with_linenum} : WARNING: In expression #{_context.current_expression}. #{message}"
-  end
-  _context.warned
-end
-
-def error(message)
-  if _context.current_expression.nil?
-    _context.error_messages.push "#{get_source_file_with_linenum} : ERROR : #{message}"
-  else
-    _context.error_messages.push "#{get_source_file_with_linenum} : ERROR : In expression #{_context.current_expression}. #{message}"
-  end
-  _context.errored
-end
 
 def _ensure_sanity_of_array(array)
   # Possibilities are
@@ -487,10 +497,10 @@ def set_default_symbols
 end
 
 def start_compilation
-  puts "Compiling #{$source_file_name}"
+  puts "Compiling #{$options[:file_to_compile]}"
   puts "Building #{$vst_file_name}"
 
-  load $source_file_name
+  load $options[:file_to_compile]
   set_default_symbols
   generate_cv_combinations
   flush_unsaved_changes
@@ -507,4 +517,52 @@ def start_compilation
   exit(returncode)
 end
 
-start_compilation
+def transliterate
+  if $options[:text_to_transliterate].nil?
+    puts "Nothing to transliterate"
+    exit 1
+  end
+  totl = $options[:text_to_transliterate]
+
+  puts "Transliterating '#{totl}'"
+
+  words_ptr = FFI::MemoryPointer.new :pointer
+  done = VarnamLibrary.varnam_transliterate($varnam_handle.get_pointer(0), totl, words_ptr);
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    puts error_message
+    exit(1)
+  end
+
+  size = VarnamLibrary.varray_length(words_ptr.get_pointer(0))
+  0.upto(size - 1) do |i|
+    word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), i)
+    vword = VarnamLibrary::Word.new(word_ptr)
+    word = VarnamWord.new(vword[:text], vword[:confidence])
+    puts "  " + word.text
+  end
+end
+
+def reverse_transliterate
+  if $options[:text_to_reverse_transliterate].nil?
+    puts "Nothing to reverse transliterate"
+    exit 1
+  end
+  tortl = $options[:text_to_reverse_transliterate]
+
+  puts "Reverse transliterating '#{tortl}'"
+
+  output_ptr = FFI::MemoryPointer.new(:pointer, 1)
+  done = VarnamLibrary.varnam_reverse_transliterate($varnam_handle.get_pointer(0), tortl, output_ptr);
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    puts error_message
+    exit(1)
+  end
+
+  ptr = output_ptr.read_pointer()
+  output = ptr.nil? ? "" : ptr.read_string
+  puts output
+end
+
+do_action
