@@ -74,6 +74,10 @@ resolve_tokens(varnam *handle,
     {
         token = varray_get (tokens, i);
 
+#ifdef _VARNAM_VERBOSE
+        varnam_debug (handle, "Token - %d, %s, %s", token->id, token->pattern, token->value1);
+#endif
+
         r = get_renderer (handle);
         if (r != NULL)
         {

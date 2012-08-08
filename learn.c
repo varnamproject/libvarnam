@@ -159,7 +159,7 @@ int
 varnam_learn(varnam *handle, const char *word)
 {
     int rc;
-#ifdef RECORD_EXEC_TIME
+#ifdef _RECORD_EXEC_TIME
     V_BEGIN_TIMING
 #endif
 
@@ -176,7 +176,7 @@ varnam_learn(varnam *handle, const char *word)
 
     vwt_end_changes (handle);
 
-#ifdef RECORD_EXEC_TIME
+#ifdef _RECORD_EXEC_TIME
     V_REPORT_TIME_TAKEN("varnam_learn")
 #endif
     return VARNAM_SUCCESS;

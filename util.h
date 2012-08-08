@@ -56,7 +56,7 @@ typedef int bool;
     while(head != NULL) {                                          \
         current = head->next; free(head); head = current;}         \
 
-#ifdef RECORD_EXEC_TIME
+#ifdef _RECORD_EXEC_TIME
     #include <time.h>
 #endif
 

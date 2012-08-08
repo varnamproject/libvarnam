@@ -615,6 +615,10 @@ symbols_tokenize_add_to_result(varnam *handle, strbuf *lookup, varray *result)
     int rc;
     varray *tokens;
 
+#ifdef _VARNAM_VERBOSE
+    varnam_debug (handle, "Symbols tokenizing - %s", strbuf_to_s(lookup));
+#endif
+
     tokens = get_pooled_array (handle);
     if (!strbuf_is_blank (lookup))
     {
@@ -687,6 +691,9 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
                 /* Tokenize the match */
                 match = varray_get (matches, i);
                 assert (match);
+#ifdef _VARNAM_VERBOSE
+                varnam_debug (handle, "Tokenizing longest prefix match - %s", strbuf_to_s (match));
+#endif
                 rc = vst_tokenize (handle, strbuf_to_s(match), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, tokens);
                 if (rc) return rc;
 
@@ -702,6 +709,9 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
             /* Remembering the failed portion as we will be using this later to do the symbols
              * tokenization */
             strbuf_addc (for_symbols_tokenization, strbuf_to_s(lookup)[0]);
+#ifdef _VARNAM_VERBOSE
+            varnam_debug (handle, "Failed to find match. Lookup = %s. For symbols tokenization = %s", strbuf_to_s (lookup), strbuf_to_s(for_symbols_tokenization));
+#endif
         }
         pattern = pattern + matchpos;
         pc = pattern;

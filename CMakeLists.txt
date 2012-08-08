@@ -23,11 +23,13 @@ IF(MSVC)
         add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
 ENDIF()
 
-option (RECORD_EXEC_TIME "Measure execution time for functions. Used for profiling" OFF)
-
 if (RECORD_EXEC_TIME)
-   add_definitions(-DRECORD_EXEC_TIME)
+   add_definitions(-D_RECORD_EXEC_TIME)
 endif (RECORD_EXEC_TIME)
+
+if (VARNAM_VERBOSE)
+   add_definitions(-D_VARNAM_VERBOSE)
+endif (VARNAM_VERBOSE)
 
 add_definitions(-DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF -DNEED_ASPRINTF)
 
