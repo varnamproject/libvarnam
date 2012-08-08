@@ -235,16 +235,16 @@ int strbuf_endswith(struct strbuf *string, const char *str)
     return (strcmp(substring, str) == 0 ? 1 : 0);
 }
 
-void strbuf_remove_from_first(struct strbuf *string, const char *toremove)
+bool strbuf_remove_from_first(struct strbuf *string, const char *toremove)
 {
     size_t to_remove_len, newlen;
     int i;
     bool matching;
 
-    if(!toremove) return;
+    if(!toremove) return false;
     to_remove_len = strlen(toremove);
 
-    if(string->length < to_remove_len) return;
+    if(string->length < to_remove_len) return false;
     newlen = (string->length - to_remove_len);
 
     matching = true;
@@ -259,25 +259,29 @@ void strbuf_remove_from_first(struct strbuf *string, const char *toremove)
       memmove (string->buffer, string->buffer + to_remove_len, newlen);
       string->buffer[newlen] = '\0';
       string->length = newlen;
+      return true;
     }
+    return false;
 }
 
-void strbuf_remove_from_last(struct strbuf *string, const char *toremove)
+bool strbuf_remove_from_last(struct strbuf *string, const char *toremove)
 {
     size_t to_remove_len, newlen;
     const char *buf;
 
-    if(!toremove) return;
+    if(!toremove) return false;
     to_remove_len = strlen(toremove);
 
-    if(string->length < to_remove_len) return;
+    if(string->length < to_remove_len) return false;
     newlen = (string->length - to_remove_len);
 
     buf = string->buffer + newlen;
     if(strcmp(buf, toremove) == 0) {
         string->buffer[newlen] = '\0';
         string->length = newlen;
+        return true;
     }
+    return false;
 }
 
 char* strbuf_detach(struct strbuf *string)

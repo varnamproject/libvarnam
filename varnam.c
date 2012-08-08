@@ -333,7 +333,7 @@ varnam_create_token(
 {
     int rc;
     size_t pattern_len;
-    char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX], v3[VARNAM_SYMBOL_MAX];
+    char p[VARNAM_SYMBOL_MAX], v1[VARNAM_SYMBOL_MAX], v2[VARNAM_SYMBOL_MAX];
     struct token *virama;
 
     set_last_error (handle, NULL);

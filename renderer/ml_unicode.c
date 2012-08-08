@@ -36,22 +36,39 @@ ml_unicode_renderer(varnam *handle,
 {
     int rc;
     vtoken *virama;
+    bool removed;
 
     rc = vst_get_virama (handle, &virama);
     if (rc) return rc;
 
-    /* Not sure about this */
-    /* if(strcmp(match->pattern, "r") == 0 || strcmp(match->pattern, "R") == 0) { */
-    /*     if(handle->internal->last_token_available && !strbuf_endswith(output, virama->value1)) { */
-    /*         strbuf_add(output, "ര്‍"); */
-    /*         return VARNAM_SUCCESS; */
-    /*     } */
-    /* } */
+    if (current->type == VARNAM_TOKEN_VOWEL && strcmp(current->pattern, "r") == 0)
+    {
+        strbuf_add (output, current->value3);
+        return VARNAM_SUCCESS;
+    }
 
     if (strcmp(current->tag, RENDER_VALUE2_TAG) == 0 && previous != NULL)
     {
+#ifdef _VARNAM_VERBOSE
+        varnam_debug (handle, "ml-unicode-renderer - Found %s tag", RENDER_VALUE2_TAG);
+#endif
         strbuf_add(output, current->value2);
         return VARNAM_SUCCESS;
+    }
+
+    if (current->type == VARNAM_TOKEN_VOWEL && previous != NULL && strcmp(previous->tag, CHIL_TAG) == 0)
+    {
+        removed = strbuf_remove_from_last (output, previous->value1);
+        if (!removed) {
+            removed = strbuf_remove_from_last (output, previous->value2);
+        }
+
+        if (removed)
+        {
+            strbuf_add (output, previous->value3);
+            strbuf_add (output, current->value2);
+            return VARNAM_SUCCESS;
+        }
     }
 
     return VARNAM_PARTIAL_RENDERING;

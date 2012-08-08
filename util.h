@@ -174,8 +174,8 @@ VARNAM_EXPORT const char* strbuf_to_s(struct strbuf *string);
 VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
 VARNAM_EXPORT int strbuf_is_blank(struct strbuf *string);
 VARNAM_EXPORT int strbuf_endswith(struct strbuf *string, const char *str);
-VARNAM_EXPORT void strbuf_remove_from_first(struct strbuf *string, const char *toremove);
-VARNAM_EXPORT void strbuf_remove_from_last(struct strbuf *string, const char *toremove);
+VARNAM_EXPORT bool strbuf_remove_from_first(struct strbuf *string, const char *toremove);
+VARNAM_EXPORT bool strbuf_remove_from_last(struct strbuf *string, const char *toremove);
 VARNAM_EXPORT struct strbuf* get_pooled_string(varnam *handle);
 
 VARNAM_EXPORT void *xmalloc(size_t size);
