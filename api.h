@@ -172,6 +172,22 @@ VARNAM_EXPORT extern int
 varnam_learn(varnam *handle, const char *word);
 
 /**
+ * Train varnam to associate pattern to the word
+ *
+ * handle            - Valid varnam instance
+ * pattern           - Pattern
+ * word              - Word to learn
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS    - Upon successful execution
+ * VARNAM_ARGS_ERROR - Handle or word is NULL
+ * VARNAM_ERROR      - Any other errors
+ **/
+VARNAM_EXPORT extern int
+varnam_train(varnam *handle, const char *pattern, const char *word);
+
+/**
  * Varnam will learn words from the supplied file
  *
  * handle            - Valid varnam instance

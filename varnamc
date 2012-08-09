@@ -70,6 +70,16 @@ optparse = OptionParser.new do |opts|
     set_action('learn')
   end
 
+  opts.on('-a', '--train PATTERN=WORD', 'Train varnam to use PATTERN for WORD') do |str|
+    training_data = str.split('=')
+    if not training_data.size == 2
+      puts 'varnamc : Incorrect arguments'
+      exit(1)
+    end
+    $options[:training_data] = training_data
+    set_action('train')
+  end
+
   opts.on('-f', '--files files', Array, 'Reads from the specified files') do |list|
     $options[:files] = list
   end
@@ -231,6 +241,9 @@ def do_action
   end
   if $options[:action] == 'learn'
     learn_text
+  end
+  if $options[:action] == 'train'
+    train_pattern_word
   end
 end
 
@@ -671,6 +684,28 @@ def learn_from_file(fname)
     exit(1)
   end
   puts "Processed #{fname}"
+end
+
+def train_pattern_word
+  if not $options[:training_data].size == 2
+    puts "varnamc : Incorrect training data"
+    exit(1)
+  end
+
+  pattern = $options[:training_data][0]
+  word = $options[:training_data][1]
+
+  ensure_single_word pattern
+  ensure_single_word word
+
+  done = VarnamLibrary.varnam_train($varnam_handle.get_pointer(0), pattern, word);
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    puts error_message
+    exit(1)
+  end
+
+  puts "Success. #{pattern} will resolve to #{word}"
 end
 
 do_action

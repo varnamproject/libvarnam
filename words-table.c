@@ -160,8 +160,8 @@ vwt_compact_file (varnam *handle)
     return execute_sql (handle, v_->known_words, sql);
 }
 
-static int
-persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
+int
+vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
 {
     int rc;
     const char *sql = "insert or ignore into patterns_content (pattern, word_id) values (trim(lower(?1)), ?2)";
@@ -192,8 +192,8 @@ persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
     return VARNAM_SUCCESS;
 }
 
-static int
-get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
+int
+vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
 {
     int rc;
 
@@ -235,7 +235,7 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
     sqlite3_int64 word_id;
     vtoken *token;
 
-    rc = get_word_id (handle, word, &word_id);
+    rc = vwt_get_word_id (handle, word, &word_id);
     if (rc) return rc;
 
     strbuf_clear (pattern);
@@ -245,7 +245,7 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
         strbuf_add (pattern, token->pattern);
     }
 
-    rc = persist_pattern (handle, strbuf_to_s (pattern), word_id);
+    rc = vwt_persist_pattern (handle, strbuf_to_s (pattern), word_id);
     if (rc)
         return rc;
 

@@ -59,4 +59,10 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result);
 int
 vwt_compact_file (varnam *handle);
 
+int
+vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id);
+
+int
+vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id);
+
 #endif

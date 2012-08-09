@@ -251,3 +251,31 @@ varnam_learn_from_file(varnam *handle,
     fclose (infile);
     return rc;
 }
+
+int
+varnam_train(varnam *handle, const char *pattern, const char *word)
+{
+    int rc;
+    sqlite3_int64 word_id;
+
+    reset_pool (handle);
+
+    rc = vwt_start_changes (handle);
+    if (rc != VARNAM_SUCCESS) return rc;
+
+    rc = varnam_learn_internal(handle, word);
+    if (rc != VARNAM_SUCCESS) {
+        vwt_discard_changes (handle);
+        return rc;
+    }
+
+    rc = vwt_get_word_id (handle, word, &word_id);
+    if (rc) return rc;
+
+    rc = vwt_persist_pattern (handle, pattern, word_id);
+    if (rc)
+        return rc;
+
+    vwt_end_changes (handle);
+    return VARNAM_SUCCESS;
+}
