@@ -91,4 +91,7 @@ vst_get_metadata (varnam *handle, const char* key, struct strbuf *output);
 int
 vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_type, varray *result);
 
+void
+destroy_all_statements(varnam *handle);
+
 #endif

@@ -783,3 +783,19 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
 
     return VARNAM_SUCCESS;
 }
+
+void
+destroy_all_statements(varnam *handle)
+{
+    sqlite3_finalize (v_->tokenize_using_pattern);
+    sqlite3_finalize (v_->tokenize_using_value);
+    sqlite3_finalize (v_->tokenize_using_value_and_match_type);
+    sqlite3_finalize (v_->can_find_more_matches_using_pattern);
+    sqlite3_finalize (v_->can_find_more_matches_using_value);
+    sqlite3_finalize (v_->learn_word);
+    sqlite3_finalize (v_->learn_pattern);
+    sqlite3_finalize (v_->get_word);
+    sqlite3_finalize (v_->get_suggestions);
+    sqlite3_finalize (v_->get_matches_for_word);
+    sqlite3_finalize (v_->possible_to_find_matches);
+}

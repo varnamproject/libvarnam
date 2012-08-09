@@ -535,6 +535,8 @@ varnam_destroy(varnam *handle)
 
     vi = handle->internal;
 
+    destroy_all_statements (handle);
+
     xfree(vi->message);
     strbuf_destroy (vi->last_error);
 

@@ -3,10 +3,10 @@
 # encoding: utf-8
 
 =begin
-'varnamrc' is a command line client to libvarnam. It allows you to quickly try
-libvarnam's fatures.
+'varnamc' is a command line client to libvarnam. It allows you to quickly try
+libvarnam's features.
 
-Usage - varnamrc options <args>
+Usage - varnamc options <args>
 =end
 
 $VERSION = '1.0.0'
@@ -32,19 +32,19 @@ def set_action(a)
   if $options[:action].nil?
     $options[:action] = a
   else
-    puts "varnamrc : #{$options[:action]} and #{a} are mutually exclusive options. Only one action is allowed"
+    puts "varnamc : #{$options[:action]} and #{a} are mutually exclusive options. Only one action is allowed"
     exit(1)
   end
 end
 
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: varnamrc [options] language_code args"
+  opts.banner = "Usage: varnamc [options] language_code args"
 
   # ability to provide varnam library name
   $options[:library] = nil
   opts.on('-l', '--library FILE', 'Sets the varnam library') do |file|
     if not File.exist?(file)
-      puts "varnamrc : Can't find #{file}"
+      puts "varnamc : Can't find #{file}"
       exit 1
     end
     $options[:library] = file
@@ -79,7 +79,7 @@ optparse = OptionParser.new do |opts|
     if File.exist?(value)
       $options[:symbols_file] = value
     else
-      # When no file name is provided, varnamrc searches in predefined locations
+      # When no file name is provided, varnamc searches in predefined locations
       # for a symbols file
         symbols_search_path = ['./schemes', '/usr/local/share/varnam', '/usr/share/varnam']
         symbols_search_path.each do |path|
