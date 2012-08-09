@@ -63,3 +63,12 @@ get_pooled_word(varnam *handle, const char *text, int confidence)
 
     return word;
 }
+
+void
+destroy_word(void *word)
+{
+    if (word != NULL)
+    {
+        xfree((vword*) word);
+    }
+}

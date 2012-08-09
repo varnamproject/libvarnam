@@ -1,6 +1,6 @@
-/* <file-name>
+/* Dynamically growing array implementation
  *
- * Copyright (C) <year> <author>
+ * Copyright (C) Navaneeth.K.N
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -111,15 +111,17 @@ varray_clear(varray *array)
 }
 
 void
-varray_free(varray *array, bool free_items)
+varray_free(varray *array, void (*destructor)(void*))
 {
     int i;
-    if (free_items)
+    void *item;
+
+    if (destructor != NULL)
     {
         for(i = 0; i < varray_length(array); i++)
         {
-            xfree (array->memory[i]);
-            array->memory[i] = NULL;
+            item = varray_get (array, i);
+            if (item != NULL) destructor(item);
         }
     }
     array->used = 0;
@@ -205,7 +207,7 @@ vpool_return(vpool *pool, void *item)
 void
 vpool_reset(vpool *pool)
 {
-    if (pool != NULL) 
+    if (pool != NULL)
     {
         pool->next_slot = 0;
         varray_clear (pool->free_pool);
@@ -213,11 +215,15 @@ vpool_reset(vpool *pool)
 }
 
 void
-vpool_free(vpool *pool)
+vpool_free(vpool *pool, void (*destructor)(void*))
 {
     assert (pool);
-    varray_free (pool->array, true);
-    /* Clean up free pool instance here */
+    varray_free (pool->array, destructor);
+    varray_free (pool->free_pool, destructor);
+    pool->next_slot = -1;
+    pool->array = NULL;
+    pool->free_pool = NULL;
+    xfree (pool);
 }
 
 varray*

@@ -34,5 +34,7 @@ Word(varnam *handle, const char *text, int confidence);
 vword*
 get_pooled_word(varnam *handle, const char *text, int confidence);
 
+void
+destroy_word(void *word);
 
 #endif

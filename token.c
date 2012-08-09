@@ -78,7 +78,7 @@ get_pooled_token (
     const char* tag)
 {
     vtoken *tok;
-    
+
     if (v_->tokens_pool == NULL)
         v_->tokens_pool = vpool_init ();
 
@@ -94,7 +94,7 @@ get_pooled_token (
     return tok;
 }
 
-varray* 
+varray*
 product_tokens(varnam *handle, varray *tokens)
 {
     int array_cnt, *offsets, i, last_array_offset;
@@ -133,5 +133,14 @@ product_tokens(varnam *handle, varray *tokens)
 finished:
     xfree (offsets);
     return product;
+}
+
+void
+destroy_token(void *token)
+{
+    if (token != NULL)
+    {
+        xfree((vtoken*) token);
+    }
 }
 

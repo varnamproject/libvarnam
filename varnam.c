@@ -28,6 +28,7 @@
 #include "symbol-table.h"
 #include "words-table.h"
 #include "token.h"
+#include "vword.h"
 #include "renderer/renderers.h"
 
 static struct varnam_internal*
@@ -142,7 +143,7 @@ varnam_register_renderer(
     int (*rtl)(varnam *handle, vtoken *previous, vtoken *current,  strbuf *output))
 {
     vtoken_renderer *r;
-    
+
     if (handle == NULL)
         return VARNAM_ARGS_ERROR;
 
@@ -524,11 +525,10 @@ varnam_get_info (varnam *handle, bool detailed, vinfo **info)
     return VARNAM_SUCCESS;
 }
 
-int
+void
 varnam_destroy(varnam *handle)
 {
     struct varnam_internal *vi;
-    int rc;
 
     if (handle == NULL)
         return VARNAM_ARGS_ERROR;
@@ -536,6 +536,12 @@ varnam_destroy(varnam *handle)
     vi = handle->internal;
 
     destroy_all_statements (handle);
+
+    vpool_free (vi->tokens_pool, &destroy_token);
+    vpool_free (vi->strings_pool, &strbuf_destroy);
+    vpool_free (vi->words_pool, &destroy_word);
+
+    varray_free (vi->tokens, &destroy_token);
 
     xfree(vi->message);
     strbuf_destroy (vi->last_error);
@@ -546,12 +552,9 @@ varnam_destroy(varnam *handle)
     strbuf_destroy (vi->scheme_author);
     strbuf_destroy (vi->scheme_compiled_date);
 
-    rc = sqlite3_close(handle->internal->db);
-    if (rc != SQLITE_OK) {
-        return VARNAM_ERROR;
-    }
+    sqlite3_close(handle->internal->db);
+
     xfree(handle->internal);
     xfree(handle->scheme_file);
     xfree(handle);
-    return VARNAM_SUCCESS;
 }

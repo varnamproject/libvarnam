@@ -38,7 +38,10 @@ get_pooled_token (
     const char* value3,
     const char* tag);
 
-varray* 
+varray*
 product_tokens(varnam *handle, varray *tokens);
+
+void
+destroy_token(void *token);
 
 #endif

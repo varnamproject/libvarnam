@@ -72,7 +72,7 @@ void
 varray_insert(varray *array, int index, void *data);
 
 void
-varray_free(varray *array, int free_items);
+varray_free(varray *array, void (*destructor)(void*));
 
 vpool*
 vpool_init();
@@ -100,7 +100,7 @@ vpool_reset(vpool *pool);
  *
  **/
 void
-vpool_free(vpool *pool);
+vpool_free(vpool *pool, void (*destructor)(void*));
 
 varray*
 get_pooled_array (varnam *handle);

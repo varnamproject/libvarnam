@@ -17,7 +17,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
-/* Contains test cases for basic transliteration. this test uses some test data rather than 
+/* Contains test cases for basic transliteration. this test uses some test data rather than
 actual characters in the supported languages */
 
 #include <stdio.h>
@@ -33,7 +33,7 @@ int ml_unicode_transliteration(int argc, char **argv)
     char *msg;
     varray *words;
     vword *word;
-    FILE *fp;   
+    FILE *fp;
     char line[LINE_MAX];
     char *part1, *part2;
 
@@ -61,31 +61,27 @@ int ml_unicode_transliteration(int argc, char **argv)
         return 1;
     }
 
-    while(fgets(line, LINE_MAX, fp) != NULL) 
+    while(fgets(line, LINE_MAX, fp) != NULL)
     {
         part1 = strtok(line, " ");
         part2 = strtok(NULL, "\n");
-                   
+
         rc = varnam_transliterate(handle, part1, &words);
         if(rc != VARNAM_SUCCESS) {
             printf("transliteration of %s failed  - \n", part1);
             printf("%s", varnam_get_last_error(handle));
             return 1;
-        }            
+        }
 
         word = varray_get (words, 0);
         if(strcmp(word->text, part2) != 0) {
             printf("transliterating %s - expected %s, but was %s\n", part1, part2, word->text);
             return 1;
-        }        
+        }
     }
 
     fclose(fp);
-    rc = varnam_destroy(handle);
-    if(rc != VARNAM_SUCCESS) {
-        printf("destruction failed\n");
-        return 1;
-    }
+    varnam_destroy(handle);
 
     return 0;
 }
@@ -128,7 +124,7 @@ int ml_unicode_reverse_transliteration(int argc, char **argv)
     {
         part1 = strtok(line, " ");
         part2 = strtok(NULL, "\n");
-                   
+
         rc = varnam_reverse_transliterate(handle, part1, &output);
         if(rc != VARNAM_SUCCESS) {
             printf("reverse transliteration of %s failed  - \n", part1);
@@ -142,11 +138,7 @@ int ml_unicode_reverse_transliteration(int argc, char **argv)
     }
 
     fclose(fp);
-    rc = varnam_destroy(handle);
-    if(rc != VARNAM_SUCCESS) {
-        printf("destruction failed\n");
-        return 1;
-    }
+    varnam_destroy(handle);
 
     return 0;
 }

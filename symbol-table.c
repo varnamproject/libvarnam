@@ -489,8 +489,8 @@ vst_generate_cv_combinations(varnam* handle)
     if (rc != VARNAM_SUCCESS)
         return rc;
 
-    varray_free (consonants, true);
-    varray_free (vowels, true);
+    varray_free (consonants, &destroy_token);
+    varray_free (vowels, &destroy_token);
 
     return VARNAM_SUCCESS;
 }

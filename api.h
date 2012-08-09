@@ -356,7 +356,7 @@ VARNAM_EXPORT extern int varnam_get_info(
     vinfo **info
     );
 
-VARNAM_EXPORT extern int
+VARNAM_EXPORT extern void
 varnam_destroy(varnam *handle);
 
 #endif

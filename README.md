@@ -1,6 +1,6 @@
 What is libvarnam
 -------------------
-'libvarnam' is a library which support transliteration and reverse transliteration. This documentation is work in progress. 
+'libvarnam' is a library which support transliteration and reverse transliteration. This documentation is work in progress.
 
 Building libvarnam
 -------------------
@@ -15,17 +15,10 @@ $ make install
 Compiling varnam schemes
 -------------------------
 
-To use `libvarnam`, you need to compile one of the scheme files. 
+To use `libvarnam`, you need to compile one of the scheme files.
 
 ```shell
-$ cd schemes
-$ ./varnam-compile ml-unicode
-```
-
-if that fails, try specifying the libvarnam path. 
-
-```shell
-$ ./varnam-compile -l ../libvarnam.so ml-unicode
+$ ./varnamc --compile schemes/ml-unicode
 ```
 
 Compilation generates a binary file named `ml-unicode.vst`.
