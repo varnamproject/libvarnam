@@ -93,7 +93,7 @@ optparse = OptionParser.new do |opts|
 
       if $options[:symbols_file].nil?
         puts "Failed to load #{value}-unicode.vst."
-        puts "Search paths - #{$symbols_search_path.to_s}"
+        puts "Search paths - #{symbols_search_path.to_s}"
         puts "If symbols file is in a non-standard path, you can specify full path to the symbols file"
         exit(1)
       end
@@ -110,7 +110,7 @@ optparse = OptionParser.new do |opts|
     set_action('compile')
   end
 
-  $options[:output_directory] = '.'
+  $options[:output_directory] = nil
   opts.on('-d', '--output-dir dir', 'Sets the output directory') do |directory|
     if not Dir.exist?(directory)
       puts "#{directory} is not a directory"
@@ -172,8 +172,8 @@ def initialize_varnam_handle
   if $options[:action] == 'compile'
     $vst_file_name = $options[:file_to_compile].sub(File.extname($options[:file_to_compile]), "") + ".vst"
 
-    if not $options[:output_directory] == ''
-      $vst_file_name = File.join($options[:output_directory], File.basename($vst_file_name))
+    if not $options[:output_directory].nil?
+      $vst_file_name = get_file_path(File.basename($vst_file_name))
     end
 
     if File.exists?($vst_file_name)
@@ -200,13 +200,21 @@ def initialize_varnam_handle
   end
 
   # Configuring suggestions
-  suggestions_file = File.join($options[:output_directory], "varnamc-learnings.varnam")
+  suggestions_file = get_file_path("varnamc-learnings.varnam")
   configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
     Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, suggestions_file)
   if configured != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     error error_message
     exit(1)
+  end
+end
+
+def get_file_path(fname)
+  if $options[:output_directory].nil?
+    return fname
+  else
+    return File.join($options[:output_directory], fname)
   end
 end
 
