@@ -21,7 +21,8 @@
 
 #include "../varnam.h"
 
-void print_transliteration_output(const char *pattern, varray *words)
+static void
+print_transliteration_output(const char *pattern, varray *words)
 {
     int i;
     vword *word;
@@ -40,7 +41,7 @@ int main()
     const char *pattern;
     int rc;
     varray *words; /* Used to store transliterated words */
-    
+
     /* Initialize varnam handle */
     rc = varnam_init ("../schemes/ml-unicode.vst", &handle, &msg);
     if (rc != VARNAM_SUCCESS)

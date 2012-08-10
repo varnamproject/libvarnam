@@ -11,6 +11,7 @@ build/
 *.vst
 *.so
 *.so.*
+*.dylib
 install_manifest.txt
 Testing/
 TAGS
@@ -22,3 +23,4 @@ varnamc-learnings.varnam-wal
 ml-unicode.vst-journal
 examples/learning
 examples/transliteration
+examples/learning-example-suggestions.varnam*
