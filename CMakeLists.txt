@@ -66,6 +66,9 @@ add_subdirectory(deps)
 # Build tests
 add_subdirectory(tests)
 
+# Build examples
+add_subdirectory(examples)
+
 # Create a shared library libvarnam
 add_library (${VARNAM_LIBRARY_NAME} SHARED ${VARNAM_SOURCES})
 

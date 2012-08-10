@@ -531,17 +531,20 @@ varnam_destroy(varnam *handle)
     struct varnam_internal *vi;
 
     if (handle == NULL)
-        return VARNAM_ARGS_ERROR;
+        return;
 
     vi = handle->internal;
 
     destroy_all_statements (handle);
+
+    destroy_token (vi->virama);
 
     vpool_free (vi->tokens_pool, &destroy_token);
     vpool_free (vi->strings_pool, &strbuf_destroy);
     vpool_free (vi->words_pool, &destroy_word);
 
     varray_free (vi->tokens, &destroy_token);
+    varray_free (vi->renderers, &xfree);
 
     xfree(vi->message);
     strbuf_destroy (vi->last_error);
@@ -551,6 +554,7 @@ varnam_destroy(varnam *handle)
     strbuf_destroy (vi->scheme_display_name);
     strbuf_destroy (vi->scheme_author);
     strbuf_destroy (vi->scheme_compiled_date);
+    strbuf_destroy (vi->log_message);
 
     sqlite3_close(handle->internal->db);
 
