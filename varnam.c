@@ -525,6 +525,13 @@ varnam_get_info (varnam *handle, bool detailed, vinfo **info)
     return VARNAM_SUCCESS;
 }
 
+static void
+destroy_array(void *a)
+{
+    varray *array = (varray*) a;
+    varray_free (array, NULL);
+}
+
 void
 varnam_destroy(varnam *handle)
 {
@@ -542,6 +549,7 @@ varnam_destroy(varnam *handle)
     vpool_free (vi->tokens_pool, &destroy_token);
     vpool_free (vi->strings_pool, &strbuf_destroy);
     vpool_free (vi->words_pool, &destroy_word);
+    vpool_free (vi->arrays_pool, &destroy_array);
 
     varray_free (vi->tokens, &destroy_token);
     varray_free (vi->renderers, &xfree);
@@ -557,6 +565,8 @@ varnam_destroy(varnam *handle)
     strbuf_destroy (vi->log_message);
 
     sqlite3_close(handle->internal->db);
+    if (handle->internal->known_words != NULL)
+        sqlite3_close(handle->internal->known_words);
 
     xfree(handle->internal);
     xfree(handle->scheme_file);

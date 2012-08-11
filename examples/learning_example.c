@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include "../varnam.h"
 
- static void
+static void
 print_transliteration_output(const char *pattern, varray *words)
 {
     int i;
@@ -105,6 +105,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	print_transliteration_output ("malayalam", words);
+        varnam_destroy (handle);
 
     return 0;
 }
