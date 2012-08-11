@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: News | Varnam project]]></title>
+  <link href="http://navaneeth.github.com/libvarnam/blog/categories/news/atom.xml" rel="self"/>
+  <link href="http://navaneeth.github.com/libvarnam/"/>
+  <updated>2012-08-11T15:58:28+05:30</updated>
+  <id>http://navaneeth.github.com/libvarnam/</id>
+  <author>
+    <name><![CDATA[Navaneeth]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Added language detection support to libvarnam]]></title>
+    <link href="http://navaneeth.github.com/libvarnam/blog/2012/08/11/added-language-detection-support-to-libvarnam/"/>
+    <updated>2012-08-11T15:42:00+05:30</updated>
+    <id>http://navaneeth.github.com/libvarnam/blog/2012/08/11/added-language-detection-support-to-libvarnam</id>
+    <content type="html"><![CDATA[<p>When using Varnam on web, you could possibly type words from multiple languages in the same editor. When a word is edited, Varnam needs to know the language of the word. <code>varnam_detect_lang()</code> API can be used to achieve this.</p>
+
+<p>See it in action</p>
+
+<p>```bash
+$ ./varnamc -s ml --detect-language ಕನ್ನಡ
+Kannada</p>
+
+<p>$ ./varnamc -s ml --detect-language தமிழ்
+Tamil</p>
+
+<p>$ ./varnamc -s ml --detect-language हिन्दी
+Hindi</p>
+
+<p>$ ./varnamc -s ml --detect-language ଓଡ଼ିଆ
+Oriya</p>
+
+<p>$ ./varnamc -s ml --detect-language മലയാളം
+Malayalam</p>
+
+<p>```
+Only few languages are supported currently. Adding support for more languages is easy and this method will work only for languages that follow Devanagari writing system.</p>
+]]></content>
+  </entry>
+  
+</feed>
