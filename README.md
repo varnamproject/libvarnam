@@ -12,16 +12,33 @@ $ make
 $ make install
 ```
 
-Compiling varnam schemes
+Trying with varnamc
 -------------------------
 
-To use `libvarnam`, you need to compile one of the scheme files.
+`varnamc` is a command line client to `libvarnam`. 
 
 ```shell
-$ ./varnamc --compile schemes/ml-unicode
+$ ./varnamc
+varnamc : no actions specified
+Usage: varnamc [options] language_code args
+    -l, --library FILE               Sets the varnam library
+    -v, --verbose                    Enable verbose output
+    -t, --transliterate TEXT         Transliterate the given text
+    -r, --reverse-transliterate TEXT Reverse transliterate the given text
+    -n, --learn [TEXT]               Learn given text. Use --files option together with this to learn from file
+    -a, --train PATTERN=WORD         Train varnam to use PATTERN for WORD
+    -f, --files files                Reads from the specified files
+    -s, --symbols VALUE              Sets the symbols file
+    -c, --compile FILE               Compile symbols file
+    -d, --output-dir dir             Sets the output directory
+    -h, --help                       Display this screen
 ```
 
-Compilation generates a binary file named `ml-unicode.vst`.
+```shell
+$ ./varnamc --symbols ml --transliterate navaneeth
+```
+
+Above command uses malayalam symbols and transliterate the text 'navaneeth'.
 
 Usage
 ------

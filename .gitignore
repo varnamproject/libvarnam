@@ -8,7 +8,6 @@ src/varnam
 tests/#CMakeLists.txt#
 tests/runner
 build/
-*.vst
 *.so
 *.so.*
 *.dylib
