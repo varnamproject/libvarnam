@@ -36,6 +36,7 @@ add_definitions(-DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF -DNEED_ASPRINTF)
 # Append the source files here
 list (APPEND VARNAM_SOURCES
   util.c
+  vutf8.c
   trie.c
   strbuf.c
   transliterate.c
