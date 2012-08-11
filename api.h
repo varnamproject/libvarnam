@@ -356,6 +356,21 @@ VARNAM_EXPORT extern int varnam_get_info(
     vinfo **info
     );
 
+/**
+ * Detects the language for the supplied word. Current implementation works only for devanagari based scripts.
+ *
+ * handle - A valid varnam instance
+ * word   - Word in some language
+ *
+ * RETURN
+ *
+ * VARNAM_LANG_CODE_XX      - Language code upon successful execution
+ * VARNAM_ERROR             - All other errors
+ **/
+VARNAM_EXPORT extern int varnam_detect_lang(
+    varnam *handle,
+    const char *word);
+
 VARNAM_EXPORT extern void
 varnam_destroy(varnam *handle);
 

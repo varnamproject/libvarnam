@@ -120,6 +120,12 @@ optparse = OptionParser.new do |opts|
     set_action('compile')
   end
 
+  $options[:word_to_detect_lang] = nil
+  opts.on('--detect-language WORD', 'Detect language of the word') do |word|
+    set_action('detect')
+    $options[:word_to_detect_lang] = word
+  end
+
   $options[:output_directory] = nil
   opts.on('-d', '--output-dir dir', 'Sets the output directory') do |directory|
     if not Dir.exist?(directory)
@@ -244,6 +250,9 @@ def do_action
   end
   if $options[:action] == 'train'
     train_pattern_word
+  end
+  if $options[:action] == 'detect'
+    detect_language
   end
 end
 
@@ -706,6 +715,19 @@ def train_pattern_word
   end
 
   puts "Success. #{pattern} will resolve to #{word}"
+end
+
+def detect_language
+  if $options[:word_to_detect_lang].nil?
+    puts "varnamc : No word found"
+    exit(1)
+  end
+
+  word = $options[:word_to_detect_lang]
+  ensure_single_word word
+
+  code = VarnamLibrary.varnam_detect_lang($varnam_handle.get_pointer(0), word);
+  puts Varnam::LANG_CODES[code]
 end
 
 do_action

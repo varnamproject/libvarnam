@@ -47,6 +47,7 @@ list (APPEND VARNAM_SOURCES
   vword.c
   learn.c
   rendering.c
+  lang_detection.c
   renderer/ml_unicode.c
   varnam.c
   )
@@ -59,6 +60,8 @@ list (APPEND VARNAM_INCLUDE_FILES
   vtypes.h
   util.h
   varray.h
+  vutf8.h
+  langcodes.h
   )
 
 # Build dependencies

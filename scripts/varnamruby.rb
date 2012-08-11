@@ -27,6 +27,7 @@ module VarnamLibrary
   attach_function :varnam_init, [:string, :pointer, :pointer], :int
   attach_function :varnam_transliterate, [:pointer, :string, :pointer], :int
   attach_function :varnam_reverse_transliterate, [:pointer, :string, :pointer], :int
+  attach_function :varnam_detect_lang, [:pointer, :string], :int
   attach_function :varnam_learn, [:pointer, :string], :int
   attach_function :varnam_train, [:pointer, :string, :string], :int
   attach_function :varnam_learn_from_file, [:pointer, :string, :pointer, :pointer, :pointer], :int
@@ -64,6 +65,27 @@ module Varnam
   VARNAM_CONFIG_USE_DEAD_CONSONANTS    = 100
   VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN = 101
   VARNAM_CONFIG_ENABLE_SUGGESTIONS = 102
+
+  VARNAM_LANG_CODE_HI = 1
+  VARNAM_LANG_CODE_BN = 2
+  VARNAM_LANG_CODE_GU = 3
+  VARNAM_LANG_CODE_OR = 4
+  VARNAM_LANG_CODE_TA = 5
+  VARNAM_LANG_CODE_TE = 6
+  VARNAM_LANG_CODE_KN = 7
+  VARNAM_LANG_CODE_ML = 8
+  VARNAM_LANG_CODE_UNKNOWN = -1
+
+  # Language codes
+  LANG_CODES = {VARNAM_LANG_CODE_UNKNOWN => 'Unknown',
+                VARNAM_LANG_CODE_HI => 'Hindi',
+                VARNAM_LANG_CODE_BN => 'Bengali',
+                VARNAM_LANG_CODE_GU => 'Gujarati',
+                VARNAM_LANG_CODE_OR => 'Oriya',
+                VARNAM_LANG_CODE_TA => 'Tamil',
+                VARNAM_LANG_CODE_TE => 'Telugu',
+                VARNAM_LANG_CODE_KN => 'Kannada',
+                VARNAM_LANG_CODE_ML => 'Malayalam'}
 
   class RuntimeContext
     include Singleton
