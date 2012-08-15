@@ -19,6 +19,8 @@
 #ifndef TESTS_H_INCLUDED_125727
 #define TESTS_H_INCLUDED_125727
 
+extern int strbuf_test(int argc, char **argv);
+
 /**
  * this tests the initialization of varnam library
  **/

@@ -26,6 +26,7 @@ struct tests_t {
 };
 
 static struct tests_t tests[] = {
+    { "strbuf-test", strbuf_test },
     { "test-varnam-initialization", test_varnam_init },
     { "basic-transliteration", basic_transliteration },
     { "ml-unicode", ml_unicode_transliteration },

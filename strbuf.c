@@ -299,6 +299,62 @@ const char* strbuf_to_s(struct strbuf *string)
     return string->buffer;
 }
 
+bool
+strbuf_replace(strbuf *string, const char *rep, const char *with)
+{
+    /* Credits goes to jmucchiello (http://stackoverflow.com/questions/779875/what-is-the-function-to-replace-string-in-c) */
+
+    char *result; /* the return string */
+    char *ins;    /* the next insert point */
+    char *tmp;    /* varies */
+    int len_rep;  /* length of rep */
+    int len_with; /* length of with */
+    int len_front; /* distance between rep and end of last rep */
+    int count;    /* number of replacements */
+    char *orig;
+
+    orig = string->buffer;
+
+    if (!orig)
+        return false;
+    if (!rep || !(len_rep = strlen(rep)))
+        return false;
+    if (!(ins = strstr(orig, rep)))
+        return false;
+    if (!with)
+        with = "";
+    len_with = strlen(with);
+
+    for (count = 0; (tmp = strstr(ins, rep)); ++count) {
+        ins = tmp + len_rep;
+    }
+
+    /* first time through the loop, all the variable are set correctly
+    // from here on,
+    //    tmp points to the end of the result string
+    //    ins points to the next occurrence of rep in orig
+    //    orig points to the remainder of orig after "end of rep"*/
+    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+
+    if (!result)
+        return false;
+
+    while (count--) {
+        ins = strstr(orig, rep);
+        len_front = ins - orig;
+        tmp = strncpy(tmp, orig, len_front) + len_front;
+        tmp = strcpy(tmp, with) + len_with;
+        orig += len_front + len_rep; /* move to next "end of rep" */
+    }
+    strcpy(tmp, orig);
+
+    strbuf_clear (string);
+    strbuf_add (string, result);
+    xfree (result);
+
+    return true;
+}
+
 struct strbuf* get_pooled_string(varnam *handle)
 {
     strbuf *string;
