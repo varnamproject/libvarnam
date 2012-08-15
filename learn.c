@@ -1,4 +1,4 @@
-/* learn.c - Functions that implements the learning module
+/* Functions that implements the learning module
 
    Copyright (C) 2010 Navaneeth.K.N
 
@@ -24,6 +24,17 @@
 #include "result-codes.h"
 #include "symbol-table.h"
 #include "words-table.h"
+
+static void
+language_specific_sanitization(strbuf *string)
+{
+    /* Malayalam has got two ways to write chil letters. Converting the old style to new one */
+    strbuf_replace (string, "ന്‍", "ൻ");
+    strbuf_replace (string, "ണ്‍", "ൺ");
+    strbuf_replace (string, "ല്‍","ൽ");
+    strbuf_replace (string, "ള്‍", "ൾ");
+    strbuf_replace (string, "ര്‍", "ർ");
+}
 
 static strbuf*
 sanitize_word (varnam *handle, const char *word)
@@ -59,6 +70,7 @@ sanitize_word (varnam *handle, const char *word)
     }
 
     strbuf_remove_from_last (string, strbuf_to_s (to_remove));
+    language_specific_sanitization (string);
 
     return string;
 }
