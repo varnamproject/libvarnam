@@ -65,7 +65,7 @@ optparse = OptionParser.new do |opts|
     set_action('reverse-transliterate')
   end
 
-  opts.on('-n', '--learn [TEXT]', 'Learn given text. Use --files option together with this to learn from file') do |text|
+  opts.on('-n', '--learn [TEXT]', 'Learn the given text') do |text|
     $options[:text_to_learn] = text
     set_action('learn')
   end
@@ -80,8 +80,18 @@ optparse = OptionParser.new do |opts|
     set_action('train')
   end
 
-  opts.on('-f', '--files files', Array, 'Reads from the specified files') do |list|
-    $options[:files] = list
+  opts.on('-f', '--learn-from FILE|DIRECTORY', 'Reads from the specified file/directory') do |path|
+    if File.exists? (path)
+      if File.directory?(path)
+        set_action('learn-from-directory')
+      else
+        set_action('learn-from-file')
+      end
+      $options[:learn_from] = path
+    else
+      puts "varnamc : #{path} is incorrect"
+      exit(1)
+    end
   end
 
   $options[:symbols_file] = nil
@@ -247,6 +257,12 @@ def do_action
   end
   if $options[:action] == 'learn'
     learn_text
+  end
+  if $options[:action] == 'learn-from-file'
+    learn_from_file
+  end
+  if $options[:action] == 'learn-from-directory'
+    learn_from_directory
   end
   if $options[:action] == 'train'
     train_pattern_word
@@ -642,23 +658,12 @@ def reverse_transliterate
 end
 
 def learn_text
-  if $options[:text_to_learn].nil? and $options[:files].nil?
+  if $options[:text_to_learn].nil?
     puts "Nothing to learn"
     exit 1
   end
 
-  if not $options[:files].nil?
-    $options[:files].each do |fname|
-      learn_from_file fname
-    end
-    puts "Processed #{$learn_counter} word(s). #{$learn_passed_counter} word(s) passed. #{$learn_failed_counter} word(s) failed."
-  else
-    text = $options[:text_to_learn]
-    learn text
-  end
-end
-
-def learn(text)
+  text = $options[:text_to_learn]
   ensure_single_word text
   done = VarnamLibrary.varnam_learn($varnam_handle.get_pointer(0), text);
   if done != 0
@@ -672,6 +677,7 @@ end
 $learn_counter = 0
 $learn_passed_counter = 0
 $learn_failed_counter = 0
+$failure_log = File.open(get_file_path("varnamc-learn-failures.txt"), "w")
 
 LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do |handle, word, status, data|
   if status == 0
@@ -679,20 +685,55 @@ LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do
     $learn_passed_counter += 1
   else
     puts "Failed to learn #{word}"
+    $failure_log.puts word
     $learn_failed_counter += 1
   end
   $learn_counter += 1
 end
 
-def learn_from_file(fname)
+def learn_from_file
+  if $options[:learn_from].nil?
+    puts "Nothing to learn"
+    exit 1
+  end
 
+  fname = $options[:learn_from]
+  learn_words_in_the_file fname
+
+  puts "Processed #{$learn_counter} word(s). #{$learn_passed_counter} word(s) passed. #{$learn_failed_counter} word(s) failed."
+  puts "Failed words are logged to - #{$failure_log.path}" if $learn_failed_counter > 0
+  $failure_log.close
+end
+
+def learn_words_in_the_file(fname)
   done = VarnamLibrary.varnam_learn_from_file($varnam_handle.get_pointer(0), fname, nil, LearnCallback, nil);
   if done != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     puts error_message
     exit(1)
   end
-  puts "Processed #{fname}"
+end
+
+def learn_from_directory
+  puts "Processing files from #{$options[:learn_from]}"
+  if $options[:learn_from].nil?
+    puts "Nothing to learn"
+    exit 1
+  end
+
+  path = $options[:learn_from]
+  files = Dir.glob("#{path}/**/*.txt")
+  puts "Found #{files.size} file(s)"
+
+  files.each_with_index do |fname, index|
+    if not File.directory?(fname)
+      puts "(#{index + 1}/#{files.size}) Processing #{fname}"
+      learn_words_in_the_file fname
+    end
+  end
+  puts "Processed #{$learn_counter} word(s). #{$learn_passed_counter} word(s) passed. #{$learn_failed_counter} word(s) failed."
+  puts "Failed words are logged to - #{$failure_log.path}" if $learn_failed_counter > 0
+  $failure_log.close
 end
 
 def train_pattern_word
