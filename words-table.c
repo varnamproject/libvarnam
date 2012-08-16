@@ -421,7 +421,7 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
     vword *word;
     const char *sql = "select word, confidence from words where rowid in "
                       "(SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= lower(?1) and pc.pattern <= lower(?1) || 'z' limit 10) "
-                      "order by confidence desc,learned desc";
+                      "and learned = 1 order by confidence desc,learned desc";
 
     assert (handle);
     assert (words);
