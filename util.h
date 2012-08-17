@@ -16,16 +16,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
-
 #ifndef VARNAM_LIB_UTIL_H_INCLUDED_095439
 #define VARNAM_LIB_UTIL_H_INCLUDED_095439
 
 #include <stddef.h>
 #include <stdarg.h>
 
-typedef int bool;
-#define false 0
-#define true  1
+#ifndef __cplusplus
+  typedef int bool;
+  #define false 0
+  #define true  1
+#endif
 
 #include "varray.h"
 #include "vtypes.h"
