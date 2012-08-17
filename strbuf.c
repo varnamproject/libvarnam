@@ -355,6 +355,44 @@ strbuf_replace(strbuf *string, const char *rep, const char *with)
     return true;
 }
 
+varray*
+strbuf_split(strbuf *string, varnam *handle, char delim)
+{
+    char *orig, *copy;
+    int bytes = 0;
+    varray *result = get_pooled_array(handle);
+    strbuf *string_part;
+
+    if (string == NULL || string->length <= 0)
+        return NULL;
+
+    orig = copy = string->buffer;
+    while(*orig)
+    {
+        if (*orig == delim) {
+            if (bytes > 0) {
+                string_part = get_pooled_string(handle);
+                strbuf_add_bytes (string_part, copy, bytes);
+                varray_push (result, string_part);
+                bytes = 0;
+            }
+            copy = ++orig;
+        }
+        else {
+            ++bytes;
+            ++orig;
+        }
+    }
+
+    if (bytes > 0) {
+        string_part = get_pooled_string(handle);
+        strbuf_add_bytes (string_part, copy, bytes);
+        varray_push (result, string_part);
+    }
+
+    return result;
+}
+
 struct strbuf* get_pooled_string(varnam *handle)
 {
     strbuf *string;
