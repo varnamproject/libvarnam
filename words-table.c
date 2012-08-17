@@ -41,7 +41,7 @@ vwt_ensure_schema_exists(varnam *handle)
 
     const char *tables =
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create table if not exists words (id integer primary key, word text unique, confidence integer, learned integer default 1, learned_on date);"
+        "create table if not exists words (id integer primary key, word text unique, confidence integer default 1, learned integer default 1, learned_on date);"
         "create table if not exists patterns_content (pattern text, word_id integer, primary key(pattern, word_id));";
         /* "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"3,4,5,6,7,8,9,10\");"; */
 
@@ -253,14 +253,45 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
 }
 
 static int
-learn_word (varnam *handle, const char *word, bool learned)
+learn_word (varnam *handle, const char *word, bool learned, bool *new_word)
 {
     int rc;
-    const char *sql = "insert or replace into words (id, word, confidence, learned_on, learned) "
-        "select (select id from words where word = trim(?1)), trim(?1), coalesce((select confidence + 1 from words where word = trim(?1)), 1), date(), "
-        "coalesce((select learned from words where word = trim(?1) and learned = 1), ?2);";
+    sqlite3_int64 word_id;
+    const char *sql = "insert into words (word, learned, learned_on) values(trim(?1), ?2, date());";
 
     assert (v_->known_words);
+
+    rc = vwt_get_word_id (handle, word, &word_id);
+    if (rc) return rc;
+
+    if (word_id > 0)
+    {
+        if (v_->update_confidence == NULL)
+        {
+            rc = sqlite3_prepare_v2( v_->known_words,
+                                     "update words set confidence = confidence + 1, learned = coalesce((select learned from words where id = ?2 and learned = 1), ?1) where id = ?2;", -1,
+                                     &v_->update_confidence, NULL );
+            if (rc != SQLITE_OK) {
+                set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
+                sqlite3_reset (v_->update_confidence);
+                return VARNAM_ERROR;
+            }
+        }
+
+        sqlite3_bind_int   (v_->update_confidence, 1, learned);
+        sqlite3_bind_int64 (v_->update_confidence, 2, word_id);
+
+        rc = sqlite3_step (v_->update_confidence);
+        if (rc != SQLITE_DONE) {
+            set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->update_confidence);
+            return VARNAM_ERROR;
+        }
+        sqlite3_reset (v_->update_confidence);
+        *new_word = false;
+
+        return VARNAM_SUCCESS;
+    }
 
     if (v_->learn_word == NULL)
     {
@@ -282,6 +313,7 @@ learn_word (varnam *handle, const char *word, bool learned)
         return VARNAM_ERROR;
     }
 
+    *new_word = true;
     sqlite3_reset (v_->learn_word);
     varnam_log (handle, "Learned word %s", word);
 
@@ -299,6 +331,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
     int i, rc, tokens_len = 0;
     vword *word;
     vtoken *token;
+    bool new_word;
 
     varray *tokens_tmp = get_pooled_array (handle);
     for (i = 0; i < varray_length (tokens); i++)
@@ -321,7 +354,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
 
             if (!word_already_learned)
             {
-                rc = learn_word (handle, word->text, false);
+                rc = learn_word (handle, word->text, false, &new_word);
                 if (rc) {
                     return_array_to_pool (handle, tokens_tmp);
                     return rc;
@@ -404,12 +437,16 @@ int
 vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
 {
     int rc;
+    bool new_word;
 
-    rc = learn_word (handle, word, true);
+    rc = learn_word (handle, word, true, &new_word);
     if (rc) return rc;
 
-    rc = learn_all_possibilities (handle, tokens, word);
-    if (rc) return rc;
+    if (new_word)
+    {
+        rc = learn_all_possibilities (handle, tokens, word);
+        if (rc) return rc;
+    }
 
     return VARNAM_SUCCESS;
 }

@@ -798,4 +798,5 @@ destroy_all_statements(varnam *handle)
     sqlite3_finalize (v_->get_suggestions);
     sqlite3_finalize (v_->get_matches_for_word);
     sqlite3_finalize (v_->possible_to_find_matches);
+    sqlite3_finalize (v_->update_confidence);
 }
