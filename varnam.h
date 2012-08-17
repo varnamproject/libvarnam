@@ -20,6 +20,10 @@
 #ifndef VARNAM_H_INCLUDED_091620
 #define VARNAM_H_INCLUDED_091620
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 
 #include "util.h"
@@ -29,5 +33,8 @@
 #include "varray.h"
 #include "langcodes.h"
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
