@@ -1,6 +1,21 @@
-* choose the preferred token if available when reverse transliterating. Need to implement the change in compiler also. Fix the test after that
+NEW FEATURES
+==============
+* Ability to turn on & off numerics.
+* Incremental tokenization. 
+* Porter stemmer implementation. Need to validate if this is really required.
+* Adding more languages.
+* libvarnam wrappers for other programming languages. Ruby gem, Node module, .NET and Java packages etc.
+* unlearn words.
+
+TO FIX
+==============
+* DB schema optimizations on symbols file. Put the greater than query. Need to see a way to put the large unicode code point.
+* When enabling suggestions, it is not checking whether the supplied file is valid or not
+* Fix the ordering of results in transliteration. Currently word with higher confidence comes first. Arrange it in a way that most matching suggestion for the current input comes first. This can be done by showing the words with smallest length first and ordererd by confidence. 
+* varnam_get_info segfaulting
 * reverse transliteration adding unwanted _ at the end if word ends with chil. Need to remove the reduntant _
-* map st to സ്റ്റ്  and sT to സ്ട് as usage for st is more
-* option which will avoid rendering of language specific numbers
 * documentation for functions
 * Remove unnecessary exports once client code removes it's usages. - mainly snprintf etc
+* can_find_more_matches()
+This function can be optimized some more. Now it checks for possibility with the current lookup which will always return a value yielding atleast 2 iteration for each tokens. This can be reduced by looking up for current lookup + next character.
+
