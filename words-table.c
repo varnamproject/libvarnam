@@ -458,8 +458,8 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
     int rc;
     vword *word;
     const char *sql = "select word, confidence from words where rowid in "
-                      "(SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= lower(?1) and pc.pattern <= lower(?1) || 'z' limit 10) "
-                      "and learned = 1 order by confidence desc,learned desc";
+                      "(SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= lower(?1) and pc.pattern <= lower(?1) || 'z' limit 5) "
+                      "and learned = 1 order by confidence desc";
 
     assert (handle);
     assert (words);
@@ -671,6 +671,8 @@ symbols_tokenize_add_to_result(varnam *handle, strbuf *lookup, varray *result)
     return VARNAM_SUCCESS;
 }
 
+/* Finds the longest possible match from the words table. Remaining string will be 
+   converted using symbols tokenization */
 int
 vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
 {
@@ -689,10 +691,9 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
     if (pattern == NULL || *pattern == '\0')
         return VARNAM_SUCCESS;
 
-    lookup                   = get_pooled_string (handle);
-    for_symbols_tokenization = get_pooled_string (handle);
-    matches                  = get_pooled_array (handle);
-    tokens                   = get_pooled_array (handle);
+    lookup     = get_pooled_string (handle);
+    matches    = get_pooled_array (handle);
+    tokens     = get_pooled_array (handle);
 
     varnam_debug (handle, "Tokenizing '%s' with words tokenizer", pattern);
 
@@ -714,60 +715,35 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
             return rc;
         if (possible)
             continue;
-
-        /* At this point we will have the longest possible match. If nothing is available,
-         * there is no words that matches the prefix. In that case, exiting early */
-        if (varray_length (matches) == 0 && varray_length(result) == 0) {
-            return VARNAM_SUCCESS;
-        }
-
-        if (varray_length (matches) > 0)
-        {
-            rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result);
-            if (rc) return rc;
-            strbuf_clear (for_symbols_tokenization);
-
-            for(i = 0; i < varray_length (matches); i++)
-            {
-                /* Tokenize the match */
-                match = varray_get (matches, i);
-                assert (match);
-#ifdef _VARNAM_VERBOSE
-                varnam_debug (handle, "Tokenizing longest prefix match - %s", strbuf_to_s (match));
-#endif
-                rc = vst_tokenize (handle, strbuf_to_s(match), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, tokens);
-                if (rc) return rc;
-
-                add_tokens (handle, tokens, result, first_match);
-                varray_clear (tokens);
-            }
-            first_match = false;
-            varray_clear (matches);
-        }
         else
-        {
-            matchpos = 1;
-            /* Remembering the failed portion as we will be using this later to do the symbols
-             * tokenization */
-            strbuf_addc (for_symbols_tokenization, strbuf_to_s(lookup)[0]);
-#ifdef _VARNAM_VERBOSE
-            varnam_debug (handle, "Failed to find match. Lookup = %s. For symbols tokenization = %s", strbuf_to_s (lookup), strbuf_to_s(for_symbols_tokenization));
-#endif
-        }
-        pattern = pattern + matchpos;
-        pc = pattern;
-        pos = 0;
-        matchpos = 0;
-        strbuf_clear (lookup);
+            break;
     }
 
-    /* If we still have text remaining in this buffer, means that the tokenization ended without
-     * getting any more matches after it failed last time to find a match
-     * if it would have got a match, it would have tokenized the items in the buffer.
-     *
-     * Loop above might have completed before it records failed characters for symbols tokenization.
-     * So adding remaining items in the lookup for tokenization */
-    strbuf_add (for_symbols_tokenization, strbuf_to_s (lookup));
+    /* At this point we will have the longest possible match. If nothing is available,
+     * there is no words that matches the prefix. In that case, exiting early */
+    if (varray_length (matches) == 0 && varray_length(result) == 0) {
+        return VARNAM_SUCCESS;
+    }
+
+    for(i = 0; i < varray_length (matches); i++)
+    {
+        /* Tokenize the match */
+        match = varray_get (matches, i);
+        assert (match);
+#ifdef _VARNAM_VERBOSE
+        varnam_debug (handle, "Tokenizing longest prefix match - %s", strbuf_to_s (match));
+#endif
+        rc = vst_tokenize (handle, strbuf_to_s(match), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, tokens);
+        if (rc) return rc;
+
+        add_tokens (handle, tokens, result, first_match);
+        varray_clear (tokens);
+    }
+    pattern = pattern + matchpos;
+
+    /* Remaining text will be tokenized literally */
+    for_symbols_tokenization = get_pooled_string (handle);
+    strbuf_add (for_symbols_tokenization, pattern);
     rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result);
     if (rc) return rc;
 
@@ -779,3 +755,112 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
 
     return VARNAM_SUCCESS;
 }
+
+/* int */
+/* vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result) */
+/* { */
+/*     int rc, matchpos = 0, pos = 0, i; */
+/*     strbuf *lookup, *for_symbols_tokenization, *match; */
+/*     varray *matches;  /\* contains strbuf* instances *\/ */
+/*     varray *tokens;   /\* Contains arrays that contains vtoken* instances *\/ */
+/*     bool found = false, possible = false, first_match = true; */
+/*     const char *pc; */
+
+/*     varray_clear (result); */
+
+/*     if (v_->known_words == NULL) */
+/*         return VARNAM_SUCCESS; */
+
+/*     if (pattern == NULL || *pattern == '\0') */
+/*         return VARNAM_SUCCESS; */
+
+/*     lookup                   = get_pooled_string (handle); */
+/*     for_symbols_tokenization = get_pooled_string (handle); */
+/*     matches                  = get_pooled_array (handle); */
+/*     tokens                   = get_pooled_array (handle); */
+
+/*     varnam_debug (handle, "Tokenizing '%s' with words tokenizer", pattern); */
+
+/*     pc = pattern; */
+/*     while (*pc != '\0') */
+/*     { */
+/*         strbuf_addc (lookup, *pc); */
+/*         ++pos; ++pc; */
+
+/*         rc = get_matches (handle, lookup, matches, &found); */
+/*         if (rc != VARNAM_SUCCESS) */
+/*             return rc; */
+/*         if (found) { */
+/*             matchpos = pos; */
+/*         } */
+
+/*         rc = can_find_possible_matches (handle, lookup, &possible); */
+/*         if (rc) */
+/*             return rc; */
+/*         if (possible) */
+/*             continue; */
+
+/*         /\* At this point we will have the longest possible match. If nothing is available, */
+/*          * there is no words that matches the prefix. In that case, exiting early *\/ */
+/*         if (varray_length (matches) == 0 && varray_length(result) == 0) { */
+/*             return VARNAM_SUCCESS; */
+/*         } */
+
+/*         if (varray_length (matches) > 0) */
+/*         { */
+/*             rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result); */
+/*             if (rc) return rc; */
+/*             strbuf_clear (for_symbols_tokenization); */
+
+/*             for(i = 0; i < varray_length (matches); i++) */
+/*             { */
+/*                 /\* Tokenize the match *\/ */
+/*                 match = varray_get (matches, i); */
+/*                 assert (match); */
+/* #ifdef _VARNAM_VERBOSE */
+/*                 varnam_debug (handle, "Tokenizing longest prefix match - %s", strbuf_to_s (match)); */
+/* #endif */
+/*                 rc = vst_tokenize (handle, strbuf_to_s(match), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, tokens); */
+/*                 if (rc) return rc; */
+
+/*                 add_tokens (handle, tokens, result, first_match); */
+/*                 varray_clear (tokens); */
+/*             } */
+/*             first_match = false; */
+/*             varray_clear (matches); */
+/*         } */
+/*         else */
+/*         { */
+/*             matchpos = 1; */
+/*             /\* Remembering the failed portion as we will be using this later to do the symbols */
+/*              * tokenization *\/ */
+/*             strbuf_addc (for_symbols_tokenization, strbuf_to_s(lookup)[0]); */
+/* #ifdef _VARNAM_VERBOSE */
+/*             varnam_debug (handle, "Failed to find match. Lookup = %s. For symbols tokenization = %s", strbuf_to_s (lookup), strbuf_to_s(for_symbols_tokenization)); */
+/* #endif */
+/*         } */
+/*         pattern = pattern + matchpos; */
+/*         pc = pattern; */
+/*         pos = 0; */
+/*         matchpos = 0; */
+/*         strbuf_clear (lookup); */
+/*     } */
+
+/*     /\* If we still have text remaining in this buffer, means that the tokenization ended without */
+/*      * getting any more matches after it failed last time to find a match */
+/*      * if it would have got a match, it would have tokenized the items in the buffer. */
+/*      * */
+/*      * Loop above might have completed before it records failed characters for symbols tokenization. */
+/*      * So adding remaining items in the lookup for tokenization *\/ */
+/*     strbuf_add (for_symbols_tokenization, strbuf_to_s (lookup)); */
+/*     rc = symbols_tokenize_add_to_result (handle, for_symbols_tokenization, result); */
+/*     if (rc) return rc; */
+
+/*     strbuf_clear (lookup); */
+/*     strbuf_clear (for_symbols_tokenization); */
+
+/*     /\* At this point, result will look like */
+/*      * [[t1,t2,t3], [t4,t5,t6]]*\/ */
+
+/*     return VARNAM_SUCCESS; */
+/* } */

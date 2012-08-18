@@ -90,7 +90,7 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
     if (rc)
         return rc;
 
-    if (varray_is_empty (words) && strlen(input) > 2)
+    if ((varray_length (words) < 5) && strlen(input) > 2)
     {
         /* We don't have any suggestions for the input. In this case, varnam does
          * it's best to provide suggestions by doing a tokenization on words table */
