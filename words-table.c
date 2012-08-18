@@ -253,11 +253,11 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
 }
 
 static int
-learn_word (varnam *handle, const char *word, bool learned, bool *new_word)
+learn_word (varnam *handle, const char *word, int confidence, bool learned, bool *new_word)
 {
     int rc;
     sqlite3_int64 word_id;
-    const char *sql = "insert into words (word, learned, learned_on) values(trim(?1), ?2, date());";
+    const char *sql = "insert into words (word, learned, confidence, learned_on) values(trim(?1), ?2, ?3, date());";
 
     assert (v_->known_words);
 
@@ -305,6 +305,7 @@ learn_word (varnam *handle, const char *word, bool learned, bool *new_word)
 
     sqlite3_bind_text (v_->learn_word, 1, word, -1, NULL);
     sqlite3_bind_int (v_->learn_word, 2, learned);
+    sqlite3_bind_int (v_->learn_word, 3, confidence);
 
     rc = sqlite3_step (v_->learn_word);
     if (rc != SQLITE_DONE) {
@@ -354,7 +355,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
 
             if (!word_already_learned)
             {
-                rc = learn_word (handle, word->text, false, &new_word);
+                rc = learn_word (handle, word->text, 1, false, &new_word);
                 if (rc) {
                     return_array_to_pool (handle, tokens_tmp);
                     return rc;
@@ -434,12 +435,12 @@ finished:
 }
 
 int
-vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word)
+vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word, int confidence)
 {
     int rc;
     bool new_word;
 
-    rc = learn_word (handle, word, true, &new_word);
+    rc = learn_word (handle, word, confidence, true, &new_word);
     if (rc) return rc;
 
     if (new_word)

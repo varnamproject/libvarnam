@@ -132,7 +132,7 @@ done:
 }
 
 static int
-varnam_learn_internal(varnam *handle, const char *word)
+varnam_learn_internal(varnam *handle, const char *word, int confidence)
 {
     int rc;
     varray *tokens;
@@ -164,7 +164,8 @@ varnam_learn_internal(varnam *handle, const char *word)
 
     return vwt_persist_possibilities (handle,
                                       tokens,
-                                      strbuf_to_s (sanitized_word));
+                                      strbuf_to_s (sanitized_word),
+                                      confidence);
 }
 
 int
@@ -180,7 +181,7 @@ varnam_learn(varnam *handle, const char *word)
     rc = vwt_start_changes (handle);
     if (rc != VARNAM_SUCCESS) return rc;
 
-    rc = varnam_learn_internal(handle, word);
+    rc = varnam_learn_internal(handle, word, 1);
     if (rc != VARNAM_SUCCESS) {
         vwt_discard_changes (handle);
         return rc;
@@ -204,7 +205,10 @@ varnam_learn_from_file(varnam *handle,
     int rc;
     FILE *infile;
     char line_buffer[10000];
-    char *word;
+    strbuf *word;
+    varray *word_parts;
+    int confidence;
+    int parts;
 
     infile = fopen(filepath, "r");
     if (!infile) {
@@ -235,13 +239,32 @@ varnam_learn_from_file(varnam *handle,
     while (fgets(line_buffer, sizeof(line_buffer), infile))
     {
         reset_pool (handle);
-        word = trimwhitespace (line_buffer);
-        rc = varnam_learn_internal (handle, word);
-        if (rc) {
+
+        word = get_pooled_string (handle);
+        strbuf_add (word, trimwhitespace (line_buffer));
+        word_parts = strbuf_split (word, handle, ' ');
+        parts = varray_length (word_parts);
+        if (parts > 0 && parts <= 2)
+        {
+            confidence = 1;
+            if (parts == 2) {
+                word = varray_get (word_parts, 1);
+                confidence = atoi (strbuf_to_s (word));
+            }
+
+            word = varray_get (word_parts, 0);
+            rc = varnam_learn_internal (handle, strbuf_to_s (word), confidence);
+            if (rc) {
+                if (status != NULL) status->failed++;
+            }
+        }
+        else {
+            rc = VARNAM_ERROR;
             if (status != NULL) status->failed++;
         }
+
         if (status   != NULL) status->total_words++;
-        if (callback != NULL) callback (handle, word, rc, object);
+        if (callback != NULL) callback (handle, strbuf_to_s (word), rc, object);
     }
 
     varnam_log (handle, "Writing changes to disk");
@@ -275,7 +298,7 @@ varnam_train(varnam *handle, const char *pattern, const char *word)
     rc = vwt_start_changes (handle);
     if (rc != VARNAM_SUCCESS) return rc;
 
-    rc = varnam_learn_internal(handle, word);
+    rc = varnam_learn_internal(handle, word, 1);
     if (rc != VARNAM_SUCCESS) {
         vwt_discard_changes (handle);
         return rc;

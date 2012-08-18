@@ -95,6 +95,9 @@ varray_pop_last_item(varray *array)
 int
 varray_length(varray *array)
 {
+    if (array == NULL)
+        return 0;
+
     return array->index + 1;
 }
 
