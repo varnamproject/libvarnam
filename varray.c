@@ -119,6 +119,9 @@ varray_free(varray *array, void (*destructor)(void*))
     int i;
     void *item;
 
+    if (array == NULL)
+        return;
+
     if (destructor != NULL)
     {
         for(i = 0; i < varray_length(array); i++)
@@ -220,6 +223,9 @@ vpool_reset(vpool *pool)
 void
 vpool_free(vpool *pool, void (*destructor)(void*))
 {
+    if (pool == NULL)
+        return;
+    
     assert (pool);
     varray_free (pool->array, destructor);
     varray_free (pool->free_pool, destructor);
