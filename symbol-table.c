@@ -764,7 +764,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
             token = get_pooled_token (handle, -99,
                                       VARNAM_TOKEN_OTHER,
                                       VARNAM_MATCH_EXACT,
-                                      strbuf_to_s (lookup), "", "", "", "");
+                                      strbuf_to_s (lookup), strbuf_to_s (lookup), "", "", "");
             assert (token);
             varray_push (tokens, token);
             matchpos = (int) lookup->length;
