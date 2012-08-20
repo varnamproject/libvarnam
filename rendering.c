@@ -110,7 +110,7 @@ resolve_tokens(varnam *handle,
                     strbuf_add(string, token->value2);
                 }
             }
-            else if(previous != NULL) {
+            else if(previous != NULL && previous->type != VARNAM_TOKEN_OTHER) {
                 strbuf_add(string, token->value2);
             }
             else {
