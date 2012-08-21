@@ -41,7 +41,7 @@ ml_unicode_renderer(varnam *handle,
     rc = vst_get_virama (handle, &virama);
     if (rc) return rc;
 
-    if (current->type == VARNAM_TOKEN_VOWEL && strcmp(current->pattern, "r") == 0)
+    if (previous != NULL && current->type == VARNAM_TOKEN_VOWEL && strcmp(current->pattern, "r") == 0)
     {
         strbuf_add (output, current->value3);
         return VARNAM_SUCCESS;
