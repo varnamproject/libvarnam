@@ -9,6 +9,7 @@ NEW FEATURES
 
 TO FIX
 ==============
+* When learn is called for the first time from the node file, and the file name is not exists, free throws error. Incorrect free
 * DB schema optimizations on symbols file. Put the greater than query. Need to see a way to put the large unicode code point.
 * When enabling suggestions, it is not checking whether the supplied file is valid or not
 * Fix the ordering of results in transliteration. Currently word with higher confidence comes first. Arrange it in a way that most matching suggestion for the current input comes first. This can be done by showing the words with smallest length first and ordererd by confidence. 
