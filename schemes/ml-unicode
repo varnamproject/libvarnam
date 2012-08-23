@@ -14,7 +14,7 @@ vowels "a" => "അ",
        ["ii", "I", "ee", ["i"]]   => ["ഈ", "ീ"],
        "u" => ["ഉ", "ു"],
        ["uu", "oo", "U", ["u"]]   => ["ഊ", "ൂ"],
-       ["r", ["ri"]] => ["ഋ", "ൃ", "ർ"],
+       ["r", ["ri", "ru"]] => ["ഋ", "ൃ", "ർ"],
        "e" => ["എ", "െ"],
        ["E", ["e"]] => ["ഏ", "േ"],
        ["ai", "ei"] => ["ഐ", "ൈ"],
@@ -66,7 +66,7 @@ consonants "nka" => "ങ്ക",
            ["ncha", ["nja"]] => "ഞ്ച",
            "ntha" => "ന്ത",
            "nta" => "ന്റ",
-           ["Nta", "nTa", ["nta", "nda"]] => "ണ്ട",
+           ["nDa", "Nta", "nTa", ["nta", "nda"]] => "ണ്ട",
            "nda" => "ന്ദ",
            "tta" => "ട്ട",
            ["THa", "ttha", ["tha"]] => "ത്ത",
@@ -124,7 +124,6 @@ end
 infer_dead_consonants false
 ignore_duplicates true
 
-# This is shortcut to generate consonant+ra
 get_dead_consonants(:exact => true).each do |dc|
   consonants ["#{dc.pattern}v", "#{dc.pattern}w"] => "#{dc.value1}വ#{$virama}" ,
              "#{dc.pattern}y" => "#{dc.value1}യ#{$virama}"
@@ -140,8 +139,6 @@ get_dead_consonants(:exact => true).each do |dc|
                [["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"]] => "#{dc.value1}വ#{vowel.value2}" ,
                [["#{dc.pattern}y#{vowel.pattern}"]] => "#{dc.value1}യ#{vowel.value2}"
   end
-
-  consonant_vowel_combinations [["#{dc.pattern}ri"]] => "#{dc.value1.sub($virama, '')}ൃ"
 end
 
 get_dead_consonants(:possibility => true).each do |dc|
