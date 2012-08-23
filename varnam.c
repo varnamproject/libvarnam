@@ -82,6 +82,7 @@ initialize_internal()
         vi->get_matches_for_word = NULL;
         vi->possible_to_find_matches = NULL;
         vi->update_confidence = NULL;
+        vi->update_learned_flag = NULL;
     }
     return vi;
 }
