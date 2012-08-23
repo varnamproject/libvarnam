@@ -268,7 +268,8 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
     for (i = 0; i < varray_length (tokens); i++)
     {
         token = varray_get (tokens, i);
-        strbuf_add (pattern, token->pattern);
+        if (token->type != VARNAM_TOKEN_NON_JOINER && token->type != VARNAM_TOKEN_JOINER)
+            strbuf_add (pattern, token->pattern);
     }
 
     rc = vwt_persist_pattern(handle, strbuf_to_s (pattern), word_id, learned);

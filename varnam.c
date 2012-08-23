@@ -408,6 +408,9 @@ varnam_create_token(
     if (token_type == VARNAM_TOKEN_NON_JOINER)
         value1 = value2 = ZWNJ();
 
+    if (token_type == VARNAM_TOKEN_JOINER)
+        value1 = value2 = ZWJ();
+
     rc = vst_persist_token (handle, pattern, value1, value2, value3, tag, token_type, match_type);
     if (rc != VARNAM_SUCCESS)
     {

@@ -502,6 +502,12 @@ def non_joiner(hash)
   $overridden_default_symbols.push Varnam::VARNAM_TOKEN_NON_JOINER
 end
 
+def joiner(hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_JOINER);
+  $overridden_default_symbols.push Varnam::VARNAM_TOKEN_JOINER
+end
+
 def get_tokens(token_type, criteria = {})
   tokens = _context.tokens[token_type]
   if criteria.empty?
@@ -576,6 +582,7 @@ end
 # Sets default symbols if user has not set overridden in the scheme file
 def set_default_symbols
   non_joiner "_" => "_"  if not $overridden_default_symbols.include?(Varnam::VARNAM_TOKEN_NON_JOINER)
+  joiner "__" => "__"  if not $overridden_default_symbols.include?(Varnam::VARNAM_TOKEN_JOINER)
   symbols "-" => "-"
 end
 

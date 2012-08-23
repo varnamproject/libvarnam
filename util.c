@@ -261,10 +261,15 @@ bool is_utf8(const char *string)
 }
 
 const char zwnj[] = {'\xe2', '\x80', '\x8c', '\0'};
-
 const char *ZWNJ()
 {
     return zwnj;
+}
+
+const char zwj[] = {'\xe2', '\x80', '\x8d', '\0'};
+const char *ZWJ()
+{
+    return zwj;
 }
 
 char *trimwhitespace(char *str)

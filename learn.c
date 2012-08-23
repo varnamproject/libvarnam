@@ -72,8 +72,9 @@ sanitize_word (varnam *handle, const char *word)
     strbuf_remove_from_last (string, strbuf_to_s (to_remove));
     language_specific_sanitization (string);
 
-    /* Remove trailing ZWNJ */
+    /* Remove trailing ZWNJ and leading ZWJ */
     strbuf_remove_from_last (string, ZWNJ());
+    strbuf_remove_from_first (string, ZWJ());
 
     return string;
 }
