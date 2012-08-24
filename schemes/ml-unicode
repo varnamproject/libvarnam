@@ -128,6 +128,8 @@ get_dead_consonants(:exact => true).each do |dc|
   consonants ["#{dc.pattern}v", "#{dc.pattern}w"] => "#{dc.value1}വ#{$virama}" ,
              "#{dc.pattern}y" => "#{dc.value1}യ#{$virama}"
 
+  consonants [["#{dc.pattern}u"]] =>  dc.value1
+
   get_vowels(:exact => true).each do |vowel|
     consonants "#{dc.pattern}r#{vowel.pattern}" => "#{dc.value1}ര#{vowel.value2}" ,
                ["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"] => "#{dc.value1}വ#{vowel.value2}",
