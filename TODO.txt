@@ -9,6 +9,8 @@ NEW FEATURES
 
 TO FIX
 ==============
+* Always try to find a suggestion for the given input and and union the results with possibilities. Currently when a lot of longer suggestions exists for an input, suggestions won't show up smaller words.
+* map jh to ഛ
 * When learn is called for the first time from the node file, and the file name is not exists, free throws error. Incorrect free
 * DB schema optimizations on symbols file. Put the greater than query. Need to see a way to put the large unicode code point.
 * When enabling suggestions, it is not checking whether the supplied file is valid or not
