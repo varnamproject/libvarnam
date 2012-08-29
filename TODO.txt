@@ -9,6 +9,7 @@ NEW FEATURES
 
 TO FIX
 ==============
+* Malayalam - ങ്ങ not coming correctly. Instead small ങ്ങ is coming
 * Always try to find a suggestion for the given input and and union the results with possibilities. Currently when a lot of longer suggestions exists for an input, suggestions won't show up smaller words.
 * map jh to ഛ
 * When learn is called for the first time from the node file, and the file name is not exists, free throws error. Incorrect free
