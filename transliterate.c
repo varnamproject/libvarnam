@@ -102,11 +102,14 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
             tokens = varray_get (all_tokens, i);
             rc = resolve_tokens (handle, tokens, &word1);
             if (rc) return rc;
-            varray_push (words, word1);
+
+            if (!varray_exists (words, word1, &word_equals))
+                varray_push (words, word1);
         }
     }
 
-    varray_push (words, word);
+    if (!varray_exists (words, word, &word_equals))
+        varray_push (words, word);
 
     rc = vwt_get_suggestions (handle, input, words);
     if (rc)

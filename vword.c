@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
 
 #include <assert.h>
+#include <string.h>
 
 #include "vword.h"
 #include "vtypes.h"
@@ -62,6 +63,23 @@ get_pooled_word(varnam *handle, const char *text, int confidence)
         initialize_word (handle, word, text, confidence);
 
     return word;
+}
+
+bool
+word_equals (void *left, void *right)
+{
+    vword *lhs, *rhs;
+
+    if (left == NULL)
+        return false;
+
+    if (right == NULL)
+        return false;
+
+    lhs = (vword*) left;
+    rhs = (vword*) right;
+
+    return strcmp (lhs->text, rhs->text) == 0;
 }
 
 void

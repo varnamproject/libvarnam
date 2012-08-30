@@ -56,6 +56,9 @@ varray_length(varray *array);
 bool
 varray_is_empty (varray *array);
 
+bool
+varray_exists (varray *array, void *item, bool (*equals)(void *left, void *right));
+
 void
 varray_clear(varray *array);
 

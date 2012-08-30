@@ -163,6 +163,20 @@ varray_is_empty (varray *array)
     return (varray_length (array) == 0);
 }
 
+bool
+varray_exists (varray *array, void *item, bool (*equals)(void *left, void *right))
+{
+    int i;
+
+    for (i = 0; i < varray_length (array); i++)
+    {
+        if (equals(varray_get (array, i), item))
+            return true;
+    }
+
+    return false;
+}
+
 vpool*
 vpool_init()
 {
@@ -225,7 +239,7 @@ vpool_free(vpool *pool, void (*destructor)(void*))
 {
     if (pool == NULL)
         return;
-    
+
     assert (pool);
     varray_free (pool->array, destructor);
     varray_free (pool->free_pool, destructor);

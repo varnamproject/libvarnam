@@ -580,7 +580,10 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
             word = get_pooled_word (handle,
                                     (const char*) sqlite3_column_text(v_->get_suggestions, 0),
                                     (int) sqlite3_column_int(v_->get_suggestions, 1));
-            varray_push (words, word);
+            if (!varray_exists (words, word, &word_equals))
+            {
+                varray_push (words, word);
+            }
         }
         else if (rc == SQLITE_DONE)
         {

@@ -21,6 +21,7 @@
 #define VWORD_H_INCLUDED_0631
 
 #include "vtypes.h"
+#include "util.h"
 
 /*
  * Constructor for vword
@@ -33,6 +34,9 @@ Word(varnam *handle, const char *text, int confidence);
  */
 vword*
 get_pooled_word(varnam *handle, const char *text, int confidence);
+
+bool
+word_equals (void *left, void *right);
 
 void
 destroy_word(void *word);
