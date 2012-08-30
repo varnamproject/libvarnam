@@ -162,7 +162,7 @@ vwt_compact_file (varnam *handle)
 }
 
 int
-vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, bool learned)
+vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
 {
     int rc;
     const char *sql = "insert or ignore into patterns_content (pattern, word_id) values (trim(lower(?1)), ?2)";
@@ -190,30 +190,33 @@ vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, 
     }
     sqlite3_reset (v_->learn_pattern);
 
-    if (learned)
+    return VARNAM_SUCCESS;
+}
+
+int
+vwt_mark_as_learned (varnam *handle, sqlite3_int64 word_id)
+{
+    int rc;
+    if (v_->update_learned_flag == NULL)
     {
-        if (v_->update_learned_flag == NULL)
-        {
-            rc = sqlite3_prepare_v2( v_->known_words, "update patterns_content set learned = 1 where pattern = ?1 and word_id = ?2 and learned = 0",
-                                     -1, &v_->update_learned_flag, NULL );
-            if (rc != SQLITE_OK) {
-                set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
-                sqlite3_reset (v_->update_learned_flag);
-                return VARNAM_ERROR;
-            }
-        }
-
-        sqlite3_bind_text  (v_->update_learned_flag, 1, pattern, -1, NULL);
-        sqlite3_bind_int64 (v_->update_learned_flag, 2, word_id);
-
-        rc = sqlite3_step (v_->update_learned_flag);
-        if (rc != SQLITE_DONE) {
-            set_last_error (handle, "Failed to learn pattern : %s", sqlite3_errmsg(v_->known_words));
+        rc = sqlite3_prepare_v2( v_->known_words, "update patterns_content set learned = 1 where word_id = ?1 and learned = 0",
+                                 -1, &v_->update_learned_flag, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to mark as learned : %s", sqlite3_errmsg(v_->known_words));
             sqlite3_reset (v_->update_learned_flag);
             return VARNAM_ERROR;
         }
-        sqlite3_reset (v_->update_learned_flag);
     }
+
+    sqlite3_bind_int64 (v_->update_learned_flag, 1, word_id);
+
+    rc = sqlite3_step (v_->update_learned_flag);
+    if (rc != SQLITE_DONE) {
+        set_last_error (handle, "Failed to mark as learned : %s", sqlite3_errmsg(v_->known_words));
+        sqlite3_reset (v_->update_learned_flag);
+        return VARNAM_ERROR;
+    }
+    sqlite3_reset (v_->update_learned_flag);
 
     return VARNAM_SUCCESS;
 }
@@ -255,7 +258,7 @@ vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
 /* Learns the pattern. strbuf* is passed in because of memory optimizations.
  * See comments in the learn_suffixes() function */
 static int
-learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern, bool learned)
+learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern)
 {
     int rc, i;
     sqlite3_int64 word_id;
@@ -272,7 +275,7 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
             strbuf_add (pattern, token->pattern);
     }
 
-    rc = vwt_persist_pattern(handle, strbuf_to_s (pattern), word_id, learned);
+    rc = vwt_persist_pattern(handle, strbuf_to_s (pattern), word_id);
     if (rc)
         return rc;
 
@@ -280,18 +283,17 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
 }
 
 static int
-learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
+learn_word (varnam *handle, const char *word, int confidence, bool *new_word, sqlite3_int64 *word_id)
 {
     int rc;
-    sqlite3_int64 word_id;
     const char *sql = "insert into words (word, confidence, learned_on) values(trim(?1), ?2, date());";
 
     assert (v_->known_words);
 
-    rc = vwt_get_word_id (handle, word, &word_id);
+    rc = vwt_get_word_id (handle, word, word_id);
     if (rc) return rc;
 
-    if (word_id > 0)
+    if (*word_id > 0)
     {
         if (v_->update_confidence == NULL)
         {
@@ -305,7 +307,7 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
             }
         }
 
-        sqlite3_bind_int64 (v_->update_confidence, 1, word_id);
+        sqlite3_bind_int64 (v_->update_confidence, 1, *word_id);
 
         rc = sqlite3_step (v_->update_confidence);
         if (rc != SQLITE_DONE) {
@@ -340,6 +342,7 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
     }
 
     *new_word = true;
+    *word_id = sqlite3_last_insert_rowid (v_->known_words);
     sqlite3_reset (v_->learn_word);
     varnam_log (handle, "Learned word %s", word);
 
@@ -358,6 +361,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
     vword *word;
     vtoken *token;
     bool new_word;
+    sqlite3_int64 word_id;
 
     varray *tokens_tmp = get_pooled_array (handle);
     for (i = 0; i < varray_length (tokens); i++)
@@ -380,14 +384,14 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
 
             if (!word_already_learned)
             {
-                rc = learn_word (handle, word->text, 1, &new_word);
+                rc = learn_word (handle, word->text, 1, &new_word, &word_id);
                 if (rc) {
                     return_array_to_pool (handle, tokens_tmp);
                     return rc;
                 }
             }
 
-            rc = learn_pattern (handle, tokens_tmp, word->text, pattern, false);
+            rc = learn_pattern (handle, tokens_tmp, word->text, pattern);
             if (rc) {
                 return_array_to_pool (handle, tokens_tmp);
                 return rc;
@@ -428,7 +432,7 @@ learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
             varray_push (array, varray_get (tmp, offsets[i]));
         }
 
-        rc = learn_pattern (handle, array, word, pattern, true);
+        rc = learn_pattern (handle, array, word, pattern);
         if (rc)
             goto finished;
 
@@ -464,8 +468,9 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word, int 
 {
     int rc;
     bool new_word;
+    sqlite3_int64 word_id;
 
-    rc = learn_word (handle, word, confidence, &new_word);
+    rc = learn_word (handle, word, confidence, &new_word, &word_id);
     if (rc) return rc;
 
     if (new_word)
@@ -474,6 +479,66 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word, int 
         if (rc) return rc;
     }
 
+    rc = vwt_mark_as_learned (handle, word_id);
+    if (rc) return rc;
+
+    return VARNAM_SUCCESS;
+}
+
+int
+vwt_get_best_match (varnam *handle, const char *input, varray *words)
+{
+    int rc;
+    vword *word;
+    const char *sql = "select word, confidence from words where rowid in "
+                      "(SELECT word_id FROM patterns_content as pc where pc.pattern = lower(?1) and learned = 1 limit 5) "
+                      "order by confidence desc";
+
+    assert (handle);
+    assert (words);
+
+    if (v_->known_words == NULL)
+        return VARNAM_SUCCESS;
+
+    if (strlen(input) < MINIMUM_CHARACTER_LENGTH_FOR_SUGGESTION)
+        return VARNAM_SUCCESS;
+
+    if (v_->get_best_match == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->get_best_match, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to get best matches : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->get_best_match);
+            return VARNAM_ERROR;
+        }
+    }
+
+    sqlite3_bind_text (v_->get_best_match, 1, input, -1, NULL);
+
+    for (;;)
+    {
+        rc = sqlite3_step (v_->get_best_match);
+        if (rc == SQLITE_ROW)
+        {
+            word = get_pooled_word (handle,
+                                    (const char*) sqlite3_column_text(v_->get_best_match, 0),
+                                    (int) sqlite3_column_int(v_->get_best_match, 1));
+            varray_push (words, word);
+        }
+        else if (rc == SQLITE_DONE)
+        {
+            break;
+        }
+        else
+        {
+            set_last_error (handle, "Failed to get best match : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->get_best_match);
+            return VARNAM_ERROR;
+        }
+    }
+
+    sqlite3_clear_bindings (v_->get_best_match);
+    sqlite3_reset (v_->get_best_match);
     return VARNAM_SUCCESS;
 }
 
@@ -483,7 +548,7 @@ vwt_get_suggestions (varnam *handle, const char *input, varray *words)
     int rc;
     vword *word;
     const char *sql = "select word, confidence from words where rowid in "
-                      "(SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern >= lower(?1) and pc.pattern <= lower(?1) || 'z' and learned = 1 limit 5) "
+                      "(SELECT distinct(word_id) FROM patterns_content as pc where pc.pattern > lower(?1) and pc.pattern <= lower(?1) || 'z' and learned = 1 limit 5) "
                       "order by confidence desc";
 
     assert (handle);

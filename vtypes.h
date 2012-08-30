@@ -116,6 +116,7 @@ struct varnam_internal
     sqlite3_stmt *learn_pattern;
     sqlite3_stmt *get_word;
     sqlite3_stmt *get_suggestions;
+    sqlite3_stmt *get_best_match;
     sqlite3_stmt *get_matches_for_word;
     sqlite3_stmt *possible_to_find_matches;
     sqlite3_stmt *update_confidence;

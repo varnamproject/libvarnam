@@ -86,13 +86,13 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
         words = get_pooled_array (handle);
     }
 
-    rc = vwt_get_suggestions (handle, input, words);
+    rc = vwt_get_best_match (handle, input, words);
     if (rc)
         return rc;
 
-    if ((varray_length (words) < 5) && strlen(input) > 2)
+    if (varray_length (words) == 0 && strlen(input) > 2)
     {
-        /* We don't have any suggestions for the input. In this case, varnam does
+        /* We don't have any best match for the input. In this case, varnam does
          * it's best to provide suggestions by doing a tokenization on words table */
         rc = vwt_tokenize_pattern (handle, input, all_tokens);
         if (rc) return rc;
@@ -107,6 +107,11 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
     }
 
     varray_push (words, word);
+
+    rc = vwt_get_suggestions (handle, input, words);
+    if (rc)
+        return rc;
+
     *output = words;
 
 #ifdef _RECORD_EXEC_TIME

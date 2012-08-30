@@ -44,6 +44,9 @@ vwt_optimize_for_huge_transaction(varnam *handle);
 int
 vwt_turn_off_optimization_for_huge_transaction(varnam *handle);
 
+int
+vwt_get_best_match (varnam *handle, const char *input, varray *words);
+
 /**
  * Gets the suggestions for input and store it in words array
  **/
@@ -63,6 +66,9 @@ int
 vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id);
 
 int
-vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, bool learned);
+vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id);
+
+int
+vwt_mark_as_learned (varnam *handle, sqlite3_int64 word_id);
 
 #endif
