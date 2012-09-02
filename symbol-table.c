@@ -674,8 +674,11 @@ static bool
 can_find_more_matches(varnam *handle, struct strbuf *lookup, int tokenize_using, bool *possible)
 {
     int rc;
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = NULL;
     char candidate[500];
+
+    assert (tokenize_using == VARNAM_TOKENIZER_PATTERN
+        || tokenize_using == VARNAM_TOKENIZER_VALUE);
 
     switch (tokenize_using)
     {

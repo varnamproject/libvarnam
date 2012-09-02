@@ -280,6 +280,8 @@ return_array_to_pool (varnam *handle, varray *array)
 void
 reset_pool(varnam *handle)
 {
+    assert(handle);
+    assert(handle->internal);
     vpool_reset (v_->tokens_pool);
     vpool_reset (v_->arrays_pool);
     vpool_reset (v_->strings_pool);

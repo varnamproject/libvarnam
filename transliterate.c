@@ -120,6 +120,9 @@ varnam_transliterate(varnam *handle, const char *input, varray **output)
 #ifdef _RECORD_EXEC_TIME
     V_REPORT_TIME_TAKEN("varnam_transliterate")
 #endif
+#ifdef _VARNAM_VERBOSE
+    printf("Transliterating %s\n", input);
+#endif
     return VARNAM_SUCCESS;
 }
 
