@@ -162,7 +162,7 @@ vwt_compact_file (varnam *handle)
 }
 
 int
-vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
+vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, bool is_prefix)
 {
     int rc;
     const char *sql = "insert or ignore into patterns_content (pattern, word_id) values (trim(lower(?1)), ?2)";
@@ -190,33 +190,30 @@ vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id)
     }
     sqlite3_reset (v_->learn_pattern);
 
-    return VARNAM_SUCCESS;
-}
-
-int
-vwt_mark_as_learned (varnam *handle, sqlite3_int64 word_id)
-{
-    int rc;
-    if (v_->update_learned_flag == NULL)
+    if (!is_prefix)
     {
-        rc = sqlite3_prepare_v2( v_->known_words, "update patterns_content set learned = 1 where word_id = ?1 and learned = 0",
-                                 -1, &v_->update_learned_flag, NULL );
-        if (rc != SQLITE_OK) {
-            set_last_error (handle, "Failed to mark as learned : %s", sqlite3_errmsg(v_->known_words));
+        if (v_->update_learned_flag == NULL)
+        {
+            rc = sqlite3_prepare_v2( v_->known_words, "update patterns_content set learned = 1 where pattern = ?1 and word_id = ?2 and learned = 0",
+                                     -1, &v_->update_learned_flag, NULL );
+            if (rc != SQLITE_OK) {
+                set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
+                sqlite3_reset (v_->update_learned_flag);
+                return VARNAM_ERROR;
+            }
+        }
+
+        sqlite3_bind_text  (v_->update_learned_flag, 1, pattern, -1, NULL);
+        sqlite3_bind_int64 (v_->update_learned_flag, 2, word_id);
+
+        rc = sqlite3_step (v_->update_learned_flag);
+        if (rc != SQLITE_DONE) {
+            set_last_error (handle, "Failed to learn pattern : %s", sqlite3_errmsg(v_->known_words));
             sqlite3_reset (v_->update_learned_flag);
             return VARNAM_ERROR;
         }
-    }
-
-    sqlite3_bind_int64 (v_->update_learned_flag, 1, word_id);
-
-    rc = sqlite3_step (v_->update_learned_flag);
-    if (rc != SQLITE_DONE) {
-        set_last_error (handle, "Failed to mark as learned : %s", sqlite3_errmsg(v_->known_words));
         sqlite3_reset (v_->update_learned_flag);
-        return VARNAM_ERROR;
     }
-    sqlite3_reset (v_->update_learned_flag);
 
     return VARNAM_SUCCESS;
 }
@@ -256,9 +253,9 @@ vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
 }
 
 /* Learns the pattern. strbuf* is passed in because of memory optimizations.
- * See comments in the learn_suffixes() function */
+ * See comments in the learn_prefixes() function */
 static int
-learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern)
+learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern, bool is_prefix)
 {
     int rc, i;
     sqlite3_int64 word_id;
@@ -275,7 +272,7 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
             strbuf_add (pattern, token->pattern);
     }
 
-    rc = vwt_persist_pattern(handle, strbuf_to_s (pattern), word_id);
+    rc = vwt_persist_pattern(handle, strbuf_to_s (pattern), word_id, is_prefix);
     if (rc)
         return rc;
 
@@ -349,13 +346,13 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word, sq
     return VARNAM_SUCCESS;
 }
 
-/* Learns all the suffixes. This won't learn single tokens and the word itself
+/* Learns all the prefixes. This won't learn single tokens and the word itself
  * tokens_tmp - Is passed is for memory usage optimization. This function gets
  * called inside a cartesion product finder which means there will be a lot of
  * instances of array required. To optimize this, we pass in this array which
  * will be allocated from cartesian product finder */
 static int
-learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_already_learned)
+learn_prefixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_already_learned)
 {
     int i, rc, tokens_len = 0;
     vword *word;
@@ -391,7 +388,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
                 }
             }
 
-            rc = learn_pattern (handle, tokens_tmp, word->text, pattern);
+            rc = learn_pattern (handle, tokens_tmp, word->text, pattern, true);
             if (rc) {
                 return_array_to_pool (handle, tokens_tmp);
                 return rc;
@@ -403,7 +400,7 @@ learn_suffixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
     return VARNAM_SUCCESS;
 }
 
-/* This function learns all possibilities of writing the word and it's suffixes.
+/* This function learns all possibilities of writing the word and it's prefixes.
  * It finds cartesian product of the tokens passed in and process each product.
  * tokens will be a multidimensional array */
 static int
@@ -432,11 +429,11 @@ learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
             varray_push (array, varray_get (tmp, offsets[i]));
         }
 
-        rc = learn_pattern (handle, array, word, pattern);
+        rc = learn_pattern (handle, array, word, pattern, false);
         if (rc)
             goto finished;
 
-        rc = learn_suffixes (handle, array, pattern, word_already_learned);
+        rc = learn_prefixes (handle, array, pattern, word_already_learned);
         if (rc)
             goto finished;
 
@@ -473,13 +470,7 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word, int 
     rc = learn_word (handle, word, confidence, &new_word, &word_id);
     if (rc) return rc;
 
-    if (new_word)
-    {
-        rc = learn_all_possibilities (handle, tokens, word);
-        if (rc) return rc;
-    }
-
-    rc = vwt_mark_as_learned (handle, word_id);
+    rc = learn_all_possibilities (handle, tokens, word);
     if (rc) return rc;
 
     return VARNAM_SUCCESS;

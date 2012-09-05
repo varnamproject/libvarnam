@@ -311,12 +311,9 @@ varnam_train(varnam *handle, const char *pattern, const char *word)
     rc = vwt_get_word_id (handle, word, &word_id);
     if (rc) return rc;
 
-    rc = vwt_persist_pattern (handle, pattern, word_id);
+    rc = vwt_persist_pattern (handle, pattern, word_id, false);
     if (rc)
         return rc;
-
-    rc = vwt_mark_as_learned (handle, word_id);
-    if (rc) return rc;
 
     vwt_end_changes (handle);
     return VARNAM_SUCCESS;
