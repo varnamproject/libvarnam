@@ -400,6 +400,36 @@ learn_prefixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
     return VARNAM_SUCCESS;
 }
 
+#ifdef _VARNAM_VERBOSE
+static void
+print_tokens_array(varray *tokens)
+{
+    varray *tmp;
+    vtoken *token;
+    int i, j;
+
+    printf("Tokens\n");
+
+    for (i = 0; i < varray_length(tokens); i++)
+    {
+        tmp = varray_get (tokens, i);
+        assert (tmp);
+        printf("[");
+        for (j = 0; j < varray_length(tmp); j++)
+        {
+            token = varray_get (tmp, j);
+            assert (token);
+            if (j + 1 == varray_length(tmp))
+                printf("'%s'", token->pattern);
+            else
+                printf("'%s', ", token->pattern);
+        }
+        printf("]\n");
+    }
+
+}
+#endif
+
 /* This function learns all possibilities of writing the word and it's prefixes.
  * It finds cartesian product of the tokens passed in and process each product.
  * tokens will be a multidimensional array */
@@ -413,6 +443,10 @@ learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
 
     array_cnt = varray_length (tokens);
     offsets = xmalloc(sizeof(int) * (size_t) array_cnt);
+
+#ifdef _VARNAM_VERBOSE
+    print_tokens_array (tokens);
+#endif
 
     for (i = 0; i < array_cnt; i++) offsets[i] = 0;
 
