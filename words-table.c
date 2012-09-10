@@ -194,7 +194,7 @@ vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, 
     {
         if (v_->update_learned_flag == NULL)
         {
-            rc = sqlite3_prepare_v2( v_->known_words, "update patterns_content set learned = 1 where pattern = ?1 and word_id = ?2 and learned = 0",
+            rc = sqlite3_prepare_v2( v_->known_words, "update patterns_content set learned = 1 where pattern = trim(lower(?1)) and word_id = ?2 and learned = 0",
                                      -1, &v_->update_learned_flag, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
