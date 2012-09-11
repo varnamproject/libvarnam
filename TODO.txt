@@ -1,7 +1,7 @@
 NEW FEATURES
 ==============
 * Ability to turn on & off numerics.
-* Incremental tokenization. 
+* Incremental tokenization.
 * Porter stemmer implementation. Need to validate if this is really required.
 * Adding more languages.
 * libvarnam wrappers for other programming languages. Ruby gem, Node module, .NET and Java packages etc.
@@ -9,6 +9,7 @@ NEW FEATURES
 
 TO FIX
 ==============
+* Make learning better. Currently all sorts of possibilities are getting learned. This is very space inefficient and lot of the patterns that are learned looks very unusual. There are less chances of that patterns getting used. We might need to implement some kind of filtering which will filter out those tokens which are less likely to occur in certain positions.
 * Malayalam - ങ്ങ not coming correctly. Instead small ങ്ങ is coming
 * When learn is called for the first time from the node file, and the file name is not exists, free throws error. Incorrect free
 * DB schema optimizations on symbols file. Put the greater than query. Need to see a way to put the large unicode code point.

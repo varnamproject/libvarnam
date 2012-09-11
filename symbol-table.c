@@ -586,7 +586,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag from symbols where value1 = ?1 or value2 = ?1;",
+                rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag from (select distinct(lower(pattern)) as pattern, * from symbols where value1 = ?1 or value2 = ?1 group by pattern order by length(pattern), id);",
                                          -1, &v_->tokenize_using_value, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -599,7 +599,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value_and_match_type == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2;",
+                rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag from (select distinct(lower(pattern)) as pattern, * from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2 group by pattern order by length(pattern), id);",
                                          -1, &v_->tokenize_using_value_and_match_type, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
