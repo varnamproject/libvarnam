@@ -169,6 +169,10 @@ vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, 
 
     assert (v_->known_words);
 
+#ifdef _VARNAM_VERBOSE
+    if (!is_prefix) printf(" %s\n", pattern);
+#endif
+
     if (v_->learn_pattern == NULL)
     {
         rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->learn_pattern, NULL );
