@@ -22,7 +22,7 @@ vowels "a" => "അ",
        ["O", ["o"]] => ["ഓ", "ോ"],
        ["au", "ow", "ou"]  => ["ഔ", "ൌ"]
 
-consonants ["ka", "ca", "qa"] => "ക",
+consonants ["ka", "ca"] => "ക",
            ["kha", ["gha"]] => "ഖ",
            "ga"  => "ഗ",
            ["gha", ["kha"]] => "ഘ",
@@ -49,7 +49,7 @@ consonants ["ka", "ca", "qa"] => "ക",
            "bha" => "ഭ",
            "ya" => "യ",
            ["va", "wa"] => "വ",
-           ["Sa", ["sha", "sa"], "Za"] => "ശ",
+           ["Sa", ["sha", "sa"]] => "ശ",
            "sha" => "ഷ",
            ["sa", "za"] => "സ",
            "ha" => "ഹ",
@@ -69,7 +69,7 @@ consonants "nka" => "ങ്ക",
            [["nda", "nta"], "nDa", "Nta", "nTa"] => "ണ്ട",
            "nda" => "ന്ദ",
            "tta" => "ട്ട",
-           ["THa", "ttha", ["tha"]] => "ത്ത",
+           [["tha"], "THa", "ttha"] => "ത്ത",
            "lla" => "ല്ല",
            ["LLa", ["lla"]] => "ള്ള",
            "nna" => "ന്ന",
@@ -147,6 +147,8 @@ get_dead_consonants(:possibility => true).each do |dc|
   consonants [["#{dc.pattern}v", "#{dc.pattern}w"]] => "#{dc.value1}വ#{$virama}" ,
              [["#{dc.pattern}y"]] => "#{dc.value1}യ#{$virama}"
 
+  consonants [["#{dc.pattern}u"]] =>  dc.value1
+
   get_vowels(:exact => true).each do |vowel|
     consonants [["#{dc.pattern}r#{vowel.pattern}"]] => "#{dc.value1}ര#{vowel.value2}" ,
                [["#{dc.pattern}v#{vowel.pattern}", "#{dc.pattern}w#{vowel.pattern}"]] => "#{dc.value1}വ#{vowel.value2}",
@@ -160,13 +162,24 @@ get_dead_consonants(:possibility => true).each do |dc|
   end
 end
 
+# This needs to be created here to avoid weird tokens like 'nua' getting generated
+consonants [["ru"]] => "ര്",
+           [["r~", "ru"]] => "റ്",
+           [["nu"]] => "ന്",
+           [["n~", "nu"]] => "ണ്",
+           [["lu"]] => "ല്",
+           [["l~", "lu"]] => "ള്",
+           [["mu"]] => "മ്"
+
+
 ignore_duplicates false
 infer_dead_consonants true
 
-consonants ["r~", ["ru"]] => "ര്",
-           ["R~", ["r~", "ru"]] => "റ്",
-           ["n~", ["nu"]] => "ന്",
-           ["N~", ["n~", "nu"]] => "ണ്",
-           ["l~", ["lu"]] => "ല്",
-           ["L~", ["l~", "lu"]] => "ള്",
-           ["m~", ["mu"]] => "മ്"
+consonants ["r~"] => "ര്",
+           ["R~"] => "റ്",
+           ["n~"] => "ന്",
+           ["N~"] => "ണ്",
+           ["l~"] => "ല്",
+           ["L~"] => "ള്",
+           ["m~"] => "മ്"
+
