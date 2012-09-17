@@ -54,8 +54,8 @@ consonants ["ka", "ca"] => "ക",
            ["sa", "za"] => "സ",
            "ha" => "ഹ",
            "zha" => "ഴ",
-           "xa" => "ക്സ",
-           ["ksha", "Xa"] => "ക്ഷ"
+           ["xa", ["Xa"]] => "ക്സ",
+           "ksha" => "ക്ഷ"
 
 tag "render_value2" do
    consonants "nja" => ["ഞ", "ഞ്ഞ"],
@@ -75,7 +75,7 @@ consonants "nka" => "ങ്ക",
            "nna" => "ന്ന",
            ["NNa", ["nna"]] => "ണ്ണ",
            ["bba", "Ba"] => "ബ്ബ",
-           ["kka", "Ka", "Ca", ["quea"]] => "ക്ക",
+           ["kka", "Ka", "Ca"] => "ക്ക",
            ["gga", "Ga"] => "ഗ്ഗ",
            ["jja", "Ja"] => "ജ്ജ",
            ["mma", "Ma"] => "മ്മ",
