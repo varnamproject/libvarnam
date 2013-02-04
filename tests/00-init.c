@@ -24,7 +24,7 @@
 
 int strbuf_formatted_strings()
 {
-    const char *expected = "Character a, Integer 10, String Navaneeth";
+    const char *expected = "Character a, Integer 10, String Navaneeth\n";
     struct strbuf *buffer = strbuf_init(100);
     strbuf_addf(buffer, "Character %c, Integer %d, String %s", 'a', 10, "Navaneeth");
 

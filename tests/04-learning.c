@@ -80,10 +80,7 @@ int test_varnam_learn_from_file(int argc, char **argv)
     printf ("No of in memory arrays - %d\n", info->arrays_in_memory);
 
     return 0;
-
-
 }
-
 
 int test_varnam_learn(int argc, char **argv)
 {
@@ -128,6 +125,4 @@ int test_varnam_learn(int argc, char **argv)
     printf ("No of in memory arrays - %d\n", info->arrays_in_memory);
 
     return 0;
-
-
 }

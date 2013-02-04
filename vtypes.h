@@ -121,6 +121,8 @@ struct varnam_internal
     sqlite3_stmt *possible_to_find_matches;
     sqlite3_stmt *update_confidence;
     sqlite3_stmt *update_learned_flag;
+    sqlite3_stmt *delete_pattern;
+    sqlite3_stmt *delete_word;
 };
 
 typedef struct varnam {

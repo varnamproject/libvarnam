@@ -201,6 +201,18 @@ varnam_learn(varnam *handle, const char *word)
 }
 
 int
+varnam_delete_word(varnam *handle, const char *word)
+{
+    if (handle == NULL || word == NULL) {
+        return VARNAM_ARGS_ERROR;
+    }
+
+    reset_pool (handle);
+
+    return vwt_delete_word (handle, word);
+}
+
+int
 varnam_learn_from_file(varnam *handle,
                        const char *filepath,
                        vlearn_status *status,

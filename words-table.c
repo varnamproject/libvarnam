@@ -878,6 +878,72 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
     return VARNAM_SUCCESS;
 }
 
+int
+vwt_delete_word(varnam *handle, const char *word)
+{
+    int rc = 0;
+    sqlite3_int64 word_id = 0;
+    const char *pattern_sql = "delete from patterns_content where word_id = ?1;";
+    const char *word_sql = "delete from words where id = ?1;";
+
+    rc = vwt_get_word_id (handle, word, &word_id);
+    if (rc != VARNAM_SUCCESS) {
+        return rc;
+    }
+
+    if (v_->delete_pattern == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, pattern_sql, -1, &v_->delete_pattern, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to delete word : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->delete_pattern);
+            return VARNAM_ERROR;
+        }
+    }
+
+    if (v_->delete_word == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, word_sql, -1, &v_->delete_word, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to delete word : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->delete_word);
+            return VARNAM_ERROR;
+        }
+    }
+
+    rc = vwt_start_changes (handle);
+    if (rc != VARNAM_SUCCESS) {
+        return rc;
+    }
+
+    sqlite3_bind_int64 (v_->delete_pattern, 1, word_id);
+    rc = sqlite3_step (v_->delete_pattern);
+    if (rc != SQLITE_DONE) {
+        set_last_error (handle, "Failed to delete pattern : %s", sqlite3_errmsg(v_->known_words));
+        sqlite3_reset (v_->delete_pattern);
+        vwt_discard_changes (handle);
+        return VARNAM_ERROR;
+    }
+    sqlite3_reset (v_->delete_pattern);
+
+    sqlite3_bind_int64 (v_->delete_word, 1, word_id);
+    rc = sqlite3_step (v_->delete_word);
+    if (rc != SQLITE_DONE) {
+        set_last_error (handle, "Failed to delete word : %s", sqlite3_errmsg(v_->known_words));
+        sqlite3_reset (v_->delete_word);
+        vwt_discard_changes (handle);
+        return VARNAM_ERROR;
+    }
+    sqlite3_reset (v_->delete_word);
+
+    rc = vwt_end_changes (handle);
+    if (rc != VARNAM_SUCCESS) {
+        return rc;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
 /* int */
 /* vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result) */
 /* { */

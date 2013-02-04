@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	printf("transliterating the text 'malayalam' after learning again. You can see it is more confident about the word now!\n");
+	printf("transliterating the text 'malayalam' after learning. You can see it is more confident about the word now!\n");
 	rc = varnam_transliterate (handle, "malayalam", &words);
 	if (rc != VARNAM_SUCCESS)
 	{
@@ -105,7 +105,17 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	print_transliteration_output ("malayalam", words);
+
+    printf("Deleting the word 'malayalam' from the known words.\n");
+    rc = varnam_delete_word (handle, "മലയാളം");
+    if (rc != VARNAM_SUCCESS)
+    {
+        printf("Deletion failed. Reason - %s", varnam_get_last_error(handle));
         varnam_destroy (handle);
+        return 1;
+    }
+
+    varnam_destroy (handle);
 
     return 0;
 }

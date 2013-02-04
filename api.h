@@ -188,6 +188,21 @@ VARNAM_EXPORT extern int
 varnam_train(varnam *handle, const char *pattern, const char *word);
 
 /**
+ * Delete the supplied word from varnam's known words list
+ *
+ * handle            - Valid varnam instance
+ * word              - Word to be deleted
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS    - After successful deletion
+ * VARNAM_ARGS_ERROR - Handle or word is NULL
+ * VARNAM_ERROR      - Any other error
+ **/
+VARNAM_EXPORT extern int
+varnam_delete_word(varnam *handle, const char *word);
+
+/**
  * Varnam will learn words from the supplied file
  *
  * handle            - Valid varnam instance

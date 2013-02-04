@@ -84,6 +84,8 @@ initialize_internal()
         vi->possible_to_find_matches = NULL;
         vi->update_confidence = NULL;
         vi->update_learned_flag = NULL;
+        vi->delete_pattern = NULL;
+        vi->delete_word = NULL;
     }
     return vi;
 }
