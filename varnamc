@@ -94,6 +94,20 @@ optparse = OptionParser.new do |opts|
     end
   end
 
+  opts.on('--train-from FILE|DIRECTORY', 'Reads the specified file/directory and trains all the words specified') do |path|
+    if File.exists? (path)
+      if File.directory?(path)
+        set_action('train-from-directory')
+      else
+        set_action('train-from-file')
+      end
+      $options[:train_from] = path
+    else
+      puts "varnamc : #{path} is incorrect"
+      exit(1)
+    end
+  end
+
   $options[:symbols_file] = nil
   opts.on('-s', '--symbols VALUE', 'Sets the symbols file') do |value|
     if File.exist?(value)
@@ -264,6 +278,13 @@ def do_action
   if $options[:action] == 'learn-from-directory'
     learn_from_directory
   end
+  if $options[:action] == 'train-from-file'
+    train_from_file
+  end
+  if $options[:action] == 'train-from-directory'
+    train_from_directory
+  end
+
   if $options[:action] == 'train'
     train_pattern_word
   end
@@ -686,6 +707,11 @@ $learn_passed_counter = 0
 $learn_failed_counter = 0
 $failure_log = File.open(get_file_path("varnamc-learn-failures.txt"), "w")
 
+$train_counter = 0
+$train_passed_counter = 0
+$train_failed_counter = 0
+$train_failure_log = File.open(get_file_path("varnamc-train-failures.txt"), "w")
+
 LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do |handle, word, status, data|
   if status == 0
     puts "(#{$learn_counter}) Learned #{word}"
@@ -743,6 +769,77 @@ def learn_from_directory
   $failure_log.close
 end
 
+def train_words_in_the_file(fname)
+    File.readlines(fname, "r").each do |line|
+        parts = line.split(' ')
+        if not parts.length == 2
+            puts "Error at #{line}"
+        else
+            pattern = parts[0]
+            value = parts[1]
+            error = perform_training(pattern, value)
+            if not error.nil?
+                message = "Failed to train #{pattern} => #{value}. #{error}"
+                puts message
+                $train_failure_log.puts message 
+                $train_failed_counter += 1
+            else
+                $train_passed_counter += 1
+            end
+        end
+        $train_counter += 1
+    end
+end
+
+def train_from_file
+  if $options[:train_from].nil?
+    puts "Nothing to train"
+    exit 1
+  end
+
+  fname = $options[:train_from]
+  train_words_in_the_file fname
+
+  puts "Processed #{$train_counter} word(s). #{$train_passed_counter} word(s) passed. #{$train_failed_counter} word(s) failed."
+  puts "Failed words are logged to - #{$train_failure_log.path}" if $train_failed_counter > 0
+  $train_failure_log.close
+end
+
+def train_from_directory
+  puts "Processing files from #{$options[:train_from]}"
+  if $options[:train_from].nil?
+    puts "Nothing to train"
+    exit 1
+  end
+
+  path = $options[:train_from]
+  files = Dir.glob("#{path}/**/*.txt")
+  puts "Found #{files.size} file(s)"
+
+  files.each_with_index do |fname, index|
+    if not File.directory?(fname)
+      puts "(#{index + 1}/#{files.size}) Processing #{fname}"
+      train_words_in_the_file fname
+    end
+  end
+  puts "Processed #{$train_counter} word(s). #{$train_passed_counter} word(s) passed. #{$train_failed_counter} word(s) failed."
+  puts "Failed words are logged to - #{$train_failure_log.path}" if $train_failed_counter > 0
+  $train_failure_log.close
+end
+
+def perform_training(pattern, word)
+    ensure_single_word pattern
+    ensure_single_word word
+
+    done = VarnamLibrary.varnam_train($varnam_handle.get_pointer(0), pattern, word);
+    if done != 0
+        error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+        return error_message
+    end
+
+    return nil
+end
+
 def train_pattern_word
   if not $options[:training_data].size == 2
     puts "varnamc : Incorrect training data"
@@ -752,14 +849,10 @@ def train_pattern_word
   pattern = $options[:training_data][0]
   word = $options[:training_data][1]
 
-  ensure_single_word pattern
-  ensure_single_word word
-
-  done = VarnamLibrary.varnam_train($varnam_handle.get_pointer(0), pattern, word);
-  if done != 0
-    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-    puts error_message
-    exit(1)
+  error = perform_training(pattern, word);
+  if not error.nil?
+      puts error
+      exit(1)
   end
 
   puts "Success. #{pattern} will resolve to #{word}"

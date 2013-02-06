@@ -17,6 +17,7 @@ TAGS
 tests/output
 tmp/
 varnamc-learn-failures.txt
+varnamc-train-failures.txt
 varnamc-learnings.varnam
 varnamc-learnings.varnam-shm
 varnamc-learnings.varnam-wal
