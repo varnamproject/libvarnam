@@ -86,6 +86,7 @@ initialize_internal()
         vi->update_learned_flag = NULL;
         vi->delete_pattern = NULL;
         vi->delete_word = NULL;
+        vi->export_words = NULL;
     }
     return vi;
 }

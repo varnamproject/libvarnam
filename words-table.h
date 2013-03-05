@@ -71,4 +71,7 @@ vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, 
 int
 vwt_delete_word(varnam *handle, const char *word);
 
+int
+vwt_export_words(varnam* handle, int words_per_file, const char* out_dir);
+
 #endif

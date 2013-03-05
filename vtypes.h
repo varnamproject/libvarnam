@@ -123,6 +123,7 @@ struct varnam_internal
     sqlite3_stmt *update_learned_flag;
     sqlite3_stmt *delete_pattern;
     sqlite3_stmt *delete_word;
+    sqlite3_stmt *export_words;
 };
 
 typedef struct varnam {

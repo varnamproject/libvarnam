@@ -14,6 +14,7 @@ list (APPEND TEST_FILES
   02-ml-unicode.c
   03-vst-compilation.c
   04-learning.c
+  05-export-words.c
   strbuftest.c
   )
 
@@ -32,4 +33,5 @@ add_test(transliteration ${test_executable_name} basic-transliteration td-01.vst
 add_test(ml-unicode ${test_executable_name} ml-unicode ../schemes/ml-unicode.vst ml-unicode-input.txt)
 add_test(ml-unicode-reverse ${test_executable_name} ml-unicode-reverse ../schemes/ml-unicode.vst ml-unicode-reverse-input.txt)
 add_test(test-vst-file-creation ${test_executable_name} test-vst-file-creation)
+add_test(test-export ${test_executable_name} test-export)
     

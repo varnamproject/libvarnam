@@ -944,6 +944,72 @@ vwt_delete_word(varnam *handle, const char *word)
     return VARNAM_SUCCESS;
 }
 
+int
+vwt_export_words(varnam* handle, int words_per_file, const char* out_dir)
+{
+    int rc = 0, words_written = 0, file_index = 0;
+    const char* sql = "select word, confidence from words where id in (select distinct(word_id) from patterns_content where learned = 1) order by confidence desc;";
+    FILE* fp = NULL;
+    strbuf* path = NULL;
+
+    if (v_->export_words == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->export_words, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to export words : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->export_words);
+            return VARNAM_ERROR;
+        }
+    }
+
+    assert (v_->export_words);
+    assert (words_per_file > 0);
+
+    for (;;)
+    {
+        rc = sqlite3_step (v_->export_words);
+        if (rc == SQLITE_ROW) 
+        {
+            if (fp == NULL) {
+                path = get_pooled_string (handle);
+                strbuf_addf (path, "%s/%d.txt",  out_dir, file_index++);
+                strbuf_remove_from_last (path, "\n");
+                fp = fopen (strbuf_to_s (path), "w");
+                if (fp == NULL) {
+                    set_last_error (handle, "Failed to open : %s", strbuf_to_s (path));
+                    sqlite3_reset (v_->export_words);
+                    return VARNAM_ERROR;
+                }
+            }
+
+            fprintf (fp, "%s %d\n", (const char*) sqlite3_column_text (v_->export_words, 0),
+                    (int) sqlite3_column_int (v_->export_words, 1));
+
+            if (++words_written == words_per_file) {
+                words_written = 0;
+                fclose (fp);
+                fp = NULL;
+            }
+        }
+        else if (rc == SQLITE_DONE) {
+            break;
+        }
+        else {
+            set_last_error (handle, "Failed to get matches : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->export_words);
+            return VARNAM_ERROR;
+        }
+    }
+
+    if (fp != NULL) {
+        fclose (fp);
+        fp = NULL;
+    }
+    sqlite3_reset (v_->export_words);
+
+    return VARNAM_SUCCESS;
+}
+
 /* int */
 /* vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result) */
 /* { */

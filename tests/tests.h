@@ -53,4 +53,6 @@ extern int test_varnam_learn(int argc, char **argv);
 
 extern int test_varnam_learn_from_file(int argc, char **argv);
 
+extern int test_varnam_export(int argc, char **argv);
+
 #endif

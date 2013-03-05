@@ -17,6 +17,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <assert.h>
 #include "api.h"
 #include "vtypes.h"
 #include "varray.h"
@@ -24,6 +25,19 @@
 #include "result-codes.h"
 #include "symbol-table.h"
 #include "words-table.h"
+
+static bool
+is_words_store_available(varnam* handle)
+{
+    assert (handle);
+
+    if (v_->known_words == NULL) {
+        set_last_error (handle, "'words' store is not enabled.");
+        return false;
+    }
+
+    return true;
+}
 
 static void
 language_specific_sanitization(strbuf *string)
@@ -146,8 +160,7 @@ varnam_learn_internal(varnam *handle, const char *word, int confidence)
     if (handle == NULL || word == NULL)
         return VARNAM_ARGS_ERROR;
 
-    if (v_->known_words == NULL) {
-        set_last_error (handle, "'words' store is not enabled.");
+    if (!is_words_store_available(handle)) {
         return VARNAM_ERROR;
     }
 
@@ -331,3 +344,17 @@ varnam_train(varnam *handle, const char *pattern, const char *word)
     vwt_end_changes (handle);
     return VARNAM_SUCCESS;
 }
+
+int
+varnam_export_words(varnam* handle, int words_per_file, const char* out_dir)
+{
+    if (handle == NULL || out_dir == NULL) {
+        return VARNAM_ARGS_ERROR;
+    }
+
+    reset_pool (handle);
+
+    return vwt_export_words (handle, words_per_file, out_dir);
+}
+
+
