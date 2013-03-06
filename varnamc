@@ -108,6 +108,10 @@ optparse = OptionParser.new do |opts|
     end
   end
 
+  opts.on('-e','--export-words', 'Export words to the output directory') do
+     set_action('export-words')
+  end
+
   $options[:symbols_file] = nil
   opts.on('-s', '--symbols VALUE', 'Sets the symbols file') do |value|
     if File.exist?(value)
@@ -142,6 +146,11 @@ optparse = OptionParser.new do |opts|
     end
     $options[:file_to_compile] = file
     set_action('compile')
+  end
+
+  $options[:learnings_file] = "varnamc-learnings.varnam"
+  opts.on('--learnings-file FILE', 'Specify the file to store all learnings') do |file|
+    $options[:learnings_file] = file
   end
 
   $options[:word_to_detect_lang] = nil
@@ -208,6 +217,8 @@ end
 
 require 'varnamruby.rb'
 
+$suggestions_file = ''
+
 def initialize_varnam_handle
   if $options[:action] == 'compile'
     $vst_file_name = $options[:file_to_compile].sub(File.extname($options[:file_to_compile]), "") + ".vst"
@@ -240,9 +251,8 @@ def initialize_varnam_handle
   end
 
   # Configuring suggestions
-  suggestions_file = get_file_path("varnamc-learnings.varnam")
   configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
-    Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, suggestions_file)
+    Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
   if configured != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     error error_message
@@ -283,6 +293,10 @@ def do_action
   end
   if $options[:action] == 'train-from-directory'
     train_from_directory
+  end
+
+  if $options[:action] == 'export-words'
+      export_words
   end
 
   if $options[:action] == 'train'
@@ -869,6 +883,29 @@ def detect_language
 
   code = VarnamLibrary.varnam_detect_lang($varnam_handle.get_pointer(0), word);
   puts Varnam::LANG_CODES[code]
+end
+
+def export_words
+  if $options[:output_directory].nil?
+    puts "varnamc : Output directory not found"
+    exit(1)
+  end
+
+  outDir = $options[:output_directory]
+  puts "Exporting words from '#{$options[:learnings_file]}' to '#{outDir}'"
+
+  # Removing any trailing /
+  outDir[outDir.length - 1] = '' if outDir.end_with?('/')
+
+  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 3000, outDir.strip);
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    puts "Export failed. #{error_message}"
+    exit(1)
+  end
+
+  puts "Exported words to #{outDir}"
+
 end
 
 do_action

@@ -41,6 +41,7 @@ module VarnamLibrary
   attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
   attach_function :varray_get, [:pointer, :int], :pointer
   attach_function :varray_length, [:pointer], :int
+  attach_function :varnam_export_words, [:pointer, :int, :string], :int
 end
 
 VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type)
