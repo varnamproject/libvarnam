@@ -389,7 +389,8 @@ VARNAM_EXPORT extern int varnam_get_info(
 VARNAM_EXPORT extern int varnam_export_words(
     varnam *handle,
     int words_per_file,
-    const char* out_dir
+    const char *out_dir,
+    void (*callback)(int , int , const char *)
     );
 
 /**

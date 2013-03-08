@@ -738,6 +738,11 @@ LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do
   $learn_counter += 1
 end
 
+ExportCallback = FFI::Function.new(:void, [:int, :int, :string]) do |total_words, total_processed, current_word|
+    percentage = (total_processed.to_f / total_words) * 100
+    print "\r Exporting #{percentage.to_int}"
+end
+
 def learn_from_file
   if $options[:learn_from].nil?
     puts "Nothing to learn"
@@ -897,13 +902,14 @@ def export_words
   # Removing any trailing /
   outDir[outDir.length - 1] = '' if outDir.end_with?('/')
 
-  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 3000, outDir.strip);
+  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 3000, outDir.strip, ExportCallback);
   if done != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     puts "Export failed. #{error_message}"
     exit(1)
   end
 
+  puts ""
   puts "Exported words to #{outDir}"
 
 end

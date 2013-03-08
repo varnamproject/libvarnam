@@ -87,6 +87,7 @@ initialize_internal()
         vi->delete_pattern = NULL;
         vi->delete_word = NULL;
         vi->export_words = NULL;
+        vi->learned_words_count = NULL;
     }
     return vi;
 }

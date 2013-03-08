@@ -346,7 +346,8 @@ varnam_train(varnam *handle, const char *pattern, const char *word)
 }
 
 int
-varnam_export_words(varnam* handle, int words_per_file, const char* out_dir)
+varnam_export_words(varnam* handle, int words_per_file, const char* out_dir, 
+    void (*callback)(int total_words, int processed, const char *current_word))
 {
     if (handle == NULL || out_dir == NULL) {
         return VARNAM_ARGS_ERROR;
@@ -354,7 +355,7 @@ varnam_export_words(varnam* handle, int words_per_file, const char* out_dir)
 
     reset_pool (handle);
 
-    return vwt_export_words (handle, words_per_file, out_dir);
+    return vwt_export_words (handle, words_per_file, out_dir, callback);
 }
 
 

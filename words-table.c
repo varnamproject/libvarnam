@@ -944,13 +944,43 @@ vwt_delete_word(varnam *handle, const char *word)
     return VARNAM_SUCCESS;
 }
 
-int
-vwt_export_words(varnam* handle, int words_per_file, const char* out_dir)
+static int
+get_learned_words_count(varnam *handle, int *words_count)
 {
-    int rc = 0, words_written = 0, file_index = 0;
+    int rc = 0;
+    const char *sql = "select count(distinct(word_id)) from patterns_content where learned = 1;";
+
+    if (v_->learned_words_count == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->learned_words_count, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to get learned words count : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_finalize (v_->learned_words_count);
+            v_->learned_words_count = NULL;
+            return VARNAM_ERROR;
+        }
+    }
+
+    *words_count = 0;
+    rc = sqlite3_step (v_->learned_words_count);
+    if (rc == SQLITE_ROW) {
+        *words_count = sqlite3_column_int (v_->learned_words_count, 0);
+    }
+
+    sqlite3_reset (v_->learned_words_count);
+
+    return VARNAM_SUCCESS;
+}
+
+int
+vwt_export_words(varnam* handle, int words_per_file, const char* out_dir,
+    void (*callback)(int, int, const char *))
+{
+    int rc = 0, words_written = 0, file_index = 0, total_words = 0, total_processed = 0;
     const char* sql = "select word, confidence from words where id in (select distinct(word_id) from patterns_content where learned = 1) order by confidence desc;";
     FILE* fp = NULL;
     strbuf* path = NULL;
+    const char *current_word = "";
 
     if (v_->export_words == NULL)
     {
@@ -964,6 +994,16 @@ vwt_export_words(varnam* handle, int words_per_file, const char* out_dir)
 
     assert (v_->export_words);
     assert (words_per_file > 0);
+
+    rc = get_learned_words_count (handle, &total_words);
+    if (rc != VARNAM_SUCCESS) {
+        return rc;
+    }
+
+    if (total_words <= 0) {
+        sqlite3_reset (v_->export_words);
+        return VARNAM_SUCCESS;
+    }
 
     for (;;)
     {
@@ -982,8 +1022,13 @@ vwt_export_words(varnam* handle, int words_per_file, const char* out_dir)
                 }
             }
 
-            fprintf (fp, "%s %d\n", (const char*) sqlite3_column_text (v_->export_words, 0),
-                    (int) sqlite3_column_int (v_->export_words, 1));
+            current_word = (const char*) sqlite3_column_text (v_->export_words, 0);
+            fprintf (fp, "%s %d\n", current_word, (int) sqlite3_column_int (v_->export_words, 1));
+            ++total_processed;
+
+            if (callback != NULL) {
+                callback (total_words, total_processed, current_word);
+            }
 
             if (++words_written == words_per_file) {
                 words_written = 0;

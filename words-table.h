@@ -72,6 +72,7 @@ int
 vwt_delete_word(varnam *handle, const char *word);
 
 int
-vwt_export_words(varnam* handle, int words_per_file, const char* out_dir);
+vwt_export_words(varnam* handle, int words_per_file, const char* out_dir,
+    void (*callback)(int total_words, int processed, const char *current_word));
 
 #endif

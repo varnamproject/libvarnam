@@ -65,7 +65,7 @@ test_varnam_export(int argc, char** argv)
         return 1;
     }
 
-    rc = varnam_export_words (handle, 2, "output/");
+    rc = varnam_export_words (handle, 2, "output/", NULL);
     if (rc != VARNAM_SUCCESS) {
         printf ("Error - %s", varnam_get_last_error (handle));
         return 1;

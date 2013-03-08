@@ -805,4 +805,5 @@ destroy_all_statements(varnam *handle)
     sqlite3_finalize (v_->update_learned_flag);
     sqlite3_finalize (v_->delete_word);
     sqlite3_finalize (v_->export_words);
+    sqlite3_finalize (v_->learned_words_count);
 }
