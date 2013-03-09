@@ -740,7 +740,8 @@ end
 
 ExportCallback = FFI::Function.new(:void, [:int, :int, :string]) do |total_words, total_processed, current_word|
     percentage = (total_processed.to_f / total_words) * 100
-    print "\r Exporting #{percentage.to_int}"
+    print "\rExporting #{percentage.to_int}%"
+    $stdout.flush
 end
 
 def learn_from_file
