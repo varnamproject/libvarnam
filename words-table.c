@@ -404,8 +404,7 @@ learn_prefixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
     return VARNAM_SUCCESS;
 }
 
-#ifdef _VARNAM_VERBOSE
-static void
+void
 print_tokens_array(varray *tokens)
 {
     varray *tmp;
@@ -432,7 +431,6 @@ print_tokens_array(varray *tokens)
     }
 
 }
-#endif
 
 /* This function learns all possibilities of writing the word and it's prefixes.
  * It finds cartesian product of the tokens passed in and process each product.

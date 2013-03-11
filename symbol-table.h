@@ -92,6 +92,9 @@ int
 vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_type, varray *result);
 
 void
+print_tokens_array(varray *tokens);
+
+void
 destroy_all_statements(varnam *handle);
 
 #endif
