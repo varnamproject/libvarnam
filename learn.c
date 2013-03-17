@@ -151,6 +151,67 @@ done:
 }
 
 static int
+get_total_possible_patterns(varray *tokens)
+{
+    int total = 1, i = 0;
+    varray *item;
+
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        item = varray_get (tokens, i);
+        total *= varray_length (item);
+    }
+
+    return total;
+}
+
+static varray*
+get_largest_array(varray *tokens)
+{
+    int i;
+    varray *item = NULL, *largest = NULL;
+
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        item = varray_get (tokens, i);
+        if (largest == NULL || varray_length (item) > varray_length (largest)) {
+            largest = item;
+        }
+    }
+
+    return largest;
+}
+
+/*
+ * This function iterates over tokens and remove unimportant tokens
+ * from the array so that only important tokens remain in tokens. 
+ * This improves learn quality
+ */
+static void
+reduce_noise_in_tokens(varray *tokens)
+{
+    varray *largest = NULL;
+
+    if (varray_is_empty (tokens)) {
+        return;
+    }
+
+    if (get_total_possible_patterns (tokens) <= MAXIMUM_PATTERNS_TO_LEARN) {
+        return;
+    }
+
+    while (get_total_possible_patterns (tokens) > MAXIMUM_PATTERNS_TO_LEARN)
+    {
+        largest = get_largest_array (tokens);
+        if (varray_length (largest) == 1) {
+            /* Largest array has only 1 element. No point in reducing further */
+            return;
+        }
+        varray_pop_last_item (largest);
+    }
+}
+
+static int
 varnam_learn_internal(varnam *handle, const char *word, int confidence)
 {
     int rc;
@@ -176,6 +237,19 @@ varnam_learn_internal(varnam *handle, const char *word, int confidence)
 
     rc = vst_tokenize (handle, strbuf_to_s (sanitized_word), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_ALL, tokens);
     if (rc) return rc;
+
+#ifdef _VARNAM_VERBOSE
+    printf ("%s\n", "Tokens before reducing noice");
+    print_tokens_array (tokens);
+#endif
+
+    /* Tokens may contain more data that we can handle. Reducing noice so that we learn most relevant combinations */
+    reduce_noise_in_tokens (tokens);
+
+#ifdef _VARNAM_VERBOSE
+    printf ("%s\n", "Tokens after reducing noice");
+    print_tokens_array (tokens);
+#endif
 
     if (!can_learn_from_tokens (handle, tokens, strbuf_to_s (sanitized_word)))
         return VARNAM_ERROR;

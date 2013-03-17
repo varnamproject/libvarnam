@@ -23,6 +23,8 @@
 #include "vtypes.h"
 #include "varray.h"
 
+#define MAXIMUM_PATTERNS_TO_LEARN 32
+
 int
 vwt_ensure_schema_exists(varnam *handle);
 

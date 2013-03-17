@@ -28,8 +28,8 @@
 #include "rendering.h"
 #include "varray.h"
 #include "vword.h"
+#include "words-table.h"
 
-#define MAXIMUM_PATTERNS_TO_LEARN 100
 #define MINIMUM_CHARACTER_LENGTH_FOR_SUGGESTION 3
 
 int
@@ -445,10 +445,6 @@ learn_all_possibilities(varnam *handle, varray *tokens, const char *word)
 
     array_cnt = varray_length (tokens);
     offsets = xmalloc(sizeof(int) * (size_t) array_cnt);
-
-#ifdef _VARNAM_VERBOSE
-    print_tokens_array (tokens);
-#endif
 
     for (i = 0; i < array_cnt; i++) offsets[i] = 0;
 
