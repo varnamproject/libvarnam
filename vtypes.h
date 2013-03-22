@@ -63,6 +63,11 @@
 #define VARNAM_TOKENIZER_PATTERN 200
 #define VARNAM_TOKENIZER_VALUE   201
 
+/* Token priority defaults */
+#define VARNAM_TOKEN_PRIORITY_HIGH 1
+#define VARNAM_TOKEN_PRIORITY_NORMAL 0
+#define VARNAM_TOKEN_PRIORITY_LOW -1
+
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
@@ -133,7 +138,7 @@ typedef struct varnam {
 } varnam;
 
 typedef struct token {
-    int id, type, match_type;
+    int id, type, match_type, priority;
     char tag[VARNAM_SYMBOL_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];

@@ -125,9 +125,9 @@ int normal_init(char **argv)
         return 1;
     }
 
-    if (handle->internal->config_use_dead_consonants != 1)
+    if (handle->internal->config_use_dead_consonants != 0)
     {
-        printf("varnam_init() should have turned on use dead consonant option");
+        printf("varnam_init() should have turned off use dead consonant option");
         return 1;
     }
 

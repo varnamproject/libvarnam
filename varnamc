@@ -359,19 +359,19 @@ def _ensure_sanity(hash)
   end
 end
 
-def _extract_keys_values_and_persist(keys, values, token_type, match_type = Varnam::VARNAM_MATCH_EXACT)
+def _extract_keys_values_and_persist(keys, values, token_type, match_type = Varnam::VARNAM_MATCH_EXACT, priority)
   keys.each do |key|
     if key.is_a?(Array)
       # This a possibility match
       key.flatten!
-      _extract_keys_values_and_persist(key, values, token_type, Varnam::VARNAM_MATCH_POSSIBILITY)
+      _extract_keys_values_and_persist(key, values, token_type, Varnam::VARNAM_MATCH_POSSIBILITY, priority)
     else
-      _persist_key_values(key, values, token_type, match_type)
+      _persist_key_values(key, values, token_type, match_type, priority)
     end
   end
 end
 
-def _persist_key_values(pattern, values, token_type, match_type)
+def _persist_key_values(pattern, values, token_type, match_type, priority)
   return if _context.errors > 0
 
   match = match_type == Varnam::VARNAM_MATCH_EXACT ? "EXACT" : "POSSIBILITY"
@@ -389,7 +389,7 @@ def _persist_key_values(pattern, values, token_type, match_type)
 
   tag = _context.current_tag
   tag = "" if tag.nil?
-  created = VarnamLibrary.varnam_create_token($varnam_handle.get_pointer(0), pattern, value1, value2, value3, tag, token_type, match_type, 1)
+  created = VarnamLibrary.varnam_create_token($varnam_handle.get_pointer(0), pattern, value1, value2, value3, tag, token_type, match_type, priority, 1)
   if created != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     error error_message
@@ -397,7 +397,7 @@ def _persist_key_values(pattern, values, token_type, match_type)
   end
 
   _context.tokens[token_type] = [] if _context.tokens[token_type].nil?
-  _context.tokens[token_type].push(VarnamToken.new(token_type, pattern, value1, value2, value3, tag, match_type))
+  _context.tokens[token_type].push(VarnamToken.new(token_type, pattern, value1, value2, value3, tag, match_type, priority))
 
   inform "Persisting #{match} - #{pattern} => #{value1},#{value2},#{value3}"
 end
@@ -469,25 +469,115 @@ def generate_cv_combinations
   end
 end
 
-def _create_token(hash, token_type)
+def generate_cv
+    all_vowels = get_vowels
+    all_consonants = get_consonants
+
+    all_consonants.each do |c|
+        consonant_has_inherent_a_sound = c.pattern.end_with?('a') and not c.pattern[c.pattern.length - 2] == 'a'
+        all_vowels.each do |v|
+            next if v.value2.nil? or v.value2.length == 0
+
+            if consonant_has_inherent_a_sound
+                pattern = "#{c.pattern[0..c.pattern.length-2]}#{v.pattern}"
+            else
+                pattern = "#{c.pattern}#{v.pattern}"
+            end
+
+            values = ["#{c.value1}#{v.value2}"]
+            if c.match_type == Varnam::VARNAM_MATCH_POSSIBILITY or v.match_type == Varnam::VARNAM_MATCH_POSSIBILITY
+                match_type = Varnam::VARNAM_MATCH_POSSIBILITY
+            else
+                match_type = Varnam::VARNAM_MATCH_EXACT
+            end
+
+            _persist_key_values pattern, values, Varnam::VARNAM_TOKEN_CONSONANT_VOWEL, match_type, v.priority
+        end
+    end
+end
+
+def combine_array(array, replacement)
+    result = []
+    array.each do |a|
+        if a.is_a?(Array)
+            result.push(combine_array(a, replacement))
+        else
+            result.push(a.to_s.gsub("*", replacement))
+        end
+    end
+
+    return result
+end
+
+# Combines an array and a hash values
+# This method also replaces the placeholder in hash
+def combine(array, hash)
+    _ensure_sanity(hash)
+    if not array.is_a?(Array)
+        error "Expected an array, but got a #{array.class}"
+        exit 1
+    end
+
+    result = {}
+    array.each do |item|
+        hash.each_pair do |key, value|
+            new_key = nil
+            if key.is_a?(Array)
+                new_key = combine_array(key, item.pattern)
+            else
+                new_key = key.to_s.gsub("*", item.pattern)
+            end
+
+            new_value = nil
+            if value.is_a?(Array)
+                new_value = combine_array(value, item.value1)
+            else
+                new_value = value.to_s.gsub("*", item.value1)
+            end
+
+            result[new_key] = new_value
+        end
+    end
+
+    return result
+end
+
+def _create_token(hash, token_type, priority = Varnam::VARNAM_TOKEN_PRIORITY_NORMAL)
   return if _context.errors > 0
   hash.each_pair do |key, value|
     if key.is_a?(Array)
-      _extract_keys_values_and_persist(key, value, token_type)
+      _extract_keys_values_and_persist(key, value, token_type, priority)
     else
-      _persist_key_values(key, value, token_type, Varnam::VARNAM_MATCH_EXACT)
+      _persist_key_values(key, value, token_type, Varnam::VARNAM_MATCH_EXACT, priority)
     end
   end
 end
 
-def vowels(hash)
-  _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_VOWEL)
+def _validate_priority(priority)
+    if not priority.is_a?(Number)
+        error 'Priority should be a number'
+        exit (1)
+    end
 end
 
-def consonants(hash)
+def _get_priority(options)
+    return Varnam::VARNAM_TOKEN_PRIORITY_NORMAL if options[:priority].nil? or options[:priority] == :normal
+    return Varnam::VARNAM_TOKEN_PRIORITY_LOW if options[:priority] == :low
+    return Varnam::VARNAM_TOKEN_PRIORITY_HIGH if options[:priority] == :high
+
+    _validate_priority options[:priority]
+    
+    return options[:priority]
+end
+
+def vowels(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_CONSONANT)
+  _create_token(hash, Varnam::VARNAM_TOKEN_VOWEL, _get_priority(options))
+end
+
+def consonants(options={}, hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_TOKEN_CONSONANT, _get_priority(options))
 end
 
 def tag(name, &block)
@@ -496,39 +586,39 @@ def tag(name, &block)
    _context.current_tag = nil
 end
 
-def consonant_vowel_combinations(hash)
+def consonant_vowel_combinations(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_CONSONANT_VOWEL)
+  _create_token(hash, Varnam::VARNAM_TOKEN_CONSONANT_VOWEL, _get_priority(options))
 end
 
-def anusvara(hash)
+def anusvara(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_ANUSVARA)
+  _create_token(hash, Varnam::VARNAM_TOKEN_ANUSVARA, _get_priority(options))
 end
 
-def visarga(hash)
+def visarga(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_VISARGA)
+  _create_token(hash, Varnam::VARNAM_TOKEN_VISARGA, _get_priority(options))
 end
 
-def virama(hash)
+def virama(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_VIRAMA)
+  _create_token(hash, Varnam::VARNAM_TOKEN_VIRAMA, _get_priority(options))
 end
 
-def symbols(hash)
+def symbols(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_SYMBOL)
+  _create_token(hash, Varnam::VARNAM_TOKEN_SYMBOL, _get_priority(options))
 end
 
-def numbers(hash)
+def numbers(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_NUMBER)
+  _create_token(hash, Varnam::VARNAM_TOKEN_NUMBER, _get_priority(options))
 end
 
-def others(hash)
+def others(options={}, hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_OTHER)
+  _create_token(hash, Varnam::VARNAM_TOKEN_OTHER, _get_priority(options))
 end
 
 def non_joiner(hash)
@@ -560,6 +650,15 @@ end
 
 def get_consonants(criteria = {})
   return get_tokens(Varnam::VARNAM_TOKEN_CONSONANT, criteria)
+end
+
+def get_virama
+    tokens = get_tokens(Varnam::VARNAM_TOKEN_VIRAMA, {})
+    if tokens.empty?
+        error 'Virama is not set'
+        exit (1)
+    end
+    return tokens[0]
 end
 
 def ffito_string(value)
@@ -627,7 +726,7 @@ def start_compilation
 
   load $options[:file_to_compile]
   set_default_symbols
-  generate_cv_combinations
+  #generate_cv_combinations
   flush_unsaved_changes
   set_scheme_details :date => Time.now.to_s
 

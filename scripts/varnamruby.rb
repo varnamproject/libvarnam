@@ -12,6 +12,7 @@ module VarnamLibrary
     layout :id, :int,
     :type, :int,
     :match_type, :int,
+    :priority, :int,
     :tag, [:char, VARNAM_SYMBOL_MAX],
     :pattern, [:char, VARNAM_SYMBOL_MAX],
     :value1, [:char, VARNAM_SYMBOL_MAX],
@@ -31,7 +32,7 @@ module VarnamLibrary
   attach_function :varnam_learn, [:pointer, :string], :int
   attach_function :varnam_train, [:pointer, :string, :string], :int
   attach_function :varnam_learn_from_file, [:pointer, :string, :pointer, :pointer, :pointer], :int
-  attach_function :varnam_create_token, [:pointer, :string, :string, :string, :string, :string, :int, :int, :int], :int
+  attach_function :varnam_create_token, [:pointer, :string, :string, :string, :string, :string, :int, :int, :int, :int], :int
   attach_function :varnam_generate_cv_combinations, [:pointer], :int
   attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
   attach_function :varnam_get_last_error, [:pointer], :string
@@ -44,7 +45,7 @@ module VarnamLibrary
   attach_function :varnam_export_words, [:pointer, :int, :string, :pointer], :int
 end
 
-VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type)
+VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type, :priority)
 VarnamWord = Struct.new(:text, :confidence)
 
 module Varnam
@@ -77,6 +78,10 @@ module Varnam
   VARNAM_LANG_CODE_KN = 7
   VARNAM_LANG_CODE_ML = 8
   VARNAM_LANG_CODE_UNKNOWN = -1
+
+  VARNAM_TOKEN_PRIORITY_HIGH = 1
+  VARNAM_TOKEN_PRIORITY_NORMAL = 0
+  VARNAM_TOKEN_PRIORITY_LOW = -1
 
   # Language codes
   LANG_CODES = {VARNAM_LANG_CODE_UNKNOWN => 'Unknown',

@@ -53,8 +53,8 @@ initialize_internal()
         vi->scheme_compiled_date = strbuf_init(10);
 
         /* configuration options */
-        vi->config_use_dead_consonants = 1;
-        vi->config_ignore_duplicate_tokens = 0;
+        vi->config_use_dead_consonants = 0;
+        vi->config_ignore_duplicate_tokens = 1;
 
         /* suggestions */
         vi->known_words = NULL;
@@ -337,6 +337,7 @@ varnam_create_token(
     const char *tag,
     int token_type,
     int match_type,
+    int priority,
     int buffered)
 {
     int rc;
@@ -400,7 +401,7 @@ varnam_create_token(
             else
                 v2[0] = '\0';
 
-            rc = vst_persist_token (handle, p, v1, v2, value3, tag, VARNAM_TOKEN_DEAD_CONSONANT, match_type);
+            rc = vst_persist_token (handle, p, v1, v2, value3, tag, VARNAM_TOKEN_DEAD_CONSONANT, match_type, priority);
             if (rc != VARNAM_SUCCESS)
             {
                 if (buffered) vst_discard_changes(handle);
@@ -416,7 +417,7 @@ varnam_create_token(
     if (token_type == VARNAM_TOKEN_JOINER)
         value1 = value2 = ZWJ();
 
-    rc = vst_persist_token (handle, pattern, value1, value2, value3, tag, token_type, match_type);
+    rc = vst_persist_token (handle, pattern, value1, value2, value3, tag, token_type, match_type, priority);
     if (rc != VARNAM_SUCCESS)
     {
         if (buffered) vst_discard_changes(handle);

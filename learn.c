@@ -182,6 +182,78 @@ get_largest_array(varray *tokens)
     return largest;
 }
 
+static bool
+remove_low_priority_tokens(varray *tokens)
+{
+    int i, j, to_remove[100], total_to_remove = 0;
+    varray *item;
+    vtoken *t;
+
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        item = varray_get (tokens, i);
+
+        if (varray_length (item) == 1)
+            continue;
+
+        for (j = 0; j < varray_length (item); j++)
+        {
+            t = varray_get (item, j);
+            if (t->priority <= VARNAM_TOKEN_PRIORITY_LOW) {
+                to_remove[total_to_remove++] = j;
+            }
+        }
+
+        for (j = 0; j < total_to_remove; j++)
+        {
+            varray_remove_at (item, to_remove[j]);
+        }
+        total_to_remove = 0;
+
+        if (get_total_possible_patterns (tokens) <= MAXIMUM_PATTERNS_TO_LEARN) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static varray*
+get_next_array(varray *tokens)
+{
+    varray *item, *candidate = NULL;
+    int i;
+    bool same_priority = true;
+    vtoken *last, *lowest = NULL;
+
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        item = varray_get (tokens, i);
+
+        if (varray_length (item) == 1)
+            continue;
+
+        last = varray_get (item, varray_length (item) - 1);
+        if (lowest == NULL || last->priority < lowest->priority) {
+            lowest = last;
+            candidate = item;
+        }
+
+        if (last->priority != lowest->priority) {
+            same_priority = false;
+        }
+    }
+
+    if (same_priority)
+    {
+        candidate = get_largest_array (tokens);
+        if (varray_length (candidate) == 1)
+            return NULL;
+    }
+
+    return candidate;
+}
+
 /*
  * This function iterates over tokens and remove unimportant tokens
  * from the array so that only important tokens remain in tokens. 
@@ -190,7 +262,7 @@ get_largest_array(varray *tokens)
 static void
 reduce_noise_in_tokens(varray *tokens)
 {
-    varray *largest = NULL;
+    varray *next = NULL;
 
     if (varray_is_empty (tokens)) {
         return;
@@ -200,14 +272,18 @@ reduce_noise_in_tokens(varray *tokens)
         return;
     }
 
+    /* Removing low priority tokens first */
+    if (remove_low_priority_tokens (tokens)) {
+        return;
+    }
+
     while (get_total_possible_patterns (tokens) > MAXIMUM_PATTERNS_TO_LEARN)
     {
-        largest = get_largest_array (tokens);
-        if (varray_length (largest) == 1) {
-            /* Largest array has only 1 element. No point in reducing further */
+        next = get_next_array (tokens);
+        if (next == NULL) {
             return;
         }
-        varray_pop_last_item (largest);
+        varray_pop_last_item (next);
     }
 }
 

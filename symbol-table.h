@@ -47,7 +47,8 @@ vst_persist_token(
     const char *value3,
     const char *tag,
     int token_type,
-    int match_type);
+    int match_type,
+    int priority);
 
 /**
  * Flushes changes to disk

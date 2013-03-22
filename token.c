@@ -32,11 +32,13 @@ initialize_token (vtoken *tok,
                   const char* value1,
                   const char* value2,
                   const char* value3,
-                  const char* tag)
+                  const char* tag,
+                  int priority)
 {
     tok->id = id;
     tok->type = type;
     tok->match_type = match_type;
+    tok->priority = priority;
     strncpy( tok->pattern, pattern, VARNAM_SYMBOL_MAX);
     strncpy( tok->value1, value1, VARNAM_SYMBOL_MAX);
 
@@ -58,10 +60,10 @@ initialize_token (vtoken *tok,
 
 struct token*
 Token(int id, int type, int match_type, const char* pattern, const char* value1,
-      const char* value2, const char* value3, const char* tag)
+      const char* value2, const char* value3, const char* tag, int priority)
 {
     struct token* tok = (struct token*) xmalloc(sizeof(struct token));
-    initialize_token (tok, id, type, match_type, pattern, value1, value2, value3, tag);
+    initialize_token (tok, id, type, match_type, pattern, value1, value2, value3, tag, priority);
     return tok;
 }
 
@@ -75,7 +77,8 @@ get_pooled_token (
     const char* value1,
     const char* value2,
     const char* value3,
-    const char* tag)
+    const char* tag,
+    int priority)
 {
     vtoken *tok;
 
@@ -85,11 +88,11 @@ get_pooled_token (
     tok = vpool_get (v_->tokens_pool);
     if (tok == NULL)
     {
-        tok = Token (id, type, match_type, pattern, value1, value2, value3, tag);
+        tok = Token (id, type, match_type, pattern, value1, value2, value3, tag, priority);
         vpool_add (v_->tokens_pool, tok);
     }
     else
-        initialize_token (tok, id, type, match_type, pattern, value1, value2, value3, tag);
+        initialize_token (tok, id, type, match_type, pattern, value1, value2, value3, tag, priority);
 
     return tok;
 }

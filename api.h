@@ -128,6 +128,7 @@ VARNAM_EXPORT extern int varnam_create_token(
     const char *tag,
     int token_type,
     int match_type,
+    int priority,
     int buffered
     );
 

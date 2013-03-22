@@ -50,7 +50,7 @@ int create_without_buffering()
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "value3", "tag", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "value3", "tag", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -74,34 +74,34 @@ int generate_cv_combinations()
         return 1;
     }
 
-    rc = varnam_create_token(handle, "~", "്", NULL,"","", VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 1);
+    rc = varnam_create_token(handle, "~", "്", NULL,"","", VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 1, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "a", "അ", NULL,"","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "a", "അ", NULL,"","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "aa", "ആ", "ാ","","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "aa", "ആ", "ാ","","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "A", "ആ", "ാ", "","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "A", "ആ", "ാ", "","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "a", "ആ", "ാ", "","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0);
+    rc = varnam_create_token(handle, "a", "ആ", "ാ", "","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "ka", "ക", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "ka", "ക", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "kha", "ഖ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "kha", "ഖ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "gha", "ഘ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "gha", "ഘ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "gha", "ഖ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0);
+    rc = varnam_create_token(handle, "gha", "ഖ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0, 0);
     return_on_error (rc);
 
-    rc = varnam_create_token(handle, "kha", "ഘ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0);
+    rc = varnam_create_token(handle, "kha", "ഘ", NULL, "","", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0, 0);
     return_on_error (rc);
 
     rc = varnam_generate_cv_combinations(handle);
@@ -127,21 +127,21 @@ int get_all_tokens()
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern", "value1", "value2","","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2","","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern1", "value11", "value21", "","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern1", "value11", "value21", "","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern2", "value12", "value22", "", "",VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern2", "value12", "value22", "", "",VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -150,14 +150,14 @@ int get_all_tokens()
 
     varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 0);
 
-    rc = varnam_create_token(handle, "p", "v", "v", "", "",VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "p", "v", "v", "", "",VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "p", "v12", "v", "", "", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0);
+    rc = varnam_create_token(handle, "p", "v12", "v", "", "", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -225,8 +225,9 @@ int ignore_duplicates()
     }
 
     varnam_enable_logging (handle, VARNAM_LOG_DEFAULT, &log_fun);
+    varnam_config (handle, VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN, 0);
 
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -234,7 +235,7 @@ int ignore_duplicates()
     }
 
     /* Creating again. This should fail */
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc == VARNAM_SUCCESS)
     {
         printf("Duplicate check is not working. %s", varnam_get_last_error(handle));
@@ -250,7 +251,7 @@ int ignore_duplicates()
     }
 
     /* Creating again. This should ignore the duplicates */
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("Duplicate ignore is not working. %s", varnam_get_last_error(handle));
@@ -271,27 +272,29 @@ int auto_create_dead_consonants()
     const char *filename = "output/03-auto_create_dead_co.vst";
     rc = varnam_init(filename, &handle, &msg);
 
+    varnam_config (handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 1);
+
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", msg);
         return 1;
     }
 
-    rc = varnam_create_token(handle, "~", "്", NULL, "tag", "",VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 1);
+    rc = varnam_create_token(handle, "~", "്", NULL, "tag", "",VARNAM_TOKEN_VIRAMA, VARNAM_MATCH_EXACT, 1, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "ka", "ക", NULL, "tag", "", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 1);
+    rc = varnam_create_token(handle, "ka", "ക", NULL, "tag", "", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 1, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "p", "പ്", NULL, "tag", "value3", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 1);
+    rc = varnam_create_token(handle, "p", "പ്", NULL, "tag", "value3", VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_EXACT, 1, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -333,7 +336,7 @@ int create_with_buffering()
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 1);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 1, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -365,14 +368,15 @@ int create_exact_match_duplicates()
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern ", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    varnam_config(handle, VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN, 0);
+    rc = varnam_create_token(handle, "pattern ", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0);
     if (rc != VARNAM_ERROR)
     {
         printf("VARNAM_ERROR expected. Never got. Looks like duplicate exact match token are allowed %s", varnam_get_last_error(handle));
@@ -391,13 +395,15 @@ int create_possibility_match_duplicates()
     const char *filename = "output/03-duplicates-possibility.vst";
     rc = varnam_init(filename, &handle, &msg);
 
+    varnam_config (handle, VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN, 0);
+
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", msg);
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("VARNAM_SUCCESS expected. Never got. %s", varnam_get_last_error(handle));
@@ -405,14 +411,14 @@ int create_possibility_match_duplicates()
     }
 
     /* This should be allowed as it is a different value */
-    rc = varnam_create_token(handle, "pattern ", "value11", "value22", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0);
+    rc = varnam_create_token(handle, "pattern ", "value11", "value22", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0, 0);
     if (rc != VARNAM_SUCCESS)
     {
         printf("Creating possible matches for same pattern with different value failing. %s", varnam_get_last_error(handle));
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern ", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0);
+    rc = varnam_create_token(handle, "pattern ", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_POSSIBILITY, 0, VARNAM_TOKEN_PRIORITY_NORMAL);
     if (rc != VARNAM_ERROR)
     {
         printf("Creating possible matches for same pattern and same value again is allowed. %s", varnam_get_last_error(handle));
@@ -437,7 +443,7 @@ int only_valid_matchtypes()
         return 1;
     }
 
-    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, 10, 0);
+    rc = varnam_create_token(handle, "pattern", "value1", "value2", "", "value3", VARNAM_TOKEN_VOWEL, 10, 0, VARNAM_TOKEN_PRIORITY_NORMAL);
     if (rc != VARNAM_ERROR)
     {
         printf("VARNAM_ERROR expected. Never got. %s", varnam_get_last_error(handle));
@@ -473,7 +479,7 @@ int maxlength_check()
         return 1;
     }
 
-    rc = varnam_create_token(handle, pattern, value1, value2, "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0);
+    rc = varnam_create_token(handle, pattern, value1, value2, "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, VARNAM_TOKEN_PRIORITY_NORMAL);
     if (rc != VARNAM_ARGS_ERROR)
     {
         printf("VARNAM_ARGS_ERROR expected. Never got. %s", varnam_get_last_error(handle));
