@@ -338,6 +338,7 @@ varnam_create_token(
     int token_type,
     int match_type,
     int priority,
+    int accept_condition,
     int buffered)
 {
     int rc;
@@ -363,6 +364,14 @@ varnam_create_token(
     if (match_type != VARNAM_MATCH_EXACT && match_type != VARNAM_MATCH_POSSIBILITY)
     {
         set_last_error (handle, "match_type should be either VARNAM_MATCH_EXACT or VARNAM_MATCH_POSSIBILITY");
+        return VARNAM_ARGS_ERROR;
+    }
+
+    if (accept_condition != VARNAM_TOKEN_ACCEPT_ALL && 
+            accept_condition != VARNAM_TOKEN_ACCEPT_IF_STARTS_WITH &&
+            accept_condition != VARNAM_TOKEN_ACCEPT_IF_IN_BETWEEN &&
+            accept_condition != VARNAM_TOKEN_ACCEPT_IF_ENDS_WITH) {
+        set_last_error (handle, "Invalid accept condition specified. It should be one of VARNAM_TOKEN_ACCEPT_XXX");
         return VARNAM_ARGS_ERROR;
     }
 
@@ -401,7 +410,7 @@ varnam_create_token(
             else
                 v2[0] = '\0';
 
-            rc = vst_persist_token (handle, p, v1, v2, value3, tag, VARNAM_TOKEN_DEAD_CONSONANT, match_type, priority);
+            rc = vst_persist_token (handle, p, v1, v2, value3, tag, VARNAM_TOKEN_DEAD_CONSONANT, match_type, priority, accept_condition);
             if (rc != VARNAM_SUCCESS)
             {
                 if (buffered) vst_discard_changes(handle);
@@ -417,7 +426,7 @@ varnam_create_token(
     if (token_type == VARNAM_TOKEN_JOINER)
         value1 = value2 = ZWJ();
 
-    rc = vst_persist_token (handle, pattern, value1, value2, value3, tag, token_type, match_type, priority);
+    rc = vst_persist_token (handle, pattern, value1, value2, value3, tag, token_type, match_type, priority, accept_condition);
     if (rc != VARNAM_SUCCESS)
     {
         if (buffered) vst_discard_changes(handle);
@@ -437,17 +446,6 @@ varnam_get_all_tokens(
 
     *tokens = v_->tokens;
     return vst_get_all_tokens (handle, token_type, v_->tokens);
-}
-
-int
-varnam_generate_cv_combinations(varnam* handle)
-{
-    if (handle == NULL)
-        return VARNAM_ARGS_ERROR;
-
-    set_last_error (handle, NULL);
-
-    return vst_generate_cv_combinations(handle);
 }
 
 int

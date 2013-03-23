@@ -48,7 +48,8 @@ vst_persist_token(
     const char *tag,
     int token_type,
     int match_type,
-    int priority);
+    int priority,
+    int accept_condition);
 
 /**
  * Flushes changes to disk
@@ -68,12 +69,6 @@ vst_discard_changes(varnam *handle);
  **/
 int
 vst_get_virama(varnam* handle, struct token **output);
-
-/**
- * Loops through all the dead consonants and make vowel combinations for all of them
- **/
-int
-vst_generate_cv_combinations(varnam* handle);
 
 int
 vst_get_all_tokens (varnam* handle, int token_type, varray *tokens);

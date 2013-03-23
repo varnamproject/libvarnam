@@ -32,7 +32,7 @@ ensure_schema_exists(varnam *handle, char **msg)
     const char *sql =
         "pragma page_size=4096;"
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create table if not exists symbols (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, value3 TEXT, tag TEXT, match_type INTEGER, priority INTEGER DEFAULT 0);";
+        "create table if not exists symbols (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, value3 TEXT, tag TEXT, match_type INTEGER, priority INTEGER DEFAULT 0, accept_condition INTEGER);";
 
     const char *indexes =
         "create index if not exists index_metadata on metadata (key);"
@@ -157,11 +157,12 @@ vst_persist_token(
     const char *tag,
     int token_type,
     int match_type,
-    int priority)
+    int priority,
+    int accept_condition)
 {
     int rc, persisted;
     sqlite3 *db; sqlite3_stmt *stmt;
-    const char *sql = "insert into symbols (type, pattern, value1, value2, value3, tag, match_type, priority) values (?1, trim(?2), trim(?3), trim(?4), trim(?5), trim(?6), ?7, ?8);";
+    const char *sql = "insert into symbols (type, pattern, value1, value2, value3, tag, match_type, priority, accept_condition) values (?1, trim(?2), trim(?3), trim(?4), trim(?5), trim(?6), ?7, ?8, ?9);";
 
     assert(handle); assert(pattern); assert(value1); assert(token_type);
 
@@ -199,6 +200,7 @@ vst_persist_token(
     sqlite3_bind_text(stmt, 6, tag == NULL ? "" : tag, -1, NULL);
     sqlite3_bind_int (stmt, 7, match_type);
     sqlite3_bind_int (stmt, 8, priority);
+    sqlite3_bind_int (stmt, 9, accept_condition);
 
     rc = sqlite3_step( stmt );
     if( rc != SQLITE_DONE )
@@ -280,7 +282,7 @@ vst_get_virama(varnam* handle, struct token **output)
 
     db = handle->internal->db;
 
-    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
+    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
         set_last_error (handle, "Failed to get virama : %s", sqlite3_errmsg(db));
@@ -303,7 +305,8 @@ vst_get_virama(varnam* handle, struct token **output)
                         (const char*) sqlite3_column_text(stmt, 5),
                         (const char*) sqlite3_column_text(stmt, 6),
                         (const char*) sqlite3_column_text(stmt, 7),
-                        (int) sqlite3_column_int(stmt, 8));
+                        (int) sqlite3_column_int(stmt, 8),
+                        (int) sqlite3_column_int(stmt, 9));
 
         v_->virama = *output;
     }
@@ -334,7 +337,7 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
 
     varray_clear (tokens);
 
-    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority from symbols where type = ?1;", -1, &stmt, NULL );
+    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition from symbols where type = ?1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
         set_last_error (handle, "Failed to get all tokens : %s", sqlite3_errmsg(db));
@@ -357,7 +360,8 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
                                     (const char*) sqlite3_column_text(stmt, 5),
                                     (const char*) sqlite3_column_text(stmt, 6),
                                     (const char*) sqlite3_column_text(stmt, 7),
-                                    (int) sqlite3_column_int(stmt, 8));
+                                    (int) sqlite3_column_int(stmt, 8),
+                                    (int) sqlite3_column_int(stmt, 9));
 
             varray_push (tokens, tok);
         }
@@ -393,110 +397,6 @@ remove_from_last(char *buffer, const char *toremove)
     if(strcmp(buf, toremove) == 0) {
         buffer[newlen] = '\0';
     }
-}
-
-int
-vst_generate_cv_combinations(varnam* handle)
-{
-    int rc, config_ignore_duplicate_tokens_old_val, new_match_type, i , j;
-    struct token *vowel = NULL,
-                 *consonant = NULL,
-                 *virama = NULL;
-    varray *vowels, *consonants;
-    char cons_pattern[VARNAM_SYMBOL_MAX], cons_value1[VARNAM_SYMBOL_MAX], cons_value2[VARNAM_SYMBOL_MAX];
-    char newpattern[VARNAM_SYMBOL_MAX], newvalue1[VARNAM_SYMBOL_MAX], newvalue2[VARNAM_SYMBOL_MAX];
-
-    set_last_error (handle, NULL);
-
-    rc = vst_get_virama(handle, &virama);
-    if (rc != VARNAM_SUCCESS)
-        return rc;
-    else if (virama == NULL)
-    {
-        set_last_error (handle, "Virama needs to be set before generating consonant vowel combinations");
-        return VARNAM_ERROR;
-    }
-
-    vowels = varray_init ();
-    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_VOWEL, vowels);
-    if (rc != VARNAM_SUCCESS)
-        return rc;
-
-    consonants = varray_init ();
-    rc = vst_get_all_tokens(handle, VARNAM_TOKEN_DEAD_CONSONANT, consonants);
-    if (rc != VARNAM_SUCCESS)
-        return rc;
-
-    /* When generating CV combinations, we ignore duplicate token check. duplicate token
-       won't generate an error, instead it won't be persisted. */
-    config_ignore_duplicate_tokens_old_val = handle->internal->config_ignore_duplicate_tokens;
-    handle->internal->config_ignore_duplicate_tokens = 1;
-
-    for (i = 0; i < varray_length (consonants); i++)
-    {
-        consonant = (struct token*) varray_get (consonants, i);
-        /* Since we are iterating over dead consonants, pattern, value1 and value2 will have a virama at the end.
-           This needs to removed before appending vowel */
-        strncpy(cons_pattern, consonant->pattern, VARNAM_SYMBOL_MAX);
-        strncpy(cons_value1, consonant->value1, VARNAM_SYMBOL_MAX);
-        cons_value2[0] = '\0';
-        if(consonant->value2 && consonant->value2[0] != '\0') {
-            strncpy(cons_value2, consonant->value2, VARNAM_SYMBOL_MAX);
-        }
-
-        remove_from_last(cons_pattern, virama->pattern);
-        remove_from_last(cons_value1, virama->value1);
-        remove_from_last(cons_value2, virama->value1);
-
-        for (j = 0; j < varray_length (vowels); j++)
-        {
-            vowel = (struct token*) varray_get (vowels, j);
-            newpattern[0] = '\0';
-            newvalue1[0]  = '\0';
-            newvalue2[0]  = '\0';
-
-            snprintf(newpattern, VARNAM_SYMBOL_MAX, "%s%s", cons_pattern, vowel->pattern);
-            if(vowel->value2 && strlen(vowel->value2) != 0)
-            {
-                snprintf(newvalue1, VARNAM_SYMBOL_MAX, "%s%s", cons_value1, vowel->value2);
-                if(cons_value2[0] != '\0')
-                    snprintf(newvalue2, VARNAM_SYMBOL_MAX, "%s%s", cons_value2, vowel->value2);
-            }
-            else {
-                snprintf(newvalue1, VARNAM_SYMBOL_MAX, "%s", cons_value1);
-                if(cons_value2[0] != '\0')
-                    snprintf(newvalue2, VARNAM_SYMBOL_MAX, "%s", cons_value2);
-            }
-
-            new_match_type = VARNAM_MATCH_EXACT;
-            if (consonant->match_type == VARNAM_MATCH_POSSIBILITY ||
-                vowel->match_type == VARNAM_MATCH_POSSIBILITY)
-            {
-                new_match_type = VARNAM_MATCH_POSSIBILITY;
-            }
-            rc = varnam_create_token(handle,
-                                     newpattern,
-                                     newvalue1,
-                                     newvalue2, "", "", VARNAM_TOKEN_CONSONANT_VOWEL, new_match_type, 1, VARNAM_TOKEN_PRIORITY_NORMAL);
-
-            if (rc != VARNAM_SUCCESS)
-            {
-                handle->internal->config_ignore_duplicate_tokens = config_ignore_duplicate_tokens_old_val;
-                return rc;
-            }
-        }
-    }
-
-    handle->internal->config_ignore_duplicate_tokens = config_ignore_duplicate_tokens_old_val;
-
-    rc = varnam_flush_buffer(handle);
-    if (rc != VARNAM_SUCCESS)
-        return rc;
-
-    varray_free (consonants, &destroy_token);
-    varray_free (vowels, &destroy_token);
-
-    return VARNAM_SUCCESS;
 }
 
 int
@@ -576,7 +476,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
     case VARNAM_TOKENIZER_PATTERN:
         if (v_->tokenize_using_pattern == NULL)
         {
-            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority from symbols where pattern = ?1 and match_type = 1;",
+            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition from symbols where pattern = ?1 and match_type = 1;",
                                      -1, &v_->tokenize_using_pattern, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -590,7 +490,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority from symbols where value1 = ?1 or value2 = ?1 group by pattern order by priority desc, id asc;",
+                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition from symbols where value1 = ?1 or value2 = ?1 group by pattern order by priority desc, id asc;",
                                          -1, &v_->tokenize_using_value, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -603,7 +503,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value_and_match_type == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2 group by pattern order by priority desc, id asc;",
+                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2 group by pattern order by priority desc, id asc;",
                                          -1, &v_->tokenize_using_value_and_match_type, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -649,7 +549,8 @@ read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokeni
                                     (const char*) sqlite3_column_text( stmt, 5 ),
                                     (const char*) sqlite3_column_text( stmt, 6 ),
                                     (const char*) sqlite3_column_text( stmt, 7 ),
-                                    sqlite3_column_int( stmt, 8 ));
+                                    sqlite3_column_int( stmt, 8 ),
+                                    sqlite3_column_int( stmt, 9 ));
             assert (tok);
 
             if (!cleared) {
@@ -772,7 +673,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
             token = get_pooled_token (handle, -99,
                                       VARNAM_TOKEN_OTHER,
                                       VARNAM_MATCH_EXACT,
-                                      strbuf_to_s (lookup), strbuf_to_s (lookup), "", "", "", 0);
+                                      strbuf_to_s (lookup), strbuf_to_s (lookup), "", "", "", 0, VARNAM_TOKEN_ACCEPT_ALL);
             assert (token);
             varray_push (tokens, token);
             matchpos = (int) lookup->length;

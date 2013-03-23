@@ -68,6 +68,12 @@
 #define VARNAM_TOKEN_PRIORITY_NORMAL 0
 #define VARNAM_TOKEN_PRIORITY_LOW -1
 
+/* Token acceptance rules */
+#define VARNAM_TOKEN_ACCEPT_ALL 0
+#define VARNAM_TOKEN_ACCEPT_IF_STARTS_WITH 1
+#define VARNAM_TOKEN_ACCEPT_IF_IN_BETWEEN 2
+#define VARNAM_TOKEN_ACCEPT_IF_ENDS_WITH 3
+
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;
@@ -138,7 +144,7 @@ typedef struct varnam {
 } varnam;
 
 typedef struct token {
-    int id, type, match_type, priority;
+    int id, type, match_type, priority, accept_condition;
     char tag[VARNAM_SYMBOL_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];

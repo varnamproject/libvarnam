@@ -183,6 +183,45 @@ get_largest_array(varray *tokens)
 }
 
 static bool
+apply_acceptance_condition(varray *tokens)
+{
+    int i, j, to_remove[100], total_to_remove = 0, state;
+    varray *item;
+    vtoken *t;
+
+    for (i = 0; i < varray_length (tokens); i++)
+    {
+        if (i == 0)
+            state = VARNAM_TOKEN_ACCEPT_IF_STARTS_WITH;
+        else if ((i + 1) == varray_length (tokens))
+            state = VARNAM_TOKEN_ACCEPT_IF_ENDS_WITH;
+        else
+            state = VARNAM_TOKEN_ACCEPT_IF_IN_BETWEEN;
+
+        item = varray_get (tokens, i);
+        if (varray_length (item) == 1)
+            continue;
+
+        for (j = 0; j < varray_length (item); j++)
+        {
+            t = varray_get (item, j);
+            if (t->accept_condition != VARNAM_TOKEN_ACCEPT_ALL && t->accept_condition != state) {
+                to_remove[total_to_remove++] = j;
+            }
+        }
+
+        for (j = 0; j < total_to_remove; j++)
+        {
+            /* to_remove[j] - j is required to calculate the new index as deleting each item changes index */
+            varray_remove_at (item, to_remove[j] - j);
+        }
+        total_to_remove = 0;
+    }
+
+    return false;
+}
+
+static bool
 remove_low_priority_tokens(varray *tokens)
 {
     int i, j, to_remove[100], total_to_remove = 0;
@@ -192,7 +231,6 @@ remove_low_priority_tokens(varray *tokens)
     for (i = 0; i < varray_length (tokens); i++)
     {
         item = varray_get (tokens, i);
-
         if (varray_length (item) == 1)
             continue;
 
@@ -206,7 +244,7 @@ remove_low_priority_tokens(varray *tokens)
 
         for (j = 0; j < total_to_remove; j++)
         {
-            varray_remove_at (item, to_remove[j]);
+            varray_remove_at (item, to_remove[j] - j);
         }
         total_to_remove = 0;
 
@@ -256,7 +294,7 @@ get_next_array(varray *tokens)
 
 /*
  * This function iterates over tokens and remove unimportant tokens
- * from the array so that only important tokens remain in tokens. 
+ * from the array so that only important tokens remain in tokens.
  * This improves learn quality
  */
 static void
@@ -267,6 +305,9 @@ reduce_noise_in_tokens(varray *tokens)
     if (varray_is_empty (tokens)) {
         return;
     }
+
+    /* Removing all unacceptable tokens */
+    apply_acceptance_condition (tokens);
 
     if (get_total_possible_patterns (tokens) <= MAXIMUM_PATTERNS_TO_LEARN) {
         return;
@@ -496,7 +537,7 @@ varnam_train(varnam *handle, const char *pattern, const char *word)
 }
 
 int
-varnam_export_words(varnam* handle, int words_per_file, const char* out_dir, 
+varnam_export_words(varnam* handle, int words_per_file, const char* out_dir,
     void (*callback)(int total_words, int processed, const char *current_word))
 {
     if (handle == NULL || out_dir == NULL) {

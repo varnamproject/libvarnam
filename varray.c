@@ -70,9 +70,9 @@ varray_remove_at(varray *array, int index)
         return;
 
     len = varray_length(array);
-    for(i = index; (i + 1) < len; i++)
+    for(i = index + 1; i < len; i++)
     {
-        array->memory[index] = array->memory[index + 1];
+        array->memory[index++] = array->memory[i];
     }
 
     array->used = array->used - sizeof(void*);

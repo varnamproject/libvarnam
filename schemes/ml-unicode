@@ -24,9 +24,9 @@ vowels "a" => "അ",
        ["O", ["o"]] => ["ഓ", "ോ"],
        ["ou", "au", "ow"]  => ["ഔ", "ൌ"]
 
-vowels({:priority => :low}, [["y"]] => ["ഇ", "ി"])
+vowels({:priority => :low, :accept_if => :ends_with}, [["y"]] => ["ഇ", "ി"])
 
-consonants ["ka", "ca"] => "ക",
+consonants ["ka"] => "ക",
            ["kha", ["gha"]] => "ഖ",
            "ga"  => "ഗ",
            ["gha", ["kha"]] => "ഘ",
@@ -56,12 +56,14 @@ consonants ["ka", "ca"] => "ക",
            ["sa", "za"] => "സ",
            "ha" => "ഹ"
 
+consonants({:accept_if => :starts_with}, ["ca"] => "ക")
+
 tag "render_value2" do
    consonants "nja" => ["ഞ", "ഞ്ഞ"],
               "nga" => ["ങ", "ങ്ങ"]
 end
 
-consonants ["kra", "cra"] => "ക്ര",
+consonants ["kra"] => "ക്ര",
            "gra"  => "ഗ്ര",
            ["ghra", ["khra"]] => "ഘ്ര",
            ["CHra", ["chra", "jhra"]] => "ഛ്ര",
@@ -94,6 +96,8 @@ consonants ["kra", "cra"] => "ക്ര",
            "nmra" => "ന്മ്ര",
            ["NDra", ["ndra"]] => "ണ്ഡ്ര"
 
+consonants({:accept_if => :starts_with}, ["cra"] => "ക്ര")
+
 consonants "ya" => "യ",
            "sha" => "ഷ",
            "zha" => "ഴ",
@@ -103,7 +107,7 @@ consonants "ya" => "യ",
            ["ncha", ["nja"]] => "ഞ്ച",
            "ntha" => "ന്ത",
            "nta" => "ന്റ",
-           [["nda"]] => "ണ്ട",
+           [["nda"], "nDa", "Nta"] => "ണ്ട",
            "nda" => "ന്ദ",
            "tta" => "ട്ട",
            [["tha"], "THa", "ttha"] => "ത്ത",
@@ -112,7 +116,7 @@ consonants "ya" => "യ",
            "nna" => "ന്ന",
            ["NNa", ["nna"]] => "ണ്ണ",
            ["bba", "Ba"] => "ബ്ബ",
-           ["kka", "Ka", "Ca"] => "ക്ക",
+           ["kka", "Ka"] => "ക്ക",
            ["gga", "Ga"] => "ഗ്ഗ",
            ["jja", "Ja"] => "ജ്ജ",
            ["mma", "Ma"] => "മ്മ",
@@ -129,8 +133,6 @@ consonants "ya" => "യ",
            ["nJa", ["nja"]] => "ഞ്ജ",
            ["NDa", ["nda"]] => "ണ്ഡ"
 
-consonants({:priority => :low}, [["nta"], "nDa", "Nta", "nTa"] => "ണ്ട")
-
 # Don't need to infer dead consonants because removing 'a' from pattern will make what is mapped for chill
 infer_dead_consonants false
 
@@ -141,6 +143,11 @@ consonants ["ra"] => "ര",
            ["la"] => "ല",
            [["la"], "La"] => "ള",
            ["ma"] => "മ"
+
+infer_dead_consonants true
+
+# Autogenerate consonant vowel combinations
+generate_cv
 
 consonants [["ru"]] => "ര്",
            [["r~", "ru"]] => "റ്",
@@ -157,11 +164,6 @@ consonants [["ru"]] => "ര്",
            ["L~"] => "ള്",
            ["m~"] => "മ്"
 
-infer_dead_consonants true
-
-# Autogenerate consonant vowel combinations
-generate_cv
-
 # value1 = atomic chil. value2 = old style. value3 = base letter
 tag "chill" do
    consonants "m" => ["ം","ം","മ"],
@@ -173,7 +175,7 @@ tag "chill" do
 end
 
 # * is the place holder which will be replaced by the actual value
-consonants(combine get_dead_consonants, [["*u"]] => "*")
+consonants({:accept_if => :ends_with}, combine(get_dead_consonants, [["*u"]] => "*"))
 
 consonants ["rva", "rwa"] => "ര്വ",
            "rya" => "ര്യ",
