@@ -526,7 +526,7 @@ def combine(array, hash)
         exit 1
     end
 
-    result = {}
+    grouped = {}
     array.each do |item|
         hash.each_pair do |key, value|
             new_key = nil
@@ -543,8 +543,18 @@ def combine(array, hash)
                 new_value = value.to_s.gsub("*", item.value1)
             end
 
-            result[new_key] = new_value
+            if grouped[new_value].nil?
+                grouped[new_value] = new_key
+            else
+                grouped[new_value].push(new_key)
+            end
         end
+    end
+
+    # invert the hash
+    result = {}
+    grouped.each_pair do |key, value|
+        result[value] = key
     end
 
     return result

@@ -113,7 +113,6 @@ can_learn_from_tokens (varnam *handle, varray *tokens, const char *word)
         for (j = 0; j < varray_length (array); j++)
         {
             t = varray_get (array, j);
-            if (t->match_type == VARNAM_MATCH_POSSIBILITY) continue;
 
             if (t->type != VARNAM_TOKEN_VOWEL) all_vowels = false;
 
