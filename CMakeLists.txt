@@ -7,9 +7,9 @@ message ("Generating project ${PROJECT_NAME}")
 set(VARNAM_LIBRARY_NAME "varnam")
 set(DEPS_LIBRARY_NAME "deps")
 
-set(VARNAM_VERSION_MAJOR 1)
+set(VARNAM_VERSION_MAJOR 2)
 set(VARNAM_VERSION_MINOR 0)
-set(VARNAM_VERSION_PATCH 1)
+set(VARNAM_VERSION_PATCH 0)
 
 enable_testing()
 
