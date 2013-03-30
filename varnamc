@@ -922,7 +922,9 @@ def learn_from_directory
 end
 
 def train_words_in_the_file(fname)
-    File.readlines(fname, "r").each do |line|
+    text = File.open(fname).read
+    text.gsub!(/\r\n?/, "\n")
+    text.each_line do |line|
         parts = line.split(' ')
         if not parts.length == 2
             puts "Error at #{line}"
