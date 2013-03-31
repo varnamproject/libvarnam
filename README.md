@@ -1,14 +1,32 @@
-What is libvarnam
--------------------
+- [Introduction](#introduction)
+- [News](#news)
+- [Installing](#installing)
+- [Getting started](#getting_started)
+- [Public API](#public_api)
+- [Supported languages](#supported_languages)
+- [Adding a new language](#adding_a_new_language)
+  - [Metadata](#adding_a_new_language_metadata)
+  - [Syntax](#adding_a_new_language_syntax)
+  - [Symbol types](#adding_a_new_language_symbol_types)
+  - [Other functions](#adding_a_new_language_other_functions)
+    - [infer_dead_consonants](#adding_a_new_language_other_functions_infer_dead_consonants)
+    - [generate_cv](#adding_a_new_language_other_functions_generate_cv)
+- [Contact](#contact)
+
+<a name="introduction" />
+# Introduction
+
 'libvarnam' is a library which support transliteration and reverse transliteration for Indian languages. 
 
-News
--------------------
+<a name="news" />
+# News
+
 * Saturday Mar 30, 2013 - v2.0.0 released
 * Thursday, Nov 1, 2012 - v1.0.1 released
 
-Installing libvarnam
--------------------
+<a name="installing" />
+# Installing libvarnam
+
 `libvarnam` uses `CMake` as build system. `libvarnam` doesn't have any external dependencies. So building it is easy.
 
 ```shell
@@ -17,8 +35,8 @@ $ make
 $ make install
 ```
 
-Getting started
--------------------------
+<a name="getting_started" />
+# Getting started
 
 You can use `varnamc` which is a command line client to `libvarnam` to quickly try out `libvarnam`. 
 
@@ -57,7 +75,7 @@ You can now start using `libvarnam`. To transliterate a word.
 $ ./varnamc --symbols ml --transliterate navaneeth
 ```
 
-Above command uses malayalam symbols and transliterate the text 'navaneeth'.
+Above command uses Malayalam symbols and transliterate the text 'navaneeth'.
 
 Similarly if you want varnam to learn some word
 
@@ -65,8 +83,8 @@ Similarly if you want varnam to learn some word
 $ ./varnamc --symbols ml --learn വർണം
 ```
 
-Public API
--------------
+<a name="public_api" />
+# Public API
 
 `api.h` defines the public API for `libvarnam`. Take a look at [api.h](https://github.com/navaneeth/libvarnam/blob/master/api.h) for available functions.
 
@@ -109,19 +127,109 @@ int main(int args, char **argv)
 }
 ```
 
-Supported languages
--------------------
+<a name="supported_languages" />
+# Supported languages
+
 * Malayalam
 * Gujarati (Experimental)
 * Tamil (Experimental)
 
-Adding a new language
----------------------
+<a name="adding_a_new_language" />
+# Adding a new language
 
-A new language can be added to `libvarnam` by adding a new scheme file. 
+A new language can be added to `libvarnam` by adding a new scheme file. A scheme file is a simple Ruby file which can be used to specify the symbols for a language. 
 
-Contact
---------------------
+<a name="adding_a_new_language_metadata" />
+## Metadata
+
+A scheme file often starts with metadata.
+
+<table>
+<tr><td>language_code</td><td>Language code for the scheme</td></tr>
+<tr><td>identifier</td><td>A unique identifier to identify this scheme</td></tr>
+<tr><td>display_name</td><td>Friendly name for this scheme</td></tr>
+<tr><td>author</td><td>Author of the scheme file</td></tr>
+</table>
+
+<a name="adding_a_new_language_syntax" />
+## Syntax
+
+```ruby
+<symbol-type> options, symbols
+```
+
+`options` and `symbols` should be valid Ruby hashes. `options` is optional argument and can contain the following values.
+
+```ruby
+options = {:accept_if => starts_with | ends_with | in_between, :priority => 0..9}
+```
+
+`symbols` should be a hash with patterns as keys and replacement as values. It can have the following form.
+
+```ruby
+'a' => 'a-value', 'b' => 'b-value'
+['a', 'aa'] => 'b-value'
+```
+
+Given the above mapping, varnam will replace token `a` with `a-value` and token `b` with `b-value`. Multiple patterns can be specified in an array. In this case, both `a` and `aa` will resolve to `b-value`.
+
+<a name="adding_a_new_language_symbol_types" />
+## Symbol types
+
+The following functions are available in the scheme files to define different types of symbols. 
+
+* vowels
+* consonants - Usually specified with the inherent 'a' sound.
+* consonant_vowel_combinations
+* anusvara
+* visarga
+* virama
+* symbols
+* numbers
+* others
+
+<a name="adding_a_new_language_other_functions" />
+## Other functions
+
+Following functions are available in a scheme file.
+
+<a name="adding_a_new_language_other_functions_infer_dead_consonants" />
+### infer_dead_consonants
+
+Usage
+
+```ruby
+infer_dead_consonants true
+```
+
+When this option is set, varnam will infer dead consonant from a consonant definition. Consider the following statements. 
+
+```ruby
+infer_dead_consonants true
+
+consonants 'ka' => 'क'
+```
+
+In this case, varnam will create a consonant `ka` which will resolve to `क` and a dead consonant `k` which resolves to `क्`.
+
+<a name="adding_a_new_language_other_functions_generate_cv" />
+### generate_cv
+
+When this function is called, varnam will autogenerate consonant-vowel combinations. Consider the following statements.
+
+
+```ruby
+vowels 'aa' => ['आ', 'ा']
+
+consonants 'ka' => 'क'
+
+generate_cv
+```
+In this case, varnam will generate consonant-vowel combinations like, `kaa` => 'का'
+
+<a name="contact" />
+# Contact
+
 <table>
   <tr>
     <td>Website</td><td>[www.varnamproject.com](http://www.varnamproject.com)</td>
