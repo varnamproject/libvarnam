@@ -11,12 +11,14 @@
   - [Other functions](#adding_a_new_language_other_functions)
     - [infer_dead_consonants](#adding_a_new_language_other_functions_infer_dead_consonants)
     - [generate_cv](#adding_a_new_language_other_functions_generate_cv)
+    - [Setting priority for a token](#adding_a_new_language_other_functions_setting_priority_for_a_token)
+    - [Setting accept condition for a token](#adding_a_new_language_other_functions_setting_accept_condition_for_a_token)
 - [Contact](#contact)
 
 <a name="introduction" />
 # Introduction
 
-'libvarnam' is a library which support transliteration and reverse transliteration for Indian languages. 
+`libvarnam` is a cross platform, self learning, open source library which support transliteration and reverse transliteration for Indian languages. `libvarnam` has a simple learning module built-in which can learn words to improve the transliteration experience. 
 
 <a name="news" />
 # News
@@ -132,12 +134,11 @@ int main(int args, char **argv)
 
 * Malayalam
 * Gujarati (Experimental)
-* Tamil (Experimental)
 
 <a name="adding_a_new_language" />
 # Adding a new language
 
-A new language can be added to `libvarnam` by adding a new scheme file. A scheme file is a simple Ruby file which can be used to specify the symbols for a language. 
+A new language can be added to `libvarnam` by adding a new scheme file. A scheme file is a simple Ruby file which can be used to specify the symbols for a language. The best way to write a new scheme file is to refer to an existing one. All the scheme files are stored under `schemes/` directory.
 
 <a name="adding_a_new_language_metadata" />
 ## Metadata
@@ -227,6 +228,28 @@ generate_cv
 ```
 In this case, varnam will generate consonant-vowel combinations like, `kaa` => 'का'
 
+<a name="adding_a_new_language_other_functions_setting_priority_for_a_token" />
+### Setting priority for a token
+
+When defining a token, you can assign some priority to it. When varnam does the tokenization, high priority tokens will appear first in the list.
+
+```ruby
+consonants({:priority => :high}, 'ka' => 'क')
+```
+
+This will generate consonant `ka` with priority set to `high`.
+
+<a name="adding_a_new_language_other_functions_setting_accept_condition_for_a_token" />
+### Setting accept condition for a token
+
+Each token can have an optional accept condition. Accept condition can have 1 of 3 possible values. `starts_with`, `ends_with` and `in_between`. 
+
+```ruby
+consonants({:accept_if => :starts_with}, 'ka' => 'क')
+```
+
+In this case, varnam will accept token `ka` only if the pattern starts with `ka`.
+
 <a name="contact" />
 # Contact
 
@@ -241,6 +264,6 @@ In this case, varnam will generate consonant-vowel combinations like, `kaa` => '
     <td>Questions</td><td>Tweet your questions to @navaneethkn</td>
   </tr>
   <tr>
-    <td>Email</td><td>navaneethkn [at] gmail</td>
+    <td>Email</td><td>varnamproject [at] googlegroups.com</td>
   </tr>
 </table>
