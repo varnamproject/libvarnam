@@ -9,7 +9,6 @@ libvarnam's features.
 Usage - varnamc options <args>
 =end
 
-$VERSION = '1.0.0'
 $LOAD_PATH << './scripts'
 
 def gem_available?(name)
@@ -23,10 +22,37 @@ if not gem_available?('ffi')
   exit(1)
 end
 
+$options = {}
+
+def find_libvarnam
+  return $options[:library] if not $options[:library].nil?
+  # Trying to find out libvarnam in the predefined locations if
+  # absolute path to the library is not specified
+  libvarnam_search_paths = ['.', '/usr/local/lib', '/usr/lib']
+  libvarnam_names = ['libvarnam.so', 'libvarnam.dylib', 'varnam.dll']
+  libvarnam_search_paths.each do |path|
+    libvarnam_names.each do |fname|
+      fullpath = File.join(path, fname)
+      if File.exists?(fullpath)
+        return fullpath
+      end
+    end
+  end
+  return nil
+end
+
+$options[:library] = find_libvarnam
+if $options[:library].nil?
+  puts "varnamc - Can't find varnam shared library. Try specifying the full path using -l option"
+  puts optparse
+else
+  puts "Using #{$options[:library]}"
+end
+
+require 'varnamruby.rb'
 require 'optparse'
 
 # Defining command line options
-$options = {}
 $options[:action] = nil
 def set_action(a)
   if $options[:action].nil?
@@ -36,6 +62,7 @@ def set_action(a)
     exit(1)
   end
 end
+
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: varnamc [options] language_code args"
@@ -173,11 +200,17 @@ optparse = OptionParser.new do |opts|
     puts opts
     exit
   end
+
+  opts.on('--version', 'Display version' ) do
+    puts "libvarnam version #{VarnamLibrary.varnam_version()}"
+    exit
+  end
+
 end
 
 begin
   optparse.parse!
-rescue
+rescue 
   puts "varnamc : incorrect arguments"
   puts optparse
   exit(1)
@@ -188,34 +221,6 @@ if $options[:action].nil?
   puts optparse
   exit(1)
 end
-
-def find_libvarnam
-  return $options[:library] if not $options[:library].nil?
-
-  # Trying to find out libvarnam in the predefined locations if
-  # absolute path to the library is not specified
-  libvarnam_search_paths = ['.', '/usr/local/lib', '/usr/lib']
-  libvarnam_names = ['libvarnam.so', 'libvarnam.dylib', 'varnam.dll']
-  libvarnam_search_paths.each do |path|
-    libvarnam_names.each do |fname|
-      fullpath = File.join(path, fname)
-      if File.exists?(fullpath)
-        return fullpath
-      end
-    end
-  end
-  return nil
-end
-
-$options[:library] = find_libvarnam
-if $options[:library].nil?
-  puts "varnamc - Can't find varnam shared library. Try specifying the full path using -l option"
-  puts optparse
-else
-  puts "Using #{$options[:library]}"
-end
-
-require 'varnamruby.rb'
 
 $suggestions_file = ''
 

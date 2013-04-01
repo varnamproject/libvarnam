@@ -46,6 +46,9 @@
 VARNAM_EXPORT extern int
 varnam_init(const char *scheme_file, varnam **handle, char **msg);
 
+VARNAM_EXPORT extern const char*
+varnam_version();
+
 VARNAM_EXPORT extern int
 varnam_register_renderer(
     varnam *handle,

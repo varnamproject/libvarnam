@@ -142,6 +142,12 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
     return VARNAM_SUCCESS;
 }
 
+const char*
+varnam_version()
+{
+    return VARNAM_VERSION;
+}
+
 int
 varnam_register_renderer(
     varnam *handle,
