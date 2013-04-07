@@ -7,6 +7,8 @@ author "Prateek Kumar Baheti"
 
 ignore_duplicates false
 
+$virama = "\u{094D}"
+
 vowels "a" => "अ",
        ["aa", "A", ["a"]]  => ["आ", "ा"],
        "i" => ["इ", "ि"],
@@ -52,5 +54,12 @@ consonants "k" => "क",
            ["sh", ["s"]] => "ष",
            ["s"] => "स",
            ["h"] => "ह"
+
+consonants "kk" => "क#{$virama}क",
+           "jj" => "ज#{$virama}ज",
+           "nn" => "न#{$virama}न"
+
+consonants(combine get_consonants, ["*b"] => ["*#{$virama}ब"])
+consonants(combine get_consonants, ["*s"] => ["*#{$virama}स"])
 
 generate_cv
