@@ -103,7 +103,7 @@ resolve_tokens(varnam *handle,
         }
         else if(token->type == VARNAM_TOKEN_VOWEL)
         {
-            if(strbuf_endswith(string, virama->value1)) {
+            if(virama && strbuf_endswith(string, virama->value1)) {
                 /* removing the virama and adding dependent vowel value */
                 strbuf_remove_from_last(string, virama->value1);
                 if(token->value2[0] != '\0') {

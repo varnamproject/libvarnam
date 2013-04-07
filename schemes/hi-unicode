@@ -5,6 +5,8 @@ identifier "hi-unicode"
 display_name "Hindi"
 author "Prateek Kumar Baheti"
 
+ignore_duplicates false
+
 vowels "a" => "अ",
        ["aa", "A", ["a"]]  => ["आ", "ा"],
        "i" => ["इ", "ि"],
@@ -27,12 +29,12 @@ consonants "k" => "क",
            ["j"]  => "ज",
            ["jh"] => "झ",
            ["nj"] => "ञ",
-           ["t"] => "ट",
+           ["T", ["t"]] => "ट",
            ["TT"] => "ठ",
            ["D", ["d"]] => "ड",
            ["Dh"] => "ढ",
            ["N"] => "ण",
-           [["t"], "th"] => "त",
+           ["t", ["th"]] => "त",
            ["th", ["dh"]] => "थ",
            "d" => "द",
            ["dh"] => "ध",
@@ -50,3 +52,5 @@ consonants "k" => "क",
            ["sh", ["s"]] => "ष",
            ["s"] => "स",
            ["h"] => "ह"
+
+generate_cv
