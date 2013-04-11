@@ -8,6 +8,9 @@ author "Prateek Kumar Baheti"
 ignore_duplicates false
 
 $virama = "\u{094D}"
+$am = "\u{0902}"
+$an = "\u{0901}"
+$nukta = "\u{093c}"
 
 vowels "a" => "अ",
        ["aa", "A", ["a"]]  => ["आ", "ा"],
@@ -18,8 +21,12 @@ vowels "a" => "अ",
        "e" => ["ए", "े"],
        ["ai", "ei"] => ["ऐ", "ै"],
        "o" => ["ओ", "ो"],
-       ["ou", "au", "ow"]  => ["औ", "ौ"]
+       ["ou", "au", "ow"]  => ["औ", "ौ"],
+       ["am", ["an"]] => ["अ#{$am}", $am],
+       [["an", "am"]] => ["अ#{$an}", $an]
 
+vowels({:priority => :low}, ["aan", "aam"] => ["अ#{$an}", $an])
+vowels({:accept_if => :ends_with}, [["n", "m"]] => ["अ#{$an}", $an])
 
 consonants "k" => "क",
            ["kh", ["gh"]] => "ख",
@@ -50,16 +57,22 @@ consonants "k" => "क",
            "r" => "र",
            "l" => "ल",
            "v" => "व",
-           ["S"] => "श",
+           ["S", ["sh"]] => "श",
            ["sh", ["s"]] => "ष",
            ["s"] => "स",
-           ["h"] => "ह"
+           ["h"] => "ह",
+           ["z"] => "ज#{$nukta}"
 
 consonants "kk" => "क#{$virama}क",
            "jj" => "ज#{$virama}ज",
            "nn" => "न#{$virama}न"
 
-consonants(combine get_consonants, ["*b"] => ["*#{$virama}ब"])
-consonants(combine get_consonants, ["*s"] => ["*#{$virama}स"])
+consonants(combine get_consonants, ["*b"] => ["*#{$virama}ब"],
+                                   ["*s"] => ["*#{$virama}स"], 
+                                   ["*r"] => ["*#{$virama}र"], 
+                                   ["*t"] => ["*#{$virama}त"],
+                                   ["*w", "*v"] => ["*#{$virama}व"])
 
 generate_cv
+
+consonants(combine get_consonants, ["*a"] => ["*"])
