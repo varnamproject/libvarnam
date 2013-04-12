@@ -12,6 +12,8 @@ $am = "\u{0902}"
 $an = "\u{0901}"
 $nukta = "\u{093c}"
 
+virama "~" => "\u{094d}"
+
 vowels "a" => "अ",
        ["aa", "A", ["a"]]  => ["आ", "ा"],
        "i" => ["इ", "ि"],
@@ -21,12 +23,7 @@ vowels "a" => "अ",
        "e" => ["ए", "े"],
        ["ai", "ei"] => ["ऐ", "ै"],
        "o" => ["ओ", "ो"],
-       ["ou", "au", "ow"]  => ["औ", "ौ"],
-       ["am", ["an"]] => ["अ#{$am}", $am],
-       [["an", "am"]] => ["अ#{$an}", $an]
-
-vowels({:priority => :low}, ["aan", "aam"] => ["अ#{$an}", $an])
-vowels({:accept_if => :ends_with}, [["n", "m"]] => ["अ#{$an}", $an])
+       ["ou", "au", "ow"]  => ["औ", "ौ"]
 
 consonants "k" => "क",
            ["kh", ["gh"]] => "ख",
@@ -52,10 +49,9 @@ consonants "k" => "क",
            "ph" => "फ",
            "b" => "ब",
            "bh" => "भ",
-           "m" => "म",
            "y" => "य",
-           "r" => "र",
-           "l" => "ल",
+           "r" => ["र", "र#{$virama}"],
+           "l" => ["ल", "ल#{$virama}"],
            "v" => "व",
            ["S", ["sh"]] => "श",
            ["sh", ["s"]] => "ष",
@@ -70,9 +66,24 @@ consonants "kk" => "क#{$virama}क",
 consonants(combine get_consonants, ["*b"] => ["*#{$virama}ब"],
                                    ["*s"] => ["*#{$virama}स"], 
                                    ["*r"] => ["*#{$virama}र"], 
-                                   ["*t"] => ["*#{$virama}त"],
+		                   ["*t"] => ["*#{$virama}ट", "*#{$virama}त"],
                                    ["*w", "*v"] => ["*#{$virama}व"])
 
 generate_cv
 
 consonants(combine get_consonants, ["*a"] => ["*"])
+
+get_vowels.each do |vowel|
+  if vowel.match_type == 1
+     consonants ["m#{vowel.pattern}"] => ["म#{vowel.value2}"]
+  else
+     consonants [["m#{vowel.pattern}"]] => ["म#{vowel.value2}"]
+  end
+end
+symbols ["m", ["n"]] => $am,
+        [["n", "m"]] => $an
+
+symbols({:priority => :low}, ["aan", "aam"] => $an)
+
+
+
