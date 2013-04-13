@@ -59,15 +59,67 @@ consonants "k" => "क",
            ["h"] => "ह",
            ["z"] => "ज#{$nukta}"
 
+consonants ["kb"] => ["क#{$virama}ब"],
+           ["khb", ["ghb"]] => ["ख#{$virama}ब"],
+           "gb"  => "ग#{$virama}ब",
+           "chb" => "च#{$virama}ब",
+           ["jb"]  => "ज#{$virama}ब",
+           ["Sb", ["shb"]] => "श#{$virama}ब",
+           ["shb", ["sb"]] => "ष#{$virama}ब",
+           ["sb"] => "स#{$virama}ब"
+
+consonants "ks" => "क#{$virama}स", 
+           ["khs", ["ghs"]] => "ख#{$virama}स", 
+           "gs"  => "ग#{$virama}स", 
+           ["ghs", ["khs"]] => "घ#{$virama}स", 
+           ["Ts", ["ts"]] => "ट#{$virama}स", 
+           ["TTs"] => "ठ#{$virama}स", 
+           ["ts", ["ths"]] => "त#{$virama}स", 
+           ["ths", ["dhs"]] => "थ#{$virama}स", 
+           "ds" => "द#{$virama}स", 
+           ["dhs"] => "ध#{$virama}स", 
+           "ps" => "प#{$virama}स", 
+           "bs" => "ब#{$virama}स"
+
+consonants "kr" => "क#{$virama}र",
+           ["khr", ["ghr"]] => "ख#{$virama}र",
+           "gr"  => "ग#{$virama}र",
+           ["ghr", ["khr"]] => "घ#{$virama}र",
+           ["jr"]  => "ज#{$virama}र",
+           ["Tr", ["tr"]] => "ट#{$virama}र",
+           ["Dr", ["dr"]] => "ड#{$virama}र",
+           ["Dhr"] => "ढ#{$virama}र",
+           ["tr", ["thr"]] => "त#{$virama}र",
+           ["thr", ["dhr"]] => "थ#{$virama}र",
+           "dr" => "द#{$virama}र",
+           ["dhr"] => "ध#{$virama}र",
+           "pr" => "प#{$virama}र",
+           "phr" => "फ#{$virama}र",
+           "br" => "ब#{$virama}र",
+           "bhr" => "भ#{$virama}र",
+           "vr" => "व#{$virama}र",
+           ["Sr", ["shr"]] => "श#{$virama}र",
+           ["shr", ["sr"]] => "ष#{$virama}र",
+           ["sr"] => "स#{$virama}र",
+           ["hr"] => "ह#{$virama}र"
+
+consonants "kt" => ["क#{$virama}ट", "क#{$virama}त"],
+           ["kht", ["ght"]] => ["ख#{$virama}ट", "ख#{$virama}त"],
+           "gt"  => ["ग#{$virama}ट", "ग#{$virama}त"],
+           ["Nt"] => ["ण#{$virama}ट", "ण#{$virama}त"],
+           ["nt"] => ["न#{$virama}ट", "न#{$virama}त"],
+           "pt" => ["प#{$virama}ट", "प#{$virama}त"],
+           "bt" => ["ब#{$virama}ट", "ब#{$virama}त"],
+           "bht" => ["भ#{$virama}ट", "भ#{$virama}त"],
+           ["St", ["sht"]] => ["श#{$virama}ट", "श#{$virama}त"],
+           ["sht", ["st"]] => ["ष#{$virama}ट", "ष#{$virama}त"],
+           ["st"] => ["स#{$virama}ट", "स#{$virama}त"]
+
 consonants "kk" => "क#{$virama}क",
            "jj" => "ज#{$virama}ज",
            "nn" => "न#{$virama}न"
 
-consonants(combine get_consonants, ["*b"] => ["*#{$virama}ब"],
-                                   ["*s"] => ["*#{$virama}स"], 
-                                   ["*r"] => ["*#{$virama}र"], 
-		                   ["*t"] => ["*#{$virama}ट", "*#{$virama}त"],
-                                   ["*w", "*v"] => ["*#{$virama}व"])
+consonants(combine get_consonants, ["*w", "*v"] => ["*#{$virama}व"])
 
 generate_cv
 
