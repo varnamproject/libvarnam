@@ -210,7 +210,7 @@ end
 
 begin
   optparse.parse!
-rescue 
+rescue
   puts "varnamc : incorrect arguments"
   puts optparse
   exit(1)
@@ -312,6 +312,34 @@ def do_action
   end
 end
 
+$custom_lists = {}
+$current_custom_list = nil
+
+def list(name, &block)
+    if name.nil?
+        error "List should have a name"
+        exit (1)
+    end
+
+    if not name.is_a?(String) and not name.is_a?(Symbol)
+        error "List name should be a string or symbols"
+        exit (1)
+    end
+
+    $custom_lists[name] = [] if not $custom_lists.has_key?(name)
+    $current_custom_list = $custom_lists[name]
+    yield if block_given?
+ensure
+    $current_custom_list = nil
+end
+
+# We handle method missing to return appropriate lists
+def self.method_missing(name, *args, &block)
+    return $custom_lists[name] if $custom_lists.has_key?(name)
+    super
+end
+
+
 # this contains default symbols key overridden in the scheme file
 # key will be the token type
 $overridden_default_symbols = []
@@ -402,7 +430,9 @@ def _persist_key_values(pattern, values, token_type, match_type, priority, accep
   end
 
   _context.tokens[token_type] = [] if _context.tokens[token_type].nil?
-  _context.tokens[token_type].push(VarnamToken.new(token_type, pattern, value1, value2, value3, tag, match_type, priority, accept_condition))
+  vtoken = VarnamToken.new(token_type, pattern, value1, value2, value3, tag, match_type, priority, accept_condition)
+  _context.tokens[token_type].push(vtoken)
+  $current_custom_list.push(vtoken) if not $current_custom_list.nil?
 
   inform "Persisting #{match} - #{pattern} => #{value1},#{value2},#{value3}"
 end
