@@ -11,6 +11,7 @@
   - [Other functions](#adding_a_new_language_other_functions)
     - [infer_dead_consonants](#adding_a_new_language_other_functions_infer_dead_consonants)
     - [generate_cv](#adding_a_new_language_other_functions_generate_cv)
+    - [list](#adding_a_new_language_other_functions_list)
     - [Setting priority for a token](#adding_a_new_language_other_functions_setting_priority_for_a_token)
     - [Setting accept condition for a token](#adding_a_new_language_other_functions_setting_accept_condition_for_a_token)
 - [Contact](#contact)
@@ -227,6 +228,22 @@ consonants 'ka' => 'क'
 generate_cv
 ```
 In this case, varnam will generate consonant-vowel combinations like, `kaa` => 'का'
+
+<a name="adding_a_new_language_other_functions_list" />
+### list
+
+Creates a custom list and adds the tokens into the list.
+
+```ruby
+list :consonants_with_inherent_a_sound do
+   consonants 'ka' => 'क'
+end
+
+# Token 'ka' will be added to the custom list named 'consonants_with_inherent_a_sound'. To read it,
+consonants_with_inherent_a_sound.each do |c|
+  puts c
+end
+```
 
 <a name="adding_a_new_language_other_functions_setting_priority_for_a_token" />
 ### Setting priority for a token
