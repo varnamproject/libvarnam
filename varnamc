@@ -313,24 +313,48 @@ def do_action
 end
 
 $custom_lists = {}
-$current_custom_list = nil
+$current_custom_list = []
 
-def list(name, &block)
-    if name.nil?
+# Starts a list context. Any tokens created inside will get added to this list
+# It can have multiple list names and token will get added to all of these. One token
+# can be in multiple lists
+def list(*names, &block)
+    if not $current_custom_list.empty?
+        # This happens when user tries to nest list.
+        # Nesting list is not allowed
+        error "Can't create nested list"
+        exit (1)
+    end
+
+    if names.empty?
         error "List should have a name"
         exit (1)
     end
 
-    if not name.is_a?(String) and not name.is_a?(Symbol)
-        error "List name should be a string or symbols"
+    names.each do |name|
+        if not name.is_a?(String) and not name.is_a?(Symbol)
+            error "List name should be a string or symbols"
+            exit (1)
+        end
+
+        $custom_lists[name] = [] if not $custom_lists.has_key?(name)
+        $current_custom_list << $custom_lists[name]
+    end
+
+    yield if block_given?
+ensure
+    $current_custom_list = []
+end
+
+def push_to_current_custom_list(token)
+    if token.nil?
+        error "Can't add empty token"
         exit (1)
     end
 
-    $custom_lists[name] = [] if not $custom_lists.has_key?(name)
-    $current_custom_list = $custom_lists[name]
-    yield if block_given?
-ensure
-    $current_custom_list = nil
+    $current_custom_list.each do |l|
+        l.push(token)
+    end
 end
 
 # We handle method missing to return appropriate lists
@@ -432,7 +456,7 @@ def _persist_key_values(pattern, values, token_type, match_type, priority, accep
   _context.tokens[token_type] = [] if _context.tokens[token_type].nil?
   vtoken = VarnamToken.new(token_type, pattern, value1, value2, value3, tag, match_type, priority, accept_condition)
   _context.tokens[token_type].push(vtoken)
-  $current_custom_list.push(vtoken) if not $current_custom_list.nil?
+  push_to_current_custom_list vtoken
 
   inform "Persisting #{match} - #{pattern} => #{value1},#{value2},#{value3}"
 end
