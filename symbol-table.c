@@ -653,6 +653,11 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
         strbuf_clear (lookup);
         strbuf_add_bytes (lookup, input, bytes_read);
 
+
+#ifdef _VARNAM_VERBOSE
+    printf("Finding token for %s\n", strbuf_to_s (lookup));
+#endif
+
         if (tokens == NULL)
             tokens = get_pooled_array (handle);
 
@@ -664,8 +669,17 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
                                                &tokens_available);
         if (rc) return rc;
 
-        if (tokens_available)
+        if (tokens_available) {
             matchpos = bytes_read;
+#ifdef _VARNAM_VERBOSE
+            printf("Found token for %s\n", strbuf_to_s (lookup));
+#endif
+        }
+#ifdef _VARNAM_VERBOSE
+        else {
+            printf("No token found for %s\n", strbuf_to_s (lookup));
+        }
+#endif
 
         if (varray_is_empty (tokens))
         {
