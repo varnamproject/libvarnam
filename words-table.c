@@ -423,9 +423,9 @@ print_tokens_array(varray *tokens)
             token = varray_get (tmp, j);
             assert (token);
             if (j + 1 == varray_length(tmp))
-                printf("'%s'", token->pattern);
+                printf("%d - '%s'", token->type, token->pattern);
             else
-                printf("'%s', ", token->pattern);
+                printf("%d - '%s', ", token->type, token->pattern);
         }
         printf("]\n");
     }

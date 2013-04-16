@@ -198,14 +198,22 @@ apply_acceptance_condition(varray *tokens)
             state = VARNAM_TOKEN_ACCEPT_IF_IN_BETWEEN;
 
         item = varray_get (tokens, i);
-        if (varray_length (item) == 1)
-            continue;
-
         for (j = 0; j < varray_length (item); j++)
         {
             t = varray_get (item, j);
-            if (t->accept_condition != VARNAM_TOKEN_ACCEPT_ALL && t->accept_condition != state) {
-                to_remove[total_to_remove++] = j;
+            switch (t->type)
+            {
+                case VARNAM_TOKEN_VIRAMA:
+                case VARNAM_TOKEN_ANUSVARA:
+                case VARNAM_TOKEN_SYMBOL:
+                case VARNAM_TOKEN_NON_JOINER:
+                    to_remove[total_to_remove++] = j;
+                    break;
+                default:
+                    if (varray_length (item) != 1 && t->accept_condition != VARNAM_TOKEN_ACCEPT_ALL && t->accept_condition != state) {
+                        to_remove[total_to_remove++] = j;
+                    }
+                    break;
             }
         }
 
