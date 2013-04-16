@@ -563,13 +563,25 @@ def generate_cv
     end
 end
 
-def combine_array(array, replacement)
+def combine_array(array, is_pattern, replacements)
+    if replacements.empty?
+        error 'Replacements should be present when combining an array. This could be a bug within varnamc'
+        exit (1)
+    end
+
     result = []
     array.each do |a|
         if a.is_a?(Array)
-            result.push(combine_array(a, replacement))
+            result.push(combine_array(a, is_pattern, replacements))
         else
-            result.push(a.to_s.gsub("*", replacement))
+            if is_pattern
+                result.push(a.to_s.gsub("*", replacements[0]))
+            else
+                new_key = a.to_s.gsub("*1", replacements[0])
+                new_key = new_key.gsub("*2", replacements[1]) if replacements.length >= 2
+                new_key = new_key.gsub("*3", replacements[2]) if replacements.length >= 3
+                result.push (new_key)
+            end
         end
     end
 
@@ -590,16 +602,16 @@ def combine(array, hash)
         hash.each_pair do |key, value|
             new_key = nil
             if key.is_a?(Array)
-                new_key = combine_array(key, item.pattern)
+                new_key = combine_array(key, true, [item.pattern])
             else
                 new_key = key.to_s.gsub("*", item.pattern)
             end
 
             new_value = nil
             if value.is_a?(Array)
-                new_value = combine_array(value, item.value1)
+                new_value = combine_array(value, true, [item.value1, item.value2, item.value3])
             else
-                new_value = value.to_s.gsub("*", item.value1)
+                new_value = value.to_s.gsub("*1", item.value1).gsub("*2", item.value2).gsub("*3", item.value3)
             end
 
             if grouped[new_value].nil?

@@ -175,7 +175,7 @@ tag "chill" do
 end
 
 # * is the place holder which will be replaced by the actual value
-consonants({:accept_if => :ends_with}, combine(get_dead_consonants, [["*u"]] => "*"))
+consonants({:accept_if => :ends_with}, combine(get_dead_consonants, [["*u"]] => "*1"))
 
 consonants ["rva", "rwa"] => "ര്വ",
            "rya" => "ര്യ",
