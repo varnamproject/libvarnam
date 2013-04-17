@@ -11,6 +11,7 @@
   - [Other functions](#adding_a_new_language_other_functions)
     - [infer_dead_consonants](#adding_a_new_language_other_functions_infer_dead_consonants)
     - [generate_cv](#adding_a_new_language_other_functions_generate_cv)
+    - [combine](#adding_a_new_language_other_functions_combine)
     - [list](#adding_a_new_language_other_functions_list)
     - [Setting priority for a token](#adding_a_new_language_other_functions_setting_priority_for_a_token)
     - [Setting accept condition for a token](#adding_a_new_language_other_functions_setting_accept_condition_for_a_token)
@@ -19,7 +20,7 @@
 <a name="introduction" />
 # Introduction
 
-`libvarnam` is a cross platform, self learning, open source library which support transliteration and reverse transliteration for Indian languages. `libvarnam` has a simple learning module built-in which can learn words to improve the transliteration experience. 
+`libvarnam` is a cross platform, self learning, open source library which support transliteration and reverse transliteration for Indian languages. At the core is a C shared library providing algorithms and patterns for transliteration. `libvarnam` has a simple learning module built-in which can learn words to improve the transliteration experience. 
 
 <a name="news" />
 # News
@@ -244,6 +245,23 @@ consonants_with_inherent_a_sound.each do |c|
   puts c
 end
 ```
+<a name="adding_a_new_language_other_functions_combine" />
+### combine
+
+`combine` function can be used to generate combination of tokens. Consider the following scheme file for *Hindi*.
+
+```ruby
+consonants "k" => "क",
+           ["kh", ["gh"]] => "ख",
+           ["gh", ["kh"]] => "घ",
+
+# Generating ka, kha etc
+consonants(combine get_consonants, ["*a"] => ["*1"])
+```
+
+It takes a list as the first argument and hash as the second argument. List could be any custom defined lists created using the `list` function or it could be any built-in list. In the above example, `combine` will iterate over the list `get_consonants` and replace the wildcard character `*` with current pattern and `*1` with value1. For values, you can use `*1`, `*2` and `*3` for getting `value1`, `value2` and `value3`.
+
+`combine` function returns a hash that can be passed to token creation functions like `consonants` or `vowels`.
 
 <a name="adding_a_new_language_other_functions_setting_priority_for_a_token" />
 ### Setting priority for a token
