@@ -175,7 +175,7 @@ optparse = OptionParser.new do |opts|
     set_action('compile')
   end
 
-  $options[:learnings_file] = "varnamc-learnings.varnam"
+  $options[:learnings_file] = nil
   opts.on('--learnings-file FILE', 'Specify the file to store all learnings') do |file|
     $options[:learnings_file] = file
   end
@@ -256,6 +256,9 @@ def initialize_varnam_handle
   end
 
   # Configuring suggestions
+  if $options[:learnings_file].nil?
+      $options[:learnings_file] = "#{File.basename($vst_file_name, ".")}.learnings"
+  end
   configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
     Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
   if configured != 0

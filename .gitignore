@@ -28,3 +28,4 @@ examples/learning-example-suggestions.varnam*
 tests/td-00.vst
 *.vst
 tools/print-tokens
+*.learnings*

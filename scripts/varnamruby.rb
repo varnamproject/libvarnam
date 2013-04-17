@@ -40,7 +40,6 @@ module VarnamLibrary
   attach_function :varnam_flush_buffer, [:pointer], :int
   attach_function :varnam_config, [:pointer, :int, :varargs], :int
   attach_function :varnam_get_all_tokens, [:pointer, :int, :pointer], :int
-  attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
   attach_function :varray_get, [:pointer, :int], :pointer
   attach_function :varray_length, [:pointer], :int
   attach_function :varnam_export_words, [:pointer, :int, :string, :pointer], :int
