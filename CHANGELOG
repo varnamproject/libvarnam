@@ -1,5 +1,11 @@
+2.1.0 / Jun 02, 2013
+=======================
+* Support for Hindi.
+* Support for custom lists in the scheme file.
+* Improvements to learning algorithm.
+
 2.0.0 / Mar 30, 2013
-=================================
+=======================
 * Several improvements to tokenization algorithm which improves quality of learning.
 * Noice reduction while tokenization.
 * Improved symbols file for Malayalam.
@@ -7,5 +13,5 @@
 * Accept condition for tokens which specifies rules for token acceptance based on the token position.
 
 1.0.1 / Nov 1, 2012
-================================
+=======================
 * Initial release

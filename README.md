@@ -25,8 +25,9 @@
 <a name="news" />
 # News
 
+* Sunday   Jun 02, 2013 - v2.1.0 released
 * Saturday Mar 30, 2013 - v2.0.0 released
-* Thursday, Nov 1, 2012 - v1.0.1 released
+* Thursday Nov 01, 2012 - v1.0.1 released
 
 <a name="installing" />
 # Installing libvarnam
@@ -134,6 +135,7 @@ int main(int args, char **argv)
 <a name="supported_languages" />
 # Supported languages
 
+* Hindi
 * Malayalam
 * Gujarati (Experimental)
 
