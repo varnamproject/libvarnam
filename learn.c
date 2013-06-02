@@ -205,7 +205,6 @@ apply_acceptance_condition(varray *tokens)
             {
                 case VARNAM_TOKEN_VIRAMA:
                 case VARNAM_TOKEN_ANUSVARA:
-                case VARNAM_TOKEN_SYMBOL:
                 case VARNAM_TOKEN_NON_JOINER:
                     to_remove[total_to_remove++] = j;
                     break;

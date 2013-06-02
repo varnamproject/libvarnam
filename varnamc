@@ -566,7 +566,7 @@ def generate_cv
     end
 end
 
-def combine_array(array, is_pattern, replacements)
+def combine_array(array, is_pattern, replacements, current_item)
     if replacements.empty?
         error 'Replacements should be present when combining an array. This could be a bug within varnamc'
         exit (1)
@@ -575,14 +575,22 @@ def combine_array(array, is_pattern, replacements)
     result = []
     array.each do |a|
         if a.is_a?(Array)
-            result.push(combine_array(a, is_pattern, replacements))
+            result.push(combine_array(a, is_pattern, replacements, current_item))
         else
             if is_pattern
-                result.push(a.to_s.gsub("*", replacements[0]))
+                if current_item.match_type == Varnam::VARNAM_MATCH_POSSIBILITY
+                    result.push([a.to_s.gsub("*", replacements[0])])
+                else
+                    result.push(a.to_s.gsub("*", replacements[0]))
+                end
             else
-                new_key = a.to_s.gsub("*1", replacements[0])
-                new_key = new_key.gsub("*2", replacements[1]) if replacements.length >= 2
-                new_key = new_key.gsub("*3", replacements[2]) if replacements.length >= 3
+                new_key = a.to_s.gsub("\*1", replacements[0])
+                if replacements.length > 1 and not replacements[1].to_s.empty?
+                    new_key = new_key.gsub("\*2", replacements[1])
+                end
+                if replacements.length > 2 and not replacements[2].to_s.empty?
+                    new_key = new_key.gsub("\*3", replacements[2])
+                end
                 result.push (new_key)
             end
         end
@@ -605,16 +613,26 @@ def combine(array, hash)
         hash.each_pair do |key, value|
             new_key = nil
             if key.is_a?(Array)
-                new_key = combine_array(key, true, [item.pattern])
+                new_key = combine_array(key, true, [item.pattern], item)
             else
-                new_key = key.to_s.gsub("*", item.pattern)
+                if item.match_type == Varnam::VARNAM_MATCH_POSSIBILITY
+                    new_key = [[key.to_s.gsub("*", item.pattern)]]
+                else
+                    new_key = key.to_s.gsub("*", item.pattern)
+                end
             end
 
             new_value = nil
             if value.is_a?(Array)
-                new_value = combine_array(value, true, [item.value1, item.value2, item.value3])
+                new_value = combine_array(value, false, [item.value1, item.value2, item.value3], item)
             else
-                new_value = value.to_s.gsub("*1", item.value1).gsub("*2", item.value2).gsub("*3", item.value3)
+                new_value = value.to_s.gsub("\*1", item.value1)
+                if not item.value2.nil? and not item.value2.to_s.empty?
+                    new_value = new_value.gsub("\*2", item.value2)
+                end
+                if not item.value3.nil? and not item.value3.to_s.empty?
+                    new_value = new_value.gsub("\*3", item.value3)
+                end
             end
 
             if grouped[new_value].nil?
@@ -996,7 +1014,7 @@ def learn_from_directory
 end
 
 def train_words_in_the_file(fname)
-    text = File.open(fname).read
+    text = File.open(fname).read.force_encoding('UTF-8').encode('UTF-8')
     text.gsub!(/\r\n?/, "\n")
     text.each_line do |line|
         parts = line.split(' ')
@@ -1007,7 +1025,7 @@ def train_words_in_the_file(fname)
             value = parts[1]
             error = perform_training(pattern, value)
             if not error.nil?
-                message = "Failed to train #{pattern} => #{value}. #{error}"
+                message = "Failed to train #{pattern} => #{value}. #{error.force_encoding('UTF-8')}"
                 puts message
                 $train_failure_log.puts message
                 $train_failed_counter += 1

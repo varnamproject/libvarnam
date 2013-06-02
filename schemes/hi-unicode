@@ -20,122 +20,90 @@ vowels "a" => "अ",
        ["ee", "I", "ii", ["i"]]   => ["ई", "ी"],
        "u" => ["उ", "ु"],
        ["uu", "oo", "U", ["u"]]   => ["ऊ", "ू"],
+       [["ri", "ru", "r"], "R"] => ["ऋ", "\u{0943}"],
        "e" => ["ए", "े"],
        ["ai", "ei"] => ["ऐ", "ै"],
        "o" => ["ओ", "ो"],
        ["ou", "au", "ow"]  => ["औ", "ौ"]
 
+list :can_make_cluster do
 consonants "k" => "क",
+           [["k"], "q"] => ["क़", "क#{$nukta}"],
            ["kh", ["gh"]] => "ख",
-           "g"  => "ग",
+           [["kh"], "KH"] => ["ख़", "ख#{$nukta}"],
            ["gh", ["kh"]] => "घ",
-           "ng" =>  "ङ",
-           "ch" => "च",
-           ["CH", ["ch"]] => "छ",
-           ["j"]  => "ज",
-           ["jh"] => "झ",
-           ["nj"] => "ञ",
            ["T", ["t"]] => "ट",
-           ["TT"] => "ठ",
+           ["Th"] => "ठ",
            ["D", ["d"]] => "ड",
-           ["Dh"] => "ढ",
-           ["N"] => "ण",
-           ["t", ["th"]] => "त",
-           ["th", ["dh"]] => "थ",
            "d" => "द",
-           ["dh"] => "ध",
-           ["n"] => "न",
+           ["Dh"] => ["ढ"],
+           "DH" => ["ढ़", "ढ#{$nukta}"],
            "p" => "प",
            "ph" => "फ",
            "b" => "ब",
            "bh" => "भ",
+           ["t", ["th"]] => "त",
+           ["th", ["dh"]] => "थ",
+	   "g"  => "ग",
+           ["G"] => ["ग़", "ग#{$nukta}"],
+           ["j"]  => "ज",
+           "ng" =>  "ङ",
+           "ch" => "च",
+           ["CH", ["ch"]] => "छ",
+           ["jh"] => "झ",
+           ["nj"] => "ञ",
+           ["N"] => "ण",
+           ["dh"] => "ध",
+           ["n"] => "न",
            "y" => "य",
            "r" => ["र", "र#{$virama}"],
            "l" => ["ल", "ल#{$virama}"],
-           "v" => "व",
+           ["v", "w"] => "व",
            ["S", ["sh"]] => "श",
            ["sh", ["s"]] => "ष",
-           ["s"] => "स",
            ["h"] => "ह",
-           ["z"] => "ज#{$nukta}"
+           ["z"] => "ज#{$nukta}",
+           ["s"] => "स",
+           "f" => ["फ़", "फ#{$nukta}"],
+           "y" => "य",
+           [["y"], "YY"] => ["य़", "य#{$nukta}"]
+end
 
-consonants ["kb"] => ["क#{$virama}ब"],
-           ["khb", ["ghb"]] => ["ख#{$virama}ब"],
-           "gb"  => "ग#{$virama}ब",
-           "chb" => "च#{$virama}ब",
-           ["jb"]  => "ज#{$virama}ब",
-           ["Sb", ["shb"]] => "श#{$virama}ब",
-           ["shb", ["sb"]] => "ष#{$virama}ब",
-           ["sb"] => "स#{$virama}ब"
+ignore_duplicates true
+can_make_cluster.each do |c1|
+   can_make_cluster.each do |c2|
+     if c1.match_type == 1
+        consonants ["#{c1.pattern}#{c2.pattern}"] => ["#{c1.value1}#{$virama}#{c2.value1}"]
+     else
+        consonants [["#{c1.pattern}#{c2.pattern}"]] => ["#{c1.value1}#{$virama}#{c2.value1}"]
+     end 
+   end
+end
 
-consonants "ks" => "क#{$virama}स", 
-           ["khs", ["ghs"]] => "ख#{$virama}स", 
-           "gs"  => "ग#{$virama}स", 
-           ["ghs", ["khs"]] => "घ#{$virama}स", 
-           ["Ts", ["ts"]] => "ट#{$virama}स", 
-           ["TTs"] => "ठ#{$virama}स", 
-           ["ts", ["ths"]] => "त#{$virama}स", 
-           ["ths", ["dhs"]] => "थ#{$virama}स", 
-           "ds" => "द#{$virama}स", 
-           ["dhs"] => "ध#{$virama}स", 
-           "ps" => "प#{$virama}स", 
-           "bs" => "ब#{$virama}स"
-
-consonants "kr" => "क#{$virama}र",
-           ["khr", ["ghr"]] => "ख#{$virama}र",
-           "gr"  => "ग#{$virama}र",
-           ["ghr", ["khr"]] => "घ#{$virama}र",
-           ["jr"]  => "ज#{$virama}र",
-           ["Tr", ["tr"]] => "ट#{$virama}र",
-           ["Dr", ["dr"]] => "ड#{$virama}र",
-           ["Dhr"] => "ढ#{$virama}र",
-           ["tr", ["thr"]] => "त#{$virama}र",
-           ["thr", ["dhr"]] => "थ#{$virama}र",
-           "dr" => "द#{$virama}र",
-           ["dhr"] => "ध#{$virama}र",
-           "pr" => "प#{$virama}र",
-           "phr" => "फ#{$virama}र",
-           "br" => "ब#{$virama}र",
-           "bhr" => "भ#{$virama}र",
-           "vr" => "व#{$virama}र",
-           ["Sr", ["shr"]] => "श#{$virama}र",
-           ["shr", ["sr"]] => "ष#{$virama}र",
-           ["sr"] => "स#{$virama}र",
-           ["hr"] => "ह#{$virama}र"
-
-consonants "kt" => ["क#{$virama}ट", "क#{$virama}त"],
-           ["kht", ["ght"]] => ["ख#{$virama}ट", "ख#{$virama}त"],
-           "gt"  => ["ग#{$virama}ट", "ग#{$virama}त"],
-           ["Nt"] => ["ण#{$virama}ट", "ण#{$virama}त"],
-           ["nt"] => ["न#{$virama}ट", "न#{$virama}त"],
-           "pt" => ["प#{$virama}ट", "प#{$virama}त"],
-           "bt" => ["ब#{$virama}ट", "ब#{$virama}त"],
-           "bht" => ["भ#{$virama}ट", "भ#{$virama}त"],
-           ["St", ["sht"]] => ["श#{$virama}ट", "श#{$virama}त"],
-           ["sht", ["st"]] => ["ष#{$virama}ट", "ष#{$virama}त"],
-           ["st"] => ["स#{$virama}ट", "स#{$virama}त"]
-
-consonants "kk" => "क#{$virama}क",
-           "jj" => "ज#{$virama}ज",
-           "nn" => "न#{$virama}न"
-
-consonants(combine get_consonants, ["*w", "*v"] => ["*#{$virama}व"])
+# Half forms for म
+consonants(combine can_make_cluster, ["m*"] => ["म#{$virama}*1"])
 
 generate_cv
 
-consonants(combine get_consonants, ["*a"] => ["*"])
+consonants(combine get_consonants, ["*a"] => ["*1"])
 
+ignore_duplicates false
+
+consonants [["m"]] => "म"
+
+# Need to replace this when we have a way to pass value2 and value3 in combine
 get_vowels.each do |vowel|
   if vowel.match_type == 1
-     consonants ["m#{vowel.pattern}"] => ["म#{vowel.value2}"]
+     consonant_vowel_combinations ["m#{vowel.pattern}"] => ["म#{vowel.value2}"]
   else
-     consonants [["m#{vowel.pattern}"]] => ["म#{vowel.value2}"]
+     consonant_vowel_combinations [["m#{vowel.pattern}"]] => ["म#{vowel.value2}"]
   end
 end
 symbols ["m", ["n"]] => $am,
         [["n", "m"]] => $an
 
 symbols({:priority => :low}, ["aan", "aam"] => $an)
+
 
 
 
