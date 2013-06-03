@@ -257,7 +257,7 @@ def initialize_varnam_handle
 
   # Configuring suggestions
   if $options[:learnings_file].nil?
-      $options[:learnings_file] = "#{File.basename($vst_file_name, ".")}.learnings"
+      $options[:learnings_file] = get_file_path "#{File.basename($vst_file_name, ".")}.learnings"
   end
   configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
     Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
