@@ -181,10 +181,10 @@ get_largest_array(varray *tokens)
     return largest;
 }
 
-static bool
+static void
 apply_acceptance_condition(varray *tokens)
 {
-    int i, j, to_remove[100], total_to_remove = 0, state;
+    int i, j, to_remove[100], total_to_remove = 0, state, empty_arrays[100], empty_arrays_index = 0;
     varray *item;
     vtoken *t;
 
@@ -204,6 +204,7 @@ apply_acceptance_condition(varray *tokens)
             switch (t->type)
             {
                 case VARNAM_TOKEN_VIRAMA:
+                case VARNAM_TOKEN_VISARGA:
                 case VARNAM_TOKEN_ANUSVARA:
                 case VARNAM_TOKEN_NON_JOINER:
                     to_remove[total_to_remove++] = j;
@@ -221,10 +222,19 @@ apply_acceptance_condition(varray *tokens)
             /* to_remove[j] - j is required to calculate the new index as deleting each item changes index */
             varray_remove_at (item, to_remove[j] - j);
         }
+
+        if (varray_length (item) == 0) {
+            /* This happens when all the items in this list is VIRAMA, VISARGA etc */
+            empty_arrays[empty_arrays_index++] = i;
+        }
+
         total_to_remove = 0;
     }
 
-    return false;
+    for (i = 0; i < empty_arrays_index; i++)
+    {
+        varray_remove_at (tokens, empty_arrays[i] - i);
+    }
 }
 
 static bool
