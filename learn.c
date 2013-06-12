@@ -48,6 +48,9 @@ language_specific_sanitization(strbuf *string)
     strbuf_replace (string, "ല്‍","ൽ");
     strbuf_replace (string, "ള്‍", "ൾ");
     strbuf_replace (string, "ര്‍", "ർ");
+
+    /* Hindi's DANDA (Purna viram) */
+    strbuf_replace (string, "।", "");
 }
 
 static strbuf*
