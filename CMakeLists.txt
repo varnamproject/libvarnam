@@ -4,6 +4,8 @@ cmake_minimum_required (VERSION 2.6)
 project(varnam)
 message ("Generating project ${PROJECT_NAME}")
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cmake_modules/")
+
 set(VARNAM_LIBRARY_NAME "varnam")
 set(DEPS_LIBRARY_NAME "deps")
 

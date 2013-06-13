@@ -4,13 +4,18 @@ cmake_minimum_required (VERSION 2.6)
 project (tests)
 message ("Generating project ${PROJECT_NAME}")
 
+find_package (Check)
+
+include_directories(${CHECK_INCLUDE_DIRS})
+
 file(REMOVE_RECURSE test_output)
 file(MAKE_DIRECTORY test_output)
 
 # Append the files that has tests here
 list (APPEND TEST_FILES
+  transliteration.c  
+  testcases.c
   00-init.c
-  01-transliteration.c  
   02-ml-unicode.c
   03-vst-compilation.c
   04-learning.c
@@ -22,7 +27,7 @@ set(test_executable_name runner)
 
 add_executable(runner test-runner.c ${TEST_FILES})
 
-target_link_libraries(runner ${VARNAM_LIBRARY_NAME})
+target_link_libraries(runner ${VARNAM_LIBRARY_NAME} ${CHECK_LIBRARIES})
 
 # This is not a test, but does the cleanup job. I haven't found a way to add pre/post hooks to tests.
 # this should be replaced when there is a cleaner way to do it

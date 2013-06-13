@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "tests.h"
+#include <check.h>
+#include "testcases.h"
 
 struct tests_t {
     const char *name;
@@ -28,7 +30,6 @@ struct tests_t {
 static struct tests_t tests[] = {
     { "strbuf-test", strbuf_test },
     { "test-varnam-initialization", test_varnam_init },
-    { "basic-transliteration", basic_transliteration },
     { "ml-unicode", ml_unicode_transliteration },
     { "ml-unicode-reverse", ml_unicode_reverse_transliteration },
     { "test-vst-file-creation", test_vst_file_creation },
@@ -73,12 +74,19 @@ static void print_all_test_names()
 
 int main(int argc, char **argv)
 {
-    if(argc == 1) {
-        printf("no tests specified\n");
-        print_all_test_names();
-        return 1;
-    }
-    argc--;
-    argv++;
-    return execute_test(argc, argv);
+    Suite *suite;
+    SRunner *runner;
+    int failed; 
+        
+    srand(time(NULL));
+
+    suite = suite_create("varnam");
+    suite_add_tcase (suite, get_transliteration_tests());
+
+    runner = srunner_create (suite);
+    srunner_run_all (runner, CK_NORMAL);
+    failed = srunner_ntests_failed (runner);
+    srunner_free (runner);
+
+    return failed;
 }
