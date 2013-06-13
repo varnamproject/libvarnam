@@ -13,6 +13,7 @@ file(MAKE_DIRECTORY test_output)
 
 # Append the files that has tests here
 list (APPEND TEST_FILES
+  initialization.c  
   transliteration.c  
   testcases.c
   00-init.c

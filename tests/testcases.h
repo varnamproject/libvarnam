@@ -24,6 +24,9 @@
 
 extern varnam *varnam_instance;
 
+strbuf*
+get_unique_filename();
+
 void 
 assert_success (int value);
 
@@ -34,6 +37,7 @@ void
 teardown();
 
 /* All the test cases */
+TCase* get_initialization_tests();
 TCase* get_transliteration_tests();
 
 #endif

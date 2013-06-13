@@ -37,7 +37,13 @@ get_unique_filename()
 void
 assert_success (int value)
 {
-    ck_assert_msg (value == VARNAM_SUCCESS, "Expected VARNAM_SUCCESS");
+    strbuf *string = NULL;
+    if (value != VARNAM_SUCCESS) {
+        string = strbuf_init (50);
+        strbuf_addf (string, "Expected VARNAM_SUCCESS, but got %d. %s", value, 
+                varnam_get_last_error (varnam_instance));
+        ck_abort_msg (strbuf_to_s (string));
+    }
 }
 
 void

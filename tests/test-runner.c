@@ -81,6 +81,7 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     suite = suite_create("varnam");
+    suite_add_tcase (suite, get_initialization_tests());
     suite_add_tcase (suite, get_transliteration_tests());
 
     runner = srunner_create (suite);

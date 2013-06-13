@@ -2,7 +2,6 @@
 #include <check.h>
 #include "testcases.h"
 
-
 static void 
 setup_data()
 {
