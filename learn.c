@@ -406,6 +406,10 @@ varnam_learn(varnam *handle, const char *word)
 
     reset_pool (handle);
 
+    if (!is_words_store_available (handle)) {
+        return VARNAM_ERROR;
+    }
+
     rc = vwt_start_changes (handle);
     if (rc != VARNAM_SUCCESS) return rc;
 

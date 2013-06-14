@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include "../varnam.h"
+#include <string.h>
 
 varnam *varnam_instance = NULL;
 
@@ -46,6 +47,40 @@ assert_success (int value)
     }
 }
 
+void 
+assert_error (int value)
+{
+    strbuf *string = NULL;
+    if (value != VARNAM_ERROR) {
+        string = strbuf_init (50);
+        strbuf_addf (string, "Expected VARNAM_ERROR, but got %d. %s", value, 
+                varnam_get_last_error (varnam_instance));
+        ck_abort_msg (strbuf_to_s (string));
+    }
+}
+
+void
+ensure_word_list_contains(varray *words, const char *word)
+{
+    int i = 0, found = 0;
+    vword *w;
+    strbuf *error;
+
+    for (i = 0; i < varray_length (words); i++) {
+        w = varray_get (words, i);
+        if (strcmp (w->text, word) == 0) {
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found) {
+        error = strbuf_init (50);
+        strbuf_addf (error, "Expected word list to contain '%s'", word);
+        ck_abort_msg (strbuf_to_s (error));
+    }
+}
+
 void
 setup()
 {
@@ -71,6 +106,5 @@ setup()
 void
 teardown()
 {
-    varnam_destroy (varnam_instance);
     varnam_instance = NULL;
 }

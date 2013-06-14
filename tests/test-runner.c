@@ -21,6 +21,7 @@
 #include "tests.h"
 #include <check.h>
 #include "testcases.h"
+#include <time.h>
 
 struct tests_t {
     const char *name;
@@ -29,12 +30,9 @@ struct tests_t {
 
 static struct tests_t tests[] = {
     { "strbuf-test", strbuf_test },
-    { "test-varnam-initialization", test_varnam_init },
     { "ml-unicode", ml_unicode_transliteration },
     { "ml-unicode-reverse", ml_unicode_reverse_transliteration },
     { "test-vst-file-creation", test_vst_file_creation },
-    { "test-learning", test_varnam_learn },
-    { "test-learning-from-file", test_varnam_learn_from_file },
     { "test-export", test_varnam_export}
 };
 
@@ -83,6 +81,7 @@ int main(int argc, char **argv)
     suite = suite_create("varnam");
     suite_add_tcase (suite, get_initialization_tests());
     suite_add_tcase (suite, get_transliteration_tests());
+    suite_add_tcase (suite, get_learning_tests());
 
     runner = srunner_create (suite);
     srunner_run_all (runner, CK_NORMAL);

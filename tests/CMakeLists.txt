@@ -15,11 +15,10 @@ file(MAKE_DIRECTORY test_output)
 list (APPEND TEST_FILES
   initialization.c  
   transliteration.c  
+  learning.c
   testcases.c
-  00-init.c
   02-ml-unicode.c
   03-vst-compilation.c
-  04-learning.c
   05-export-words.c
   strbuftest.c
   )

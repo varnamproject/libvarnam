@@ -66,7 +66,7 @@ START_TEST (cancellation_character_should_force_independent_vowel_form)
 {
     int rc;
     vword* word;
-    varray *words = varray_init();
+    varray *words;
 
     rc = varnam_transliterate(varnam_instance, "aa_a", &words);
     assert_success (rc);

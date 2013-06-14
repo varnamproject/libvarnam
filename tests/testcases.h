@@ -30,6 +30,12 @@ get_unique_filename();
 void 
 assert_success (int value);
 
+void 
+assert_error (int value);
+
+void
+ensure_word_list_contains(varray *words, const char *word);
+
 void
 setup();
 
@@ -39,5 +45,6 @@ teardown();
 /* All the test cases */
 TCase* get_initialization_tests();
 TCase* get_transliteration_tests();
+TCase* get_learning_tests();
 
 #endif
