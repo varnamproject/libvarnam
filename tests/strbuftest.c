@@ -19,67 +19,49 @@
 #include "../varnam.h"
 #include <stdio.h>
 #include <string.h>
+#include <check.h>
+#include "testcases.h"
 
-static varnam *handle;
-
-int strbuf_formatted_strings()
+START_TEST (formatted_strings)
 {
     const char *expected = "Character a, Integer 10, String Navaneeth\n";
     struct strbuf *buffer = strbuf_init(100);
     strbuf_addf(buffer, "Character %c, Integer %d, String %s", 'a', 10, "Navaneeth");
-
-    if (strcmp(expected, strbuf_to_s (buffer)) != 0)
-    {
-        printf ("Incorrect formatting. Expected '%s', but was '%s'\n", expected, strbuf_to_s(buffer));
-        return 1;
-    }
-
-    return VARNAM_SUCCESS;
+    ck_assert_str_eq (expected, strbuf_to_s (buffer));
 }
+END_TEST
 
-static int replace_string()
+START_TEST (replace_string)
 {
     strbuf *string = strbuf_init (10);
     strbuf_add (string, "Varnam program");
     strbuf_replace(string, "program", "software");
-    if (strcmp(strbuf_to_s(string), "Varnam software") != 0) {
-        printf ("Replace failed\n");
-        return VARNAM_ERROR;
-    }
-
+    ck_assert_str_eq ("Varnam software", strbuf_to_s (string));
     strbuf_destroy (string);
-    return VARNAM_SUCCESS;
 }
+END_TEST
 
-static int replace_string_should_be_case_sensitive()
+START_TEST (replace_string_should_be_case_sensitive)
 {
     strbuf *string = strbuf_init (10);
     strbuf_add (string, "Varnam program");
     strbuf_replace(string, "varnam", "libvarnam");
-    if (strcmp(strbuf_to_s(string), "libvarnam program") == 0) {
-        printf ("Replace is not case sensitive\n");
-        return VARNAM_ERROR;
-    }
-
+    ck_assert_str_eq ("Varnam program", strbuf_to_s (string));
     strbuf_destroy (string);
-    return VARNAM_SUCCESS;
 }
+END_TEST
 
-static int replace_should_word_for_utf8_strings()
+START_TEST (replace_should_work_for_utf8_strings)
 {
     strbuf *string = strbuf_init (10);
     strbuf_add (string, "അവന്‍");
     strbuf_replace(string, "ന്‍", "ൻ");
-    if (strcmp(strbuf_to_s(string), "അവൻ") != 0) {
-        printf ("Replace failed for utf8\n");
-        return VARNAM_ERROR;
-    }
-
+    ck_assert_str_eq (strbuf_to_s(string), "അവൻ");
     strbuf_destroy (string);
-    return VARNAM_SUCCESS;
 }
+END_TEST
 
-static int split_string()
+START_TEST (split_string)
 {
     int i = 0;
     varray *tokens;
@@ -87,84 +69,46 @@ static int split_string()
 
     strbuf *string = strbuf_init (10);
     strbuf_add (string, "test\ttest\ttest\t\t\t\t\ttest");
-    tokens = strbuf_split(string, handle, '\t');
-
-    if (tokens == NULL || varray_length(tokens) != 4) {
-        printf("4 elements expected.\n");
-        return VARNAM_ERROR;
-    }
+    tokens = strbuf_split(string, varnam_instance, '\t');
+    ck_assert_int_eq (varray_length (tokens), 4);
 
     for(i = 0; i < varray_length(tokens); i++) {
         token = varray_get(tokens, i);
-        if (strcmp("test", strbuf_to_s(token)) != 0) {
-            printf("Expected test. but was %s\n", strbuf_to_s(token));
-            return VARNAM_ERROR;
-        }
+        ck_assert_str_eq ("test", strbuf_to_s(token));
     }
 
     strbuf_clear (string);
     strbuf_add (string, "test test test    ");
-    tokens = strbuf_split(string, handle, ' ');
-
-    if (tokens == NULL || varray_length(tokens) != 3) {
-        printf("3 elements expected.\n");
-        return VARNAM_ERROR;
-    }
+    tokens = strbuf_split(string, varnam_instance, ' ');
+    ck_assert_int_eq (varray_length (tokens), 3);
 
     for(i = 0; i < varray_length(tokens); i++) {
         token = varray_get(tokens, i);
-        if (strcmp("test", strbuf_to_s(token)) != 0) {
-            printf("Expected test. but was %s\n", strbuf_to_s(token));
-            return VARNAM_ERROR;
-        }
+        ck_assert_str_eq ("test", strbuf_to_s(token));
     }
 
     strbuf_clear (string);
     strbuf_add (string, "testtesttest");
-    tokens = strbuf_split(string, handle, 't');
-
-    if (tokens == NULL || varray_length(tokens) != 3) {
-        printf("3 elements expected.\n");
-        return VARNAM_ERROR;
-    }
+    tokens = strbuf_split(string, varnam_instance, 't');
+    ck_assert_int_eq (varray_length (tokens), 3);
 
     for(i = 0; i < varray_length(tokens); i++) {
         token = varray_get(tokens, i);
-        if (strcmp("es", strbuf_to_s(token)) != 0) {
-            printf("Expected es. but was %s\n", strbuf_to_s(token));
-            return VARNAM_ERROR;
-        }
+        ck_assert_str_eq ("es", strbuf_to_s(token));
     }
 
     strbuf_destroy (string);
-    return VARNAM_SUCCESS;
 }
+END_TEST
 
-int strbuf_test(int argc, char **argv)
+TCase* get_strbuf_tests()
 {
-    int rc;
-    char *msg;
-
-    const char *filename = "output/strbuftest.vst";
-    rc = varnam_init(filename, &handle, &msg);
-
-    if (rc != VARNAM_SUCCESS)
-    {
-        printf("VARNAM_SUCCESS expected. Never got. %s", msg);
-        return 1;
-    }
-
-    rc = split_string();
-    if(rc) return rc;
-
-    rc = replace_string ();
-    if (rc) return rc;
-
-    rc = replace_string_should_be_case_sensitive ();
-    if (rc) return rc;
-
-    rc = replace_should_word_for_utf8_strings ();
-    if (rc) return rc;
-
-    return VARNAM_SUCCESS;
+    TCase* tcase = tcase_create("strbuf");
+    tcase_add_checked_fixture (tcase, setup, teardown);
+    tcase_add_test (tcase, formatted_strings);
+    tcase_add_test (tcase, replace_string);
+    tcase_add_test (tcase, replace_string_should_be_case_sensitive);
+    tcase_add_test (tcase, replace_should_work_for_utf8_strings);
+    tcase_add_test (tcase, split_string);
+    return tcase;
 }

@@ -46,5 +46,6 @@ teardown();
 TCase* get_initialization_tests();
 TCase* get_transliteration_tests();
 TCase* get_learning_tests();
+TCase* get_strbuf_tests();
 
 #endif

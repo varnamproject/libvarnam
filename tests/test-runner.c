@@ -29,7 +29,6 @@ struct tests_t {
 };
 
 static struct tests_t tests[] = {
-    { "strbuf-test", strbuf_test },
     { "test-vst-file-creation", test_vst_file_creation },
     { "test-export", test_varnam_export}
 };
@@ -70,18 +69,22 @@ static void print_all_test_names()
 
 int main(int argc, char **argv)
 {
-    Suite *suite;
+    Suite *suite, *util;
     SRunner *runner;
     int failed; 
         
     srand(time(NULL));
 
-    suite = suite_create("varnam");
+    suite = suite_create ("core");
     suite_add_tcase (suite, get_initialization_tests());
     suite_add_tcase (suite, get_transliteration_tests());
     suite_add_tcase (suite, get_learning_tests());
 
+    util = suite_create ("util");
+    suite_add_tcase (util, get_strbuf_tests());
+
     runner = srunner_create (suite);
+    srunner_add_suite (runner, util);
     srunner_run_all (runner, CK_NORMAL);
     failed = srunner_ntests_failed (runner);
     srunner_free (runner);
