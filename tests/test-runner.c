@@ -30,8 +30,6 @@ struct tests_t {
 
 static struct tests_t tests[] = {
     { "strbuf-test", strbuf_test },
-    { "ml-unicode", ml_unicode_transliteration },
-    { "ml-unicode-reverse", ml_unicode_reverse_transliteration },
     { "test-vst-file-creation", test_vst_file_creation },
     { "test-export", test_varnam_export}
 };

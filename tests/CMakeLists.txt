@@ -17,7 +17,6 @@ list (APPEND TEST_FILES
   transliteration.c  
   learning.c
   testcases.c
-  02-ml-unicode.c
   03-vst-compilation.c
   05-export-words.c
   strbuftest.c
