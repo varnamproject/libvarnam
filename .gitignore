@@ -2,7 +2,6 @@
 CMakeCache.txt
 CMakeFiles/
 Makefile
-*.cmake
 src/varnam
 *.a
 tests/#CMakeLists.txt#
@@ -25,8 +24,9 @@ ml-unicode.vst-journal
 examples/learning
 examples/transliteration
 examples/learning-example-suggestions.varnam*
-tests/td-00.vst
 *.vst
 tools/print-tokens
 *.learnings*
 .DS_Store
+CTestTestfile.cmake
+cmake_install.cmake
