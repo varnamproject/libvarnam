@@ -27,8 +27,15 @@ int main(int argc, char **argv)
 {
     Suite *suite, *util;
     SRunner *runner;
-    int failed; 
-        
+    int failed, exit_code;
+
+    /* Cleaning the output directory */
+    exit_code = system ("ruby test_output_cleanup.rb");
+    if (exit_code != 0) {
+        fprintf (stderr, "Failed to cleanup test output directory. Process returned %d", exit_code);
+    }
+
+    /* A random seed value */
     srand(time(NULL));
 
     suite = suite_create ("core");

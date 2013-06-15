@@ -8,8 +8,8 @@ find_package (Check)
 
 include_directories(${CHECK_INCLUDE_DIRS})
 
-file(REMOVE_RECURSE test_output)
-file(MAKE_DIRECTORY test_output)
+file(REMOVE_RECURSE output)
+file(MAKE_DIRECTORY output)
 
 # Append the files that has tests here
 list (APPEND TEST_FILES
@@ -22,11 +22,11 @@ list (APPEND TEST_FILES
   strbuftest.c
   )
 
-set(test_executable_name runner)
+set(test_executable_name runtests)
 
-add_executable(runner test-runner.c ${TEST_FILES})
+add_executable(${test_executable_name} test-runner.c ${TEST_FILES})
 
-target_link_libraries(runner ${VARNAM_LIBRARY_NAME} ${CHECK_LIBRARIES})
+target_link_libraries(${test_executable_name} ${VARNAM_LIBRARY_NAME} ${CHECK_LIBRARIES})
 
 # This is not a test, but does the cleanup job. I haven't found a way to add pre/post hooks to tests.
 # this should be replaced when there is a cleaner way to do it

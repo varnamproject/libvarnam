@@ -30,3 +30,4 @@ tools/print-tokens
 .DS_Store
 CTestTestfile.cmake
 cmake_install.cmake
+tests/runtests
