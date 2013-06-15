@@ -13,8 +13,8 @@ file(MAKE_DIRECTORY output)
 
 # Append the files that has tests here
 list (APPEND TEST_FILES
-  initialization.c  
-  transliteration.c  
+  initialization.c
+  transliteration.c
   learning.c
   testcases.c
   vst-compilation.c
@@ -28,14 +28,3 @@ add_executable(${test_executable_name} test-runner.c ${TEST_FILES})
 
 target_link_libraries(${test_executable_name} ${VARNAM_LIBRARY_NAME} ${CHECK_LIBRARIES})
 
-# This is not a test, but does the cleanup job. I haven't found a way to add pre/post hooks to tests.
-# this should be replaced when there is a cleaner way to do it
-add_test(cleanup ruby test_output_cleanup.rb)
-
-add_test(initialization ${test_executable_name} test-varnam-initialization td-00.vst)
-add_test(transliteration ${test_executable_name} basic-transliteration td-01.vst)
-add_test(ml-unicode ${test_executable_name} ml-unicode ../schemes/ml-unicode.vst ml-unicode-input.txt)
-add_test(ml-unicode-reverse ${test_executable_name} ml-unicode-reverse ../schemes/ml-unicode.vst ml-unicode-reverse-input.txt)
-add_test(test-vst-file-creation ${test_executable_name} test-vst-file-creation)
-add_test(test-export ${test_executable_name} test-export)
-    

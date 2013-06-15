@@ -77,7 +77,6 @@ add_subdirectory(deps)
 
 if (BUILD_TESTS)
     # Build tests
-    enable_testing()
     add_subdirectory(tests)
 endif ()
 
