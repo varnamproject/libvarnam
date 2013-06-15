@@ -37,6 +37,12 @@ void
 ensure_word_list_contains(varray *words, const char *word);
 
 void
+reinitialize_varnam_instance(const char *filename);
+
+int
+file_exist (const char *filename);
+
+void
 setup();
 
 void 
@@ -47,5 +53,6 @@ TCase* get_initialization_tests();
 TCase* get_transliteration_tests();
 TCase* get_learning_tests();
 TCase* get_strbuf_tests();
+TCase* get_export_tests();
 
 #endif

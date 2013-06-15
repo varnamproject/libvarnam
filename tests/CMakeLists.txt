@@ -18,7 +18,7 @@ list (APPEND TEST_FILES
   learning.c
   testcases.c
   03-vst-compilation.c
-  05-export-words.c
+  export-words.c
   strbuftest.c
   )
 

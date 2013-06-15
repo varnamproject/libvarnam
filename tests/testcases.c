@@ -9,7 +9,7 @@
 
 varnam *varnam_instance = NULL;
 
-static int
+int
 file_exist (const char *filename)
 {
     struct stat buffer;
@@ -82,25 +82,35 @@ ensure_word_list_contains(varray *words, const char *word)
 }
 
 void
-setup()
+reinitialize_varnam_instance(const char *filename)
 {
     int rc;
     char *msg;
     varnam *handle;
-    strbuf *filename;
+    strbuf *error;
 
-    filename = get_unique_filename();
-
-    rc = varnam_init(strbuf_to_s (filename), &handle, &msg);
-    if(rc != VARNAM_SUCCESS) {
-        printf ("%s\n", msg);
-        ck_abort_msg ("Varnam initialization failed");
+    if (varnam_instance != NULL) {
+        varnam_destroy (varnam_instance);
+        varnam_instance = NULL;
     }
 
-    printf ("Using %s\n", strbuf_to_s (filename));
+    rc = varnam_init (filename, &handle, &msg);
+    if(rc != VARNAM_SUCCESS) {
+        error = strbuf_init (50);
+        strbuf_addf (error, "Varnam initialization failed. %s. %s", filename, msg);
+        ck_abort_msg (strbuf_to_s (error));
+    }
 
-   varnam_instance = handle;
-   strbuf_destroy (filename);
+    printf ("Using %s\n", filename);
+    varnam_instance = handle;
+}
+
+void
+setup()
+{
+    strbuf *filename =  get_unique_filename();
+    reinitialize_varnam_instance (strbuf_to_s (filename));
+    strbuf_destroy (filename);
 }
 
 void

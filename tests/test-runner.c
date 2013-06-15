@@ -30,7 +30,6 @@ struct tests_t {
 
 static struct tests_t tests[] = {
     { "test-vst-file-creation", test_vst_file_creation },
-    { "test-export", test_varnam_export}
 };
 
 #define NO_OF_TESTS (sizeof(tests)/sizeof(tests[0]))
@@ -79,6 +78,7 @@ int main(int argc, char **argv)
     suite_add_tcase (suite, get_initialization_tests());
     suite_add_tcase (suite, get_transliteration_tests());
     suite_add_tcase (suite, get_learning_tests());
+    suite_add_tcase (suite, get_export_tests());
 
     util = suite_create ("util");
     suite_add_tcase (util, get_strbuf_tests());
