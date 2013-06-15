@@ -15,6 +15,7 @@
     - [list](#adding_a_new_language_other_functions_list)
     - [Setting priority for a token](#adding_a_new_language_other_functions_setting_priority_for_a_token)
     - [Setting accept condition for a token](#adding_a_new_language_other_functions_setting_accept_condition_for_a_token)
+- [Contributing](#contributing)
 - [Contact](#contact)
 
 <a name="introduction" />
@@ -286,6 +287,11 @@ consonants({:accept_if => :starts_with}, 'ka' => 'क')
 ```
 
 In this case, varnam will accept token `ka` only if the pattern starts with `ka`.
+
+<a name="contributing" />
+# Contributing
+
+Thank you for your interest. You can look at [issues](https://github.com/navaneeth/libvarnam/issues) and pick one which you find interesting to work with. Submit a pull request after the fix.
 
 <a name="contact" />
 # Contact
