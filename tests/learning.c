@@ -6,7 +6,7 @@
 static void
 enable_suggestions()
 {
-    varnam_config (varnam_instance, VARNAM_CONFIG_ENABLE_SUGGESTIONS, strbuf_to_s (get_unique_filename()));
+    varnam_config (varnam_instance, VARNAM_CONFIG_ENABLE_SUGGESTIONS, get_unique_filename());
 }
 
 static void

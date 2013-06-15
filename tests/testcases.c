@@ -16,7 +16,7 @@ file_exist (const char *filename)
     return (stat (filename, &buffer) == 0);
 }
 
-strbuf*
+const char*
 get_unique_filename()
 {
     strbuf *filename = strbuf_init (25);
@@ -32,7 +32,7 @@ get_unique_filename()
         }
     }
 
-    return filename;
+    return strbuf_detach (filename);
 }
 
 void
@@ -108,9 +108,9 @@ reinitialize_varnam_instance(const char *filename)
 void
 setup()
 {
-    strbuf *filename =  get_unique_filename();
-    reinitialize_varnam_instance (strbuf_to_s (filename));
-    strbuf_destroy (filename);
+    const char *filename =  get_unique_filename();
+    reinitialize_varnam_instance (filename);
+    xfree (filename);
 }
 
 void

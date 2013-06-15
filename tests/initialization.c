@@ -9,7 +9,7 @@ START_TEST (set_scheme_details)
     char *msg;
     varnam *handle;
 
-    rc = varnam_init (strbuf_to_s (get_unique_filename()), &handle, &msg);
+    rc = varnam_init (get_unique_filename(), &handle, &msg);
     assert_success (rc);
 
     rc = varnam_set_scheme_details(handle, "ml", "ml-unicode", "Malayalam", "Navaneeth K N", "May 3 2012");
@@ -29,7 +29,7 @@ START_TEST (enable_suggestions)
     char *msg;
     varnam *handle;
 
-    rc = varnam_init(strbuf_to_s (get_unique_filename()), &handle, &msg);
+    rc = varnam_init(get_unique_filename(), &handle, &msg);
     assert_success (rc);
 
     rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "output/00-suggestions");
@@ -43,7 +43,7 @@ START_TEST (normal_init)
     char *msg;
     varnam *handle;
 
-    rc = varnam_init (strbuf_to_s (get_unique_filename()), &handle, &msg);
+    rc = varnam_init (get_unique_filename(), &handle, &msg);
     assert_success (rc);
 
     if (handle->internal->config_use_dead_consonants != 0)
