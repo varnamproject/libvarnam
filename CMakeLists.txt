@@ -13,7 +13,9 @@ set(VARNAM_VERSION_MAJOR 2)
 set(VARNAM_VERSION_MINOR 1)
 set(VARNAM_VERSION_PATCH 0)
 
-enable_testing()
+option(BUILD_TESTS "Build tests?" ON)
+option(BUILD_EXAMPLES "Build examples?" ON)
+option(BUILD_TOOLS "Build tools?" ON)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
         set(CMAKE_C_FLAGS "-g -Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings")
@@ -70,14 +72,22 @@ list (APPEND VARNAM_INCLUDE_FILES
 # Build dependencies
 add_subdirectory(deps)
 
-# Build tests
-add_subdirectory(tests)
 
-# Build examples
-add_subdirectory(examples)
+if (BUILD_TESTS)
+    # Build tests
+    enable_testing()
+    add_subdirectory(tests)
+endif ()
 
-# Build tools
-add_subdirectory(tools)
+if (BUILD_EXAMPLES)
+    # Build examples
+    add_subdirectory(examples)
+endif ()
+
+if (BUILD_TOOLS)
+    # Build tools
+    add_subdirectory(tools)
+endif ()
 
 # Create a shared library libvarnam
 add_library (${VARNAM_LIBRARY_NAME} SHARED ${VARNAM_SOURCES})

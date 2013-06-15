@@ -40,6 +40,13 @@ $ cmake .
 $ make
 $ make install
 ```
+By default, `libvarnam` installs a build which contains `tests` and `examples`. You can build just the library by,
+
+```shell
+$ cmake . -DBUILD_TESTS=false -DBUILD_EXAMPLES=false -DBUILD_TOOLS=false
+$ make
+$ make install
+```
 
 <a name="getting_started" />
 # Getting started
