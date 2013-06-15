@@ -18,7 +18,9 @@ option(BUILD_EXAMPLES "Build examples?" ON)
 option(BUILD_TOOLS "Build tools?" ON)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
-        set(CMAKE_C_FLAGS "-g -Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings")
+    set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings")
+    set(CMAKE_C_FLAGS_DEBUG "-g")
+    set(CMAKE_C_FLAGS_RELEASE "-O2")
 ENDIF()
 
 IF(MSVC)
