@@ -54,5 +54,6 @@ TCase* get_transliteration_tests();
 TCase* get_learning_tests();
 TCase* get_strbuf_tests();
 TCase* get_export_tests();
+TCase* get_token_creation_tests();
 
 #endif

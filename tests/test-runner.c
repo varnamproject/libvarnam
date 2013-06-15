@@ -23,49 +23,6 @@
 #include "testcases.h"
 #include <time.h>
 
-struct tests_t {
-    const char *name;
-    int(*function)(int argc, char **argv);
-};
-
-static struct tests_t tests[] = {
-    { "test-vst-file-creation", test_vst_file_creation },
-};
-
-#define NO_OF_TESTS (sizeof(tests)/sizeof(tests[0]))
-
-static int execute_test(int argc, char **argv)
-{
-    const char *test_to_execute = argv[0];
-    struct tests_t *test = 0;
-    unsigned i;
-    for (i = 0; i < NO_OF_TESTS; i++) {
-        struct tests_t *t  = tests + i;
-        if (strcmp(t->name, test_to_execute) == 0) {
-            test = t;
-            break;
-        }
-    }
-
-    if(test == NULL) {
-        printf("invalid test '%s'.\n", test_to_execute);
-        return 1;
-    }
-    argv++;
-    argc--;
-    return test->function(argc, argv);
-}
-
-static void print_all_test_names()
-{
-    int i;
-    for (i = 0; i < NO_OF_TESTS; i++) {
-        struct tests_t *t  = tests + i;
-        printf ("%s\n", t->name);
-    }
-}
-
-
 int main(int argc, char **argv)
 {
     Suite *suite, *util;
@@ -79,6 +36,7 @@ int main(int argc, char **argv)
     suite_add_tcase (suite, get_transliteration_tests());
     suite_add_tcase (suite, get_learning_tests());
     suite_add_tcase (suite, get_export_tests());
+    suite_add_tcase (suite, get_token_creation_tests());
 
     util = suite_create ("util");
     suite_add_tcase (util, get_strbuf_tests());

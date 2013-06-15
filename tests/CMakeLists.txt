@@ -17,7 +17,7 @@ list (APPEND TEST_FILES
   transliteration.c  
   learning.c
   testcases.c
-  03-vst-compilation.c
+  vst-compilation.c
   export-words.c
   strbuftest.c
   )
