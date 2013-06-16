@@ -101,6 +101,7 @@ INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME})
 INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
 INSTALL ( FILES schemes/ml-unicode.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst)
+INSTALL_PROGRAMS(/bin FILES varnamc varnamruby.rb)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
         # sqlite requires pthread and dl
@@ -111,6 +112,3 @@ IF(MSVC)
         target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME})
 ENDIF()
 
-add_custom_target(vstfiles
-                           COMMAND varnam-cli compile vsf/ml-unicode.vsf
-                           COMMAND varnam-cli compile tests/td-01.vsf)

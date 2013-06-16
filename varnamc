@@ -15,8 +15,6 @@ libvarnam's features.
 Usage - varnamc options <args>
 =end
 
-$LOAD_PATH << './scripts'
-
 def gem_available?(name)
    Gem::Specification.find_by_name(name)
 rescue Gem::LoadError
@@ -55,7 +53,7 @@ else
   puts "Using #{$options[:library]}"
 end
 
-require 'varnamruby.rb'
+require_relative './varnamruby.rb'
 require 'optparse'
 
 # Defining command line options
