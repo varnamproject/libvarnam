@@ -150,7 +150,7 @@ optparse = OptionParser.new do |opts|
     else
       # When no file name is provided, varnamc searches in predefined locations
       # for a symbols file
-        symbols_search_path = ['./schemes', '/usr/local/share/varnam', '/usr/share/varnam']
+        symbols_search_path = ['./schemes', '/usr/local/share/varnam/vst', '/usr/share/varnam/vst']
         symbols_search_path.each do |path|
         file = File.join(path, "#{value}-unicode.vst")
         if File.exist?(file)

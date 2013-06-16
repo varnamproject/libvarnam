@@ -37,7 +37,7 @@
     <td>libvarnam</td><td>Standard C libraries</td>
   </tr>
   <tr>
-    <td>varnamc (libvarnam's command line client)</td><td><li>Ruby >= 1.9.3</li><li>ffi (gem install ffi)</li></td>
+    <td>varnamc (libvarnam's command line client)</td><td><ul><li>Ruby >= 1.9.3</li><li>ffi (gem install ffi)</li></ul></td>
   </tr>
   <tr>
     <td>libvarnam's unit tests</td><td>Check (http://check.sourceforge.net)</td>
@@ -94,7 +94,7 @@ Each supported language will have a scheme file under the `schemes` directory. T
 $ ./varnamc --compile schemes/<SCHEME_FILE_NAME>
 ```
 
-This will generate a file named <SCHEME_FILE_NAME>.vst (*V*arnam *S*ymbol *T*able) which is a binary file which contains all symbols defined in the scheme file.  
+This will generate a file named <SCHEME_FILE_NAME>.vst (*V*arnam *S*ymbol *T*able) which is a binary file which contains all symbols defined in the scheme file. Running `make install` will install VST files and this allows `varnamc` to be used outside the source directory. 
 
 You can now start using `libvarnam`. To transliterate a word.
 
