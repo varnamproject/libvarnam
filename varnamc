@@ -2,6 +2,12 @@
 
 # encoding: utf-8
 
+## 
+## Copyright (C) Navaneeth.K.N
+##
+## This is part of libvarnam. See LICENSE.txt for the license
+##
+
 =begin
 'varnamc' is a command line client to libvarnam. It allows you to quickly try
 libvarnam's features.
