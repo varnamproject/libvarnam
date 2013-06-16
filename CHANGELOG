@@ -1,3 +1,12 @@
+2.2.0 / Jun 16, 2013
+=======================
+* While learning a word, few more unwanted tokens will be rejected.
+* varnamc learn will use the output directory if specified.
+* Small corrections to Malayalam scheme file.
+* Major improvements to Hindi scheme file.
+* Learn errors will be logged in the learn failures file.
+* varnamc is usable outside the source directory
+
 2.1.0 / Jun 02, 2013
 =======================
 * Support for Hindi.
