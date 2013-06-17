@@ -37,6 +37,14 @@ setup_test_data()
     rc = varnam_create_token(varnam_instance, "gha", "ഖ", "", "", "",
             VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0, 0, 0);
     assert_success (rc);
+
+    rc = varnam_create_token (varnam_instance, "0", "०", "", 
+            "", "", VARNAM_TOKEN_NUMBER, VARNAM_MATCH_EXACT, 0, 0, 0);
+    assert_success (rc);
+
+    rc = varnam_create_token (varnam_instance, "1", "१", "", 
+            "", "", VARNAM_TOKEN_NUMBER, VARNAM_MATCH_EXACT, 0, 0, 0);
+    assert_success (rc);
 }
 
 START_TEST (starting_and_trailing_special_chars_should_be_removed)
@@ -90,6 +98,25 @@ START_TEST (words_with_repeating_characters_will_not_be_learned)
 }
 END_TEST
 
+START_TEST (numbers_will_be_ignored_while_learning)
+{
+    int rc;
+    strbuf *string;
+
+    rc = varnam_learn (varnam_instance, "01");
+    assert_error (rc);
+    string = strbuf_init (50);
+    strbuf_add (string, "Can't process '0'. One or more characters in '01' are not known\n");
+    ck_assert_str_eq (varnam_get_last_error (varnam_instance), strbuf_to_s (string));
+
+    rc = varnam_learn (varnam_instance, "१०१");
+    assert_error (rc);
+    strbuf_clear (string);
+    strbuf_add (string, "Nothing to learn from '१०१'\n");
+    ck_assert_str_eq (varnam_get_last_error (varnam_instance), strbuf_to_s (string));
+}
+END_TEST
+
 TCase* get_learning_tests()
 {
     TCase* tcase = tcase_create("learning");
@@ -100,5 +127,6 @@ TCase* get_learning_tests()
     tcase_add_test (tcase, words_with_unknown_letters_should_be_rejected);
     tcase_add_test (tcase, basic_learning);
     tcase_add_test (tcase, words_with_repeating_characters_will_not_be_learned);
+    tcase_add_test (tcase, numbers_will_be_ignored_while_learning);
     return tcase;
 }

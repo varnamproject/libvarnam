@@ -42,6 +42,7 @@ initialize_internal()
         /* configuration options */
         vi->config_use_dead_consonants = 0;
         vi->config_ignore_duplicate_tokens = 1;
+        vi->config_use_indic_digits = 0;
 
         /* suggestions */
         vi->known_words = NULL;
@@ -496,6 +497,9 @@ varnam_config(varnam *handle, int type, ...)
         break;
     case VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN:
         v_->config_ignore_duplicate_tokens = va_arg(args, int);
+        break;
+    case VARNAM_CONFIG_USE_INDIC_DIGITS:
+        v_->config_use_indic_digits = va_arg(args, int);
         break;
     case VARNAM_CONFIG_ENABLE_SUGGESTIONS:
         rc = enable_suggestions (handle, va_arg(args, const char*));

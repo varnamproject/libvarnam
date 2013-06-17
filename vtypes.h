@@ -42,6 +42,7 @@
 #define VARNAM_CONFIG_USE_DEAD_CONSONANTS      100
 #define VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN   101
 #define VARNAM_CONFIG_ENABLE_SUGGESTIONS       102
+#define VARNAM_CONFIG_USE_INDIC_DIGITS         103
 
 /* Keys used in metadata*/
 #define VARNAM_METADATA_SCHEME_LANGUAGE_CODE     "lang-code"
@@ -98,6 +99,7 @@ struct varnam_internal
     /* configuration options */
     int config_use_dead_consonants;
     int config_ignore_duplicate_tokens;
+    int config_use_indic_digits;
 
     /* instance pools */
     struct vpool_t *tokens_pool;

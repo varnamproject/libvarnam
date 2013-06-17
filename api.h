@@ -64,6 +64,12 @@ varnam_register_renderer(
  *   Eg : varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 0) - Turns this option off
  *        varnam_config(handle, VARNAM_CONFIG_USE_DEAD_CONSONANTS, 1) - Turns this option on
  *
+ * VARNAM_CONFIG_USE_INDIC_DIGITS
+ *   This option controls how numbers are rendered in varnam_transliterate().
+ *   by default, this option is set to false.
+ *   Eg : varnam_config(handle, VARNAM_CONFIG_USE_INDIC_DIGITS, 0) - Turns this option off
+ *        varnam_config(handle, VARNAM_CONFIG_USE_INDIC_DIGITS, 1) - Turns this option on
+ *
  * VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN
  *   This will make varnam_create_token() to ignore duplicate tokens. Varnam will issue a warning
  *   log message when duplicates are detected.

@@ -112,6 +112,13 @@ resolve_tokens(varnam *handle,
                 strbuf_add(string, token->value1);
             }
         }
+        else if (token->type == VARNAM_TOKEN_NUMBER)
+        {
+            if (v_->config_use_indic_digits)
+                strbuf_add (string, token->value1);
+            else
+                strbuf_add (string, token->pattern);
+        }
         else {
             strbuf_add(string, token->value1);
         }
