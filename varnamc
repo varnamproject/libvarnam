@@ -779,6 +779,26 @@ def get_consonants(criteria = {})
   return get_tokens(Varnam::VARNAM_TOKEN_CONSONANT, criteria)
 end
 
+def get_consonant_vowel_combinations(criteria = {})
+  return get_tokens(Varnam::VARNAM_TOKEN_CONSONANT_VOWEL, criteria)
+end
+
+def get_anusvara(criteria = {})
+  return get_tokens(Varnam::VARNAM_TOKEN_ANUSVARA, criteria)
+end
+
+def get_visarga(criteria = {})
+  return get_tokens(Varnam::VARNAM_TOKEN_VISARGA, criteria)
+end
+
+def get_symbols(criteria = {})
+  return get_tokens(Varnam::VARNAM_TOKEN_SYMBOL, criteria)
+end
+
+def get_numbers(criteria = {})
+  return get_tokens(Varnam::VARNAM_TOKEN_OTHER, criteria)
+end
+
 def get_virama
     tokens = get_tokens(Varnam::VARNAM_TOKEN_VIRAMA, {})
     if tokens.empty?
