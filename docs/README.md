@@ -70,10 +70,11 @@ You can use `varnamc` which is a command line client to `libvarnam` to quickly t
 ```shell
 $ ./varnamc
 varnamc : no actions specified
-Usage: varnamc [options] language_code args
+Usage: varnamc options args
     -l, --library FILE               Sets the varnam library
     -v, --verbose                    Enable verbose output
     -t, --transliterate TEXT         Transliterate the given text
+        --indic-digits               Turns on indic digit rendering while transliterating
     -r, --reverse-transliterate TEXT Reverse transliterate the given text
     -n, --learn [TEXT]               Learn the given text
     -a, --train PATTERN=WORD         Train varnam to use PATTERN for WORD
@@ -86,6 +87,7 @@ Usage: varnamc [options] language_code args
         --detect-language WORD       Detect language of the word
     -d, --output-dir dir             Sets the output directory
     -h, --help                       Display this screen
+        --version                    Display version
 ```
 
 Each supported language will have a scheme file under the `schemes` directory. This scheme file is in plain text format and needs to be compiled before using. To compile a scheme file, use the following command. 
