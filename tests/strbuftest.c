@@ -14,7 +14,7 @@
 
 START_TEST (formatted_strings)
 {
-    const char *expected = "Character a, Integer 10, String Navaneeth\n";
+    const char *expected = "Character a, Integer 10, String Navaneeth";
     struct strbuf *buffer = strbuf_init(100);
     strbuf_addf(buffer, "Character %c, Integer %d, String %s", 'a', 10, "Navaneeth");
     ck_assert_str_eq (expected, strbuf_to_s (buffer));
@@ -91,6 +91,24 @@ START_TEST (split_string)
 }
 END_TEST
 
+START_TEST (addf_should_not_add_newline)
+{
+    strbuf *string = strbuf_init (50);
+    strbuf_addf (string, "%s", "test");
+    if (strbuf_endswith (string, "\n")) {
+        ck_abort_msg ("Looks like strbuf_addf adding new lines.");
+    }
+}
+END_TEST
+
+START_TEST (addfln_should_add_newline)
+{
+    strbuf *string = strbuf_init (50);
+    strbuf_addfln (string, "%s", "test");
+    ck_assert_str_eq ("test\n", strbuf_to_s (string));
+}
+END_TEST
+
 TCase* get_strbuf_tests()
 {
     TCase* tcase = tcase_create("strbuf");
@@ -100,5 +118,7 @@ TCase* get_strbuf_tests()
     tcase_add_test (tcase, replace_string_should_be_case_sensitive);
     tcase_add_test (tcase, replace_should_work_for_utf8_strings);
     tcase_add_test (tcase, split_string);
+    tcase_add_test (tcase, addf_should_not_add_newline);
+    tcase_add_test (tcase, addfln_should_add_newline);
     return tcase;
 }

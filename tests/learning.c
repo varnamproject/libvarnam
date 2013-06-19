@@ -62,7 +62,7 @@ START_TEST (words_with_unknown_letters_should_be_rejected)
         ck_abort_msg ("Expected return code to be VARNAM_ERROR");
     }
     ck_assert_str_eq (varnam_get_last_error (varnam_instance),
-            "Can't process 't'. One or more characters in 'test' are not known\n");
+            "Can't process 't'. One or more characters in 'test' are not known");
 }
 END_TEST
 
@@ -106,13 +106,13 @@ START_TEST (numbers_will_be_ignored_while_learning)
     rc = varnam_learn (varnam_instance, "01");
     assert_error (rc);
     string = strbuf_init (50);
-    strbuf_add (string, "Can't process '0'. One or more characters in '01' are not known\n");
+    strbuf_add (string, "Can't process '0'. One or more characters in '01' are not known");
     ck_assert_str_eq (varnam_get_last_error (varnam_instance), strbuf_to_s (string));
 
     rc = varnam_learn (varnam_instance, "१०१");
     assert_error (rc);
     strbuf_clear (string);
-    strbuf_add (string, "Nothing to learn from '१०१'\n");
+    strbuf_add (string, "Nothing to learn from '१०१'");
     ck_assert_str_eq (varnam_get_last_error (varnam_instance), strbuf_to_s (string));
 }
 END_TEST

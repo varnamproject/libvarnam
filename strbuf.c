@@ -92,6 +92,21 @@ int strbuf_addln(struct strbuf *string, const char *c)
     return 0;
 }
 
+int strbuf_addfln(struct strbuf *string, const char *format, ...)
+{
+    int rc;
+    va_list args;
+
+    va_start(args, format);
+    rc = strbuf_addvf(string, format, args);
+    va_end(args);
+
+    if (rc)
+        return strbuf_add (string, "\n");
+
+    return rc;
+}
+
 int strbuf_addf(struct strbuf *string, const char *format, ...)
 {
     int rc;
@@ -158,7 +173,6 @@ int strbuf_addvf(struct strbuf *string, const char *format, va_list args)
         }
     }
 
-    strbuf_addc (string, '\n');
     return 1;
 
 }

@@ -996,7 +996,6 @@ vwt_export_words(varnam* handle, int words_per_file, const char* out_dir,
             if (fp == NULL) {
                 path = get_pooled_string (handle);
                 strbuf_addf (path, "%s/%d.txt",  out_dir, file_index++);
-                strbuf_remove_from_last (path, "\n");
                 fp = fopen (strbuf_to_s (path), "w");
                 if (fp == NULL) {
                     set_last_error (handle, "Failed to open : %s", strbuf_to_s (path));
