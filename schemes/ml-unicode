@@ -146,6 +146,22 @@ consonants ["ra"] => "ര",
 
 infer_dead_consonants true
 
+consonants ["rva", "rwa"] => "ര്വ",
+           "rya" => "ര്യ",
+           ["Rva", "Rwa", ["rva"]] => "റ്വ്",
+           ["Rya", ["rya"]] => "റ്യ്",
+           ["nva", "nwa"] => "ന്വ",
+           "nya" => "ന്യ",
+           ["Nva", "Nwa", ["nva", "nwa"]] => "ണ്വ",
+           ["Nya", ["nya"]] => "ണ്യ",
+           ["lva", "lwa"] => "ല്വ",
+           "lya" => "ല്യ",
+           ["Lva", "Lwa", ["lva", "lwa"]] => "ള്വ",
+           ["Lya", ["lya"]] => "ള്യ",
+           ["mva", "mwa"] => "മ്വ",
+           "mya" => "മ്യ"
+
+
 # Autogenerate consonant vowel combinations
 generate_cv
 
@@ -176,21 +192,6 @@ end
 
 # * is the place holder which will be replaced by the actual value
 consonants({:accept_if => :ends_with}, combine(get_dead_consonants, [["*u"]] => "*1"))
-
-consonants ["rva", "rwa"] => "ര്വ",
-           "rya" => "ര്യ",
-           ["Rva", "Rwa", ["rva"]] => "റ്വ്",
-           ["Rya", ["rya"]] => "റ്യ്",
-           ["nva", "nwa"] => "ന്വ",
-           "nya" => "ന്യ",
-           ["Nva", "Nwa", ["nva", "nwa"]] => "ണ്വ",
-           ["Nya", ["nya"]] => "ണ്യ",
-           ["lva", "lwa"] => "ല്വ",
-           "lya" => "ല്യ",
-           ["Lva", "Lwa", ["lva", "lwa"]] => "ള്വ",
-           ["Lya", ["lya"]] => "ള്യ",
-           ["mva", "mwa"] => "മ്വ",
-           "mya" => "മ്യ"
 
 symbols "/" => "ഽ",
         ["H", ":"] => "ഃ"
