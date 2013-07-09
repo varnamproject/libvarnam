@@ -116,5 +116,7 @@ setup()
 void
 teardown()
 {
+    if (varnam_instance != NULL)
+        varnam_destroy (varnam_instance);
     varnam_instance = NULL;
 }

@@ -105,12 +105,10 @@ INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${
 INSTALL ( FILES ${vst_files} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL_PROGRAMS(/bin FILES varnamc varnamruby.rb)
 
-IF(CMAKE_COMPILER_IS_GNUCC)
-        # sqlite requires pthread and dl
-        target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME} pthread dl)
-ENDIF()
-
 IF(MSVC)
         target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME})
+else()
+        # sqlite requires pthread and dl
+        target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME} pthread dl)
 ENDIF()
 
