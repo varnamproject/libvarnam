@@ -13,9 +13,9 @@ set(VARNAM_VERSION_MAJOR 2)
 set(VARNAM_VERSION_MINOR 2)
 set(VARNAM_VERSION_PATCH 0)
 
-option(BUILD_TESTS "Build tests?" ON)
-option(BUILD_EXAMPLES "Build examples?" ON)
-option(BUILD_TOOLS "Build tools?" ON)
+option(BUILD_TESTS "Build tests?" OFF)
+option(BUILD_EXAMPLES "Build examples?" OFF)
+option(BUILD_TOOLS "Build tools?" OFF)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings")
