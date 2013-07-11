@@ -397,10 +397,10 @@ varnam_create_token(
         else if (can_generate_dead_consonant(pattern, pattern_len))
         {
             substr(p, pattern, 1, (int) (pattern_len - 1));
-            snprintf(v1, VARNAM_SYMBOL_MAX, "%s%s", value1, virama->value1);
+            portable_snprintf(v1, VARNAM_SYMBOL_MAX, "%s%s", value1, virama->value1);
 
             if (value2 != NULL)
-                snprintf(v2, VARNAM_SYMBOL_MAX, "%s%s", value2, virama->value1);
+                portable_snprintf(v2, VARNAM_SYMBOL_MAX, "%s%s", value2, virama->value1);
             else
                 v2[0] = '\0';
 
