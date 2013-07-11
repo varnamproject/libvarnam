@@ -14,7 +14,7 @@
 
 extern varnam *varnam_instance;
 
-const char*
+char*
 get_unique_filename();
 
 void 
