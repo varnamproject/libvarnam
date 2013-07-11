@@ -186,9 +186,9 @@ START_TEST (maxlength_check)
         value2[i] = 'a';
     }
 
-    pattern[VARNAM_SYMBOL_MAX + 2] = '\0';
-    value1[VARNAM_SYMBOL_MAX + 2] = '\0';
-    value2[VARNAM_SYMBOL_MAX + 2] = '\0';
+    pattern[VARNAM_SYMBOL_MAX + 1] = '\0';
+    value1[VARNAM_SYMBOL_MAX + 1] = '\0';
+    value2[VARNAM_SYMBOL_MAX + 1] = '\0';
 
     rc = varnam_create_token(varnam_instance, pattern, value1, value2, "", "value3", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0, 0);
     if (rc != VARNAM_ARGS_ERROR)
