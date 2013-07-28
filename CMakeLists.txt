@@ -7,6 +7,7 @@ message ("Generating project ${PROJECT_NAME}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cmake_modules/")
 
 set(VARNAM_LIBRARY_NAME "varnam")
+set(VARNAM_LIBRARY_NAME_STATIC "varnamstatic")
 set(DEPS_LIBRARY_NAME "deps")
 
 set(VARNAM_VERSION_MAJOR 2)
@@ -57,6 +58,8 @@ list (APPEND VARNAM_SOURCES
   lang_detection.c
   renderer/ml_unicode.c
   varnam.c
+  deps/snprintf.c
+  deps/sqlite3.c
   )
 
 # Append the header files here. this will get copied to include directory
@@ -70,10 +73,6 @@ list (APPEND VARNAM_INCLUDE_FILES
   vutf8.h
   langcodes.h
   )
-
-# Build dependencies
-add_subdirectory(deps)
-
 
 if (BUILD_TESTS)
     # Build tests
@@ -90,7 +89,11 @@ if (BUILD_TOOLS)
     add_subdirectory(tools)
 endif ()
 
-# Create a shared library libvarnam
+
+add_definitions(-DSQLITE_CASE_SENSITIVE_LIKE -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS)
+
+# Create a shared and static library libvarnam
+add_library (${VARNAM_LIBRARY_NAME_STATIC} STATIC ${VARNAM_SOURCES})
 add_library (${VARNAM_LIBRARY_NAME} SHARED ${VARNAM_SOURCES})
 
 SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
@@ -100,15 +103,16 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
 file(GLOB vst_files  "schemes/*.vst")
 
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME_STATIC} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME})
 INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
 INSTALL ( FILES ${vst_files} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL_PROGRAMS(/bin FILES varnamc varnamruby.rb)
 
 IF(MSVC)
-        target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME})
+        target_link_libraries(${VARNAM_LIBRARY_NAME})
 else()
         # sqlite requires pthread and dl
-        target_link_libraries(${VARNAM_LIBRARY_NAME} ${DEPS_LIBRARY_NAME} pthread dl)
+        target_link_libraries(${VARNAM_LIBRARY_NAME} pthread dl)
 ENDIF()
 
