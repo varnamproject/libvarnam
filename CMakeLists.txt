@@ -1,5 +1,5 @@
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 
 project(varnam)
 message ("Generating project ${PROJECT_NAME}")
@@ -58,8 +58,6 @@ list (APPEND VARNAM_SOURCES
   lang_detection.c
   renderer/ml_unicode.c
   varnam.c
-  deps/snprintf.c
-  deps/sqlite3.c
   )
 
 # Append the header files here. this will get copied to include directory
@@ -73,6 +71,8 @@ list (APPEND VARNAM_INCLUDE_FILES
   vutf8.h
   langcodes.h
   )
+
+add_subdirectory(deps)
 
 if (BUILD_TESTS)
     # Build tests
@@ -93,8 +93,9 @@ endif ()
 add_definitions(-DSQLITE_CASE_SENSITIVE_LIKE -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS)
 
 # Create a shared and static library libvarnam
-add_library (${VARNAM_LIBRARY_NAME_STATIC} STATIC ${VARNAM_SOURCES})
-add_library (${VARNAM_LIBRARY_NAME} SHARED ${VARNAM_SOURCES})
+add_library (varnam_core OBJECT ${VARNAM_SOURCES})
+add_library (${VARNAM_LIBRARY_NAME_STATIC} STATIC $<TARGET_OBJECTS:${DEPS_LIBRARY_NAME}> $<TARGET_OBJECTS:varnam_core>)
+add_library (${VARNAM_LIBRARY_NAME} SHARED $<TARGET_OBJECTS:${DEPS_LIBRARY_NAME}> $<TARGET_OBJECTS:varnam_core>)
 
 SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              VERSION ${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}
