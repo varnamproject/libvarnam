@@ -84,6 +84,27 @@ START_TEST (basic_learning)
 }
 END_TEST
 
+START_TEST (confidence_should_get_updated_for_existing_words)
+{
+    int rc;
+    varray* words;
+    vword* word;
+    const char *word_to_learn = "കഖ";
+
+    rc = varnam_learn (varnam_instance, word_to_learn);
+    assert_success (rc);
+    rc = varnam_learn (varnam_instance, word_to_learn);
+    assert_success (rc);
+
+    rc = varnam_transliterate (varnam_instance, "kagha", &words);
+    assert_success (rc);
+    ck_assert_int_eq (varray_length (words), 2);
+
+    word = varray_get (words, 0);
+    ck_assert_int_eq (word->confidence, 2);
+}
+END_TEST
+
 START_TEST (words_with_repeating_characters_will_not_be_learned)
 {
     int rc;
@@ -128,5 +149,6 @@ TCase* get_learning_tests()
     tcase_add_test (tcase, basic_learning);
     tcase_add_test (tcase, words_with_repeating_characters_will_not_be_learned);
     tcase_add_test (tcase, numbers_will_be_ignored_while_learning);
+    tcase_add_test (tcase, confidence_should_get_updated_for_existing_words);
     return tcase;
 }

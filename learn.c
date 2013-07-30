@@ -460,6 +460,9 @@ varnam_learn_from_file(varnam *handle,
         return rc;
     }
 
+    /* Learning from file will be mostly new words. Optimizing for that */
+    v_->_config_mostly_learning_new_words = 1;
+
     varnam_log (handle, "Starting to learn from %s", filepath);
     rc = vwt_start_changes (handle);
     if (rc) {

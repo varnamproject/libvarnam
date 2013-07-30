@@ -101,6 +101,10 @@ struct varnam_internal
     int config_ignore_duplicate_tokens;
     int config_use_indic_digits;
 
+    /* internal configuration options */
+    int _config_mostly_learning_new_words;
+
+
     /* instance pools */
     struct vpool_t *tokens_pool;
     struct vpool_t *arrays_pool;

@@ -273,43 +273,11 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
 }
 
 static int
-learn_word (varnam *handle, const char *word, int confidence, bool *new_word, sqlite3_int64 *word_id)
-{
+try_insert_new_word (varnam* handle, const char* word, int confidence, sqlite3_int64* new_word_id) {
     int rc;
-    const char *sql = "insert into words (word, confidence, learned_on) values(trim(?1), ?2, date());";
+    const char *sql = "insert or ignore into words (word, confidence, learned_on) values(trim(?1), ?2, date());";
 
-    assert (v_->known_words);
-
-    rc = vwt_get_word_id (handle, word, word_id);
-    if (rc) return rc;
-
-    if (*word_id > 0)
-    {
-        if (v_->update_confidence == NULL)
-        {
-            rc = sqlite3_prepare_v2( v_->known_words,
-                                     "update words set confidence = confidence + 1 where id = ?1;", -1,
-                                     &v_->update_confidence, NULL );
-            if (rc != SQLITE_OK) {
-                set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
-                sqlite3_reset (v_->update_confidence);
-                return VARNAM_ERROR;
-            }
-        }
-
-        sqlite3_bind_int64 (v_->update_confidence, 1, *word_id);
-
-        rc = sqlite3_step (v_->update_confidence);
-        if (rc != SQLITE_DONE) {
-            set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
-            sqlite3_reset (v_->update_confidence);
-            return VARNAM_ERROR;
-        }
-        sqlite3_reset (v_->update_confidence);
-        *new_word = false;
-
-        return VARNAM_SUCCESS;
-    }
+    *new_word_id = -1;
 
     if (v_->learn_word == NULL)
     {
@@ -330,12 +298,77 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word, sq
         sqlite3_reset (v_->learn_word);
         return VARNAM_ERROR;
     }
+    
+    if (sqlite3_changes (v_->known_words) != 0) {
+        *new_word_id = sqlite3_last_insert_rowid (v_->known_words);
+    }
 
-    *new_word = true;
-    *word_id = sqlite3_last_insert_rowid (v_->known_words);
     sqlite3_reset (v_->learn_word);
-    varnam_log (handle, "Learned word %s", word);
+    return VARNAM_SUCCESS;
+}
 
+static int
+try_update_word_confidence (varnam* handle, const char* word, bool* updated) {
+    int rc;
+    *updated = false;
+
+    if (v_->update_confidence == NULL)
+    {
+        rc = sqlite3_prepare_v2( v_->known_words,
+                "update words set confidence = confidence + 1 where word = ?1;", -1,
+                &v_->update_confidence, NULL );
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
+            sqlite3_reset (v_->update_confidence);
+            return VARNAM_ERROR;
+        }
+    }
+
+    sqlite3_bind_text (v_->update_confidence, 1, word, -1, NULL);
+
+    rc = sqlite3_step (v_->update_confidence);
+    if (rc != SQLITE_DONE) {
+        set_last_error (handle, "Failed to learn word : %s", sqlite3_errmsg(v_->known_words));
+        sqlite3_reset (v_->update_confidence);
+        return VARNAM_ERROR;
+    }
+
+    *updated = sqlite3_changes (v_->known_words);
+    sqlite3_reset (v_->update_confidence);
+    return VARNAM_SUCCESS;
+}
+
+static int
+learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
+{
+    int rc;
+    bool confidence_updated;
+    sqlite3_int64 new_word_id;
+
+    assert (v_->known_words);
+
+    if (!v_->_config_mostly_learning_new_words) {
+        rc = try_update_word_confidence (handle, word, &confidence_updated);
+        if (rc) return rc;
+
+        if (!confidence_updated) {
+            rc = try_insert_new_word (handle, word, confidence, &new_word_id);
+            if (rc) return rc;
+        }
+    }
+    else {
+        /* This assumes new words won't be already learned. So attempts insert first and fallback to update
+         * confidence later */
+        rc = try_insert_new_word (handle, word, confidence, &new_word_id);
+        if (rc) return rc;
+
+        if (new_word_id == -1) {
+            rc = try_update_word_confidence (handle, word, &confidence_updated);
+            if (rc) return rc;
+        }
+    }
+
+    varnam_log (handle, "Learned word %s", word);
     return VARNAM_SUCCESS;
 }
 
@@ -351,7 +384,6 @@ learn_prefixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
     vword *word;
     vtoken *token;
     bool new_word;
-    sqlite3_int64 word_id;
 
     varray *tokens_tmp = get_pooled_array (handle);
     for (i = 0; i < varray_length (tokens); i++)
@@ -374,7 +406,7 @@ learn_prefixes(varnam *handle, varray *tokens, strbuf *pattern, bool word_alread
 
             if (!word_already_learned)
             {
-                rc = learn_word (handle, word->text, 1, &new_word, &word_id);
+                rc = learn_word (handle, word->text, 1, &new_word);
                 if (rc) {
                     return_array_to_pool (handle, tokens_tmp);
                     return rc;
@@ -486,9 +518,8 @@ vwt_persist_possibilities(varnam *handle, varray *tokens, const char *word, int 
 {
     int rc;
     bool new_word;
-    sqlite3_int64 word_id;
 
-    rc = learn_word (handle, word, confidence, &new_word, &word_id);
+    rc = learn_word (handle, word, confidence, &new_word);
     if (rc) return rc;
 
     rc = learn_all_possibilities (handle, tokens, word);
