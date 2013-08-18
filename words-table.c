@@ -116,13 +116,15 @@ vwt_discard_changes(varnam *handle)
 int
 vwt_optimize_for_huge_transaction(varnam *handle)
 {
-    const char *sql =
-        "pragma journal_mode=delete;";
+    int rc;
 
     assert (handle);
     assert (v_->known_words);
 
-    return execute_sql (handle, v_->known_words, sql);
+    rc = execute_sql (handle, v_->known_words, "PRAGMA synchronous = OFF;");
+    if (rc) return rc;
+
+    return execute_sql (handle, v_->known_words, "PRAGMA journal_mode = MEMORY;");
 }
 
 int
@@ -368,7 +370,7 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
         }
     }
 
-    varnam_log (handle, "Learned word %s", word);
+    /*varnam_log (handle, "Learned word %s", word);*/
     return VARNAM_SUCCESS;
 }
 

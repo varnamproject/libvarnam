@@ -991,7 +991,7 @@ $train_failure_log = File.open(get_file_path("varnamc-train-failures.txt"), "w")
 
 LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do |handle, word, status, data|
   if status == 0
-    puts "(#{$learn_counter}) Learned #{word}"
+    #puts "(#{$learn_counter}) Learned #{word}"
     $learn_passed_counter += 1
   else
     puts "Failed to learn #{word}"
