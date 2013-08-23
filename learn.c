@@ -656,10 +656,6 @@ varnam_import_learnings_from_file(varnam *handle, const char *filepath,
         return rc;
     }
 
-    varnam_log (handle, "Compacting file");
-    rc = vwt_compact_file (handle);
-    if (rc) return rc;
-
     return VARNAM_SUCCESS;
 }
 

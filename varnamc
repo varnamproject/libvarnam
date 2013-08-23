@@ -1258,7 +1258,7 @@ def export_words
   exporttype = Varnam::VARNAM_EXPORT_WORDS if $options[:action] == 'export-words'
   exporttype = Varnam::VARNAM_EXPORT_FULL if $options[:action] == 'export-full'
 
-  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 100000, outDir.strip, 
+  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 10000000, outDir.strip, 
                                            exporttype, ExportCallback);
   if done != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
