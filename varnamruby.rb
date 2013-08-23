@@ -42,7 +42,8 @@ module VarnamLibrary
   attach_function :varnam_get_all_tokens, [:pointer, :int, :pointer], :int
   attach_function :varray_get, [:pointer, :int], :pointer
   attach_function :varray_length, [:pointer], :int
-  attach_function :varnam_export_words, [:pointer, :int, :string, :pointer], :int
+  attach_function :varnam_export_words, [:pointer, :int, :string, :int, :pointer], :int
+  attach_function :varnam_import_learnings_from_file, [:pointer, :string, :pointer], :int
 end
 
 VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type, :priority, :accept_condition)
@@ -89,6 +90,9 @@ module Varnam
   VARNAM_TOKEN_ACCEPT_IF_IN_BETWEEN = 2
   VARNAM_TOKEN_ACCEPT_IF_ENDS_WITH = 3
 
+  VARNAM_EXPORT_WORDS = 0
+  VARNAM_EXPORT_FULL = 1
+  
   # Language codes
   LANG_CODES = {VARNAM_LANG_CODE_UNKNOWN => 'Unknown',
                 VARNAM_LANG_CODE_HI => 'Hindi',

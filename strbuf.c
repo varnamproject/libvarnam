@@ -414,3 +414,14 @@ struct strbuf* get_pooled_string(varnam *handle)
     strbuf_clear (string);
     return string;
 }
+
+void
+return_string_to_pool (varnam *handle, strbuf* string)
+{
+    if (v_->strings_pool == NULL)
+        return;
+
+    vpool_return (v_->strings_pool, string);
+}
+
+

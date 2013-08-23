@@ -65,6 +65,14 @@
 #define VARNAM_TOKEN_ACCEPT_IF_IN_BETWEEN 2
 #define VARNAM_TOKEN_ACCEPT_IF_ENDS_WITH 3
 
+/* Export options */
+#define VARNAM_EXPORT_WORDS 0
+#define VARNAM_EXPORT_FULL 1
+
+/* File identifiers for import and export */
+#define VARNAM_PATTERNS_EXPORT_METADATA "filetype:varnam_patterns_export"
+#define VARNAM_WORDS_EXPORT_METADATA "filetype:varnam_words_export"
+
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;

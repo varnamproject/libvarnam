@@ -148,6 +148,24 @@ optparse = OptionParser.new do |opts|
      set_action('export-words')
   end
 
+  opts.on('--export-full', 'Export words & patterns to the output directory') do
+     set_action('export-full')
+  end
+
+  opts.on('--import-learnings-from FILE|DIRECTORY', 'Import learned data from the specified file/directory') do |path|
+    if File.exists? (path)
+      if File.directory?(path)
+        set_action('import-learnings-from-directory')
+      else
+        set_action('import-learnings-from-file')
+      end
+      $options[:import_learnings_from] = path
+    else
+      puts "varnamc : #{path} is incorrect"
+      exit(1)
+    end
+  end
+
   $options[:symbols_file] = nil
   opts.on('-s', '--symbols VALUE', 'Sets the symbols file') do |value|
     if File.exist?(value)
@@ -312,7 +330,7 @@ def do_action
     train_from_directory
   end
 
-  if $options[:action] == 'export-words'
+  if $options[:action] == 'export-words' or $options[:action] == 'export-full'
       export_words
   end
 
@@ -322,6 +340,15 @@ def do_action
   if $options[:action] == 'detect'
     detect_language
   end
+
+  if $options[:action] == 'import-learnings-from-file'
+      import_learnings_from_file
+  end
+
+  if $options[:action] == 'import-learnings-from-directory'
+      import_learnings_from_directory
+  end
+
 end
 
 $custom_lists = {}
@@ -1144,6 +1171,65 @@ def train_pattern_word
   puts "Success. #{pattern} will resolve to #{word}"
 end
 
+$import_failure_log = nil
+$import_failure_count = 0
+ImportFailureCallback = FFI::Function.new(:void, [:string]) do |current_word|
+    if $import_failure_log.nil?
+        $import_failure_log = File.open(get_file_path("varnamc-import-failures.txt"), "w")
+    end
+    $import_failure_log.puts current_word
+    $import_failure_count += 1
+end
+
+def import_learned_words_in_the_file(fname)
+    if not File.exists?(fname)
+        puts "Invalid file: #{fname}"
+        exit (1)
+    end
+
+    done = VarnamLibrary.varnam_import_learnings_from_file($varnam_handle.get_pointer(0), fname, ImportFailureCallback);
+    if done != 0
+        error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+        puts error_message
+    exit(1)
+    end
+end
+
+def import_learnings_from_file
+    if $options[:import_learnings_from].nil?
+        puts "Nothing to import"
+        exit (1)
+    end
+
+    fname = $options[:import_learnings_from]
+    puts "Importing: #{fname}"
+    import_learned_words_in_the_file fname
+end
+
+def import_learnings_from_directory
+    path = $options[:import_learnings_from]
+    if path.nil?
+        puts "Nothing to import"
+        exit 1
+    end
+
+    puts "Processing files from #{path}"
+    files = Dir.glob("#{path}/**/*.words.txt")
+    files.concat Dir.glob("#{path}/**/*.patterns.txt")
+    puts "Found #{files.size} file(s)"
+
+    files.each_with_index do |fname, index|
+        if not File.directory?(fname)
+            puts "(#{index + 1}/#{files.size}) Processing #{fname}"
+            import_learned_words_in_the_file fname
+        end
+    end
+    puts "Processed #{files.size} file(s)."
+    puts "#{$import_failure_count} failed. Failed words are logged to #{$import_failure_log.path}" if $import_failure_count > 0
+    $failure_log.close if not $failure_log.nil?
+end
+
+
 def detect_language
   if $options[:word_to_detect_lang].nil?
     puts "varnamc : No word found"
@@ -1169,7 +1255,11 @@ def export_words
   # Removing any trailing /
   outDir[outDir.length - 1] = '' if outDir.end_with?('/')
 
-  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 3000, outDir.strip, ExportCallback);
+  exporttype = Varnam::VARNAM_EXPORT_WORDS if $options[:action] == 'export-words'
+  exporttype = Varnam::VARNAM_EXPORT_FULL if $options[:action] == 'export-full'
+
+  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 100000, outDir.strip, 
+                                           exporttype, ExportCallback);
   if done != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     puts "Export failed. #{error_message}"

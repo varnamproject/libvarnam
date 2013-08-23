@@ -1,10 +1,12 @@
-/* 
+/*
  * Copyright (C) Navaneeth.K.N
  *
  * This is part of libvarnam. See LICENSE.txt for the license
  */
 
 #include <assert.h>
+#include <string.h>
+
 #include "api.h"
 #include "vtypes.h"
 #include "varray.h"
@@ -551,7 +553,7 @@ varnam_train(varnam *handle, const char *pattern, const char *word)
 }
 
 int
-varnam_export_words(varnam* handle, int words_per_file, const char* out_dir,
+varnam_export_words(varnam* handle, int words_per_file, const char* out_dir, int export_type,
     void (*callback)(int total_words, int processed, const char *current_word))
 {
     if (handle == NULL || out_dir == NULL) {
@@ -560,7 +562,105 @@ varnam_export_words(varnam* handle, int words_per_file, const char* out_dir,
 
     reset_pool (handle);
 
-    return vwt_export_words (handle, words_per_file, out_dir, callback);
+    if (export_type == VARNAM_EXPORT_FULL)
+        return vwt_full_export (handle, words_per_file, out_dir, callback);
+    else
+        return vwt_export_words (handle, words_per_file, out_dir, callback);
+}
+
+#define _WORDS_IMPORT 1
+#define _PATTERNS_IMPORT 2
+
+static int
+get_file_type (FILE* infile)
+{
+    char metadata[100];
+
+    if ((fgets (metadata, 100, infile)) == NULL) 
+        return -1;
+
+    if (strcmp (trimwhitespace (metadata), VARNAM_WORDS_EXPORT_METADATA) == 0)
+        return _WORDS_IMPORT;
+    else if (strcmp (trimwhitespace (metadata), VARNAM_PATTERNS_EXPORT_METADATA) == 0)
+        return _PATTERNS_IMPORT;
+
+    return -1;
+}
+
+int
+varnam_import_learnings_from_file(varnam *handle, const char *filepath,
+        void (*onfailure)(const char* line))
+{
+    int rc, filetype = -1;
+    FILE *infile;
+
+    reset_pool (handle);
+
+    infile = fopen(filepath, "r");
+    if (!infile) {
+        set_last_error (handle, "Couldn't open file '%s' for reading.\n", filepath);
+        return VARNAM_ERROR;
+    }
+
+    rc = vwt_optimize_for_huge_transaction(handle);
+    if (rc) {
+        fclose (infile);
+        return rc;
+    }
+
+    varnam_log (handle, "Starting to import from %s", filepath);
+    rc = vwt_start_changes (handle);
+    if (rc) {
+        vwt_turn_off_optimization_for_huge_transaction(handle);
+        fclose (infile);
+        return rc;
+    }
+
+    filetype = get_file_type (infile);
+    switch (filetype) {
+        case _WORDS_IMPORT:
+            rc = vwt_import_words (handle, infile, onfailure);
+            if (rc != VARNAM_SUCCESS) {
+                fclose (infile);
+                vwt_turn_off_optimization_for_huge_transaction (handle);
+                return rc;
+            }
+            break;
+        case _PATTERNS_IMPORT:
+            rc = vwt_import_patterns (handle, infile, onfailure);
+            if (rc != VARNAM_SUCCESS) {
+                fclose (infile);
+                vwt_turn_off_optimization_for_huge_transaction (handle);
+                return rc;
+            }
+            break;
+        case -1:
+            set_last_error (handle, "Couldn't read file '%s'. Unknown file type\n", filepath);
+            fclose (infile);
+            return VARNAM_ERROR;
+    }
+
+    fclose (infile);
+
+    varnam_log (handle, "Writing changes to disk");
+    rc = vwt_end_changes (handle);
+    if (rc != VARNAM_SUCCESS) {
+        varnam_log (handle, "Writing changes to disk failed");
+        return rc;
+    }
+
+    varnam_log (handle, "Ensuring file integrity");
+    rc = vwt_turn_off_optimization_for_huge_transaction(handle);
+    if (rc) {
+        varnam_log (handle, "Failed to check file integrity");
+        return rc;
+    }
+
+    varnam_log (handle, "Compacting file");
+    rc = vwt_compact_file (handle);
+    if (rc) return rc;
+
+    return VARNAM_SUCCESS;
 }
 
 

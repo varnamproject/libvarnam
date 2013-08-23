@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) Navaneeth.K.N
  *
  * This is part of libvarnam. See LICENSE.txt for the license
@@ -183,7 +183,7 @@ VARNAM_EXPORT extern int
 varnam_delete_word(varnam *handle, const char *word);
 
 /**
- * Varnam will learn words from the supplied file. 
+ * Varnam will learn words from the supplied file.
  * Each word can optionaly take a confidence. Word and confidence should be separated with a space
  *
  * handle            - Valid varnam instance
@@ -353,11 +353,12 @@ VARNAM_EXPORT extern int varnam_get_info(
     );
 
 /**
- * Exports words to text file(s). This may produce multiple text files depending on the number of words
+ * Exports words and patterns to text file(s). This may produce multiple text files depending on the number of words
  *
  * handle         - A valid varnam handle
  * words_per_file - Number of words to be written to one file
  * out_dir        - Directory path without trailing '/' where files will be written
+ * export_type    - VARNAM_EXPORT_FULL or VARNAM_EXPORT_WORDS
  *
  * RETURN
  *
@@ -370,8 +371,28 @@ VARNAM_EXPORT extern int varnam_export_words(
     varnam *handle,
     int words_per_file,
     const char *out_dir,
+    int export_type,
     void (*callback)(int , int , const char *)
     );
+
+/**
+ * Import learned data from the specified file.
+ * Mostly the files exported using varnam_export_words will be given to this function.
+ *
+ * handle    - A valid varnam instance
+ * filepath  - Full path to the file
+ * onfailure - A callback to be invoked when there are failures in import
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS    - Upon successful import
+ * VARNAM_ARGS_ERROR - When incorrect arguments are specified
+ * VARNAM_ERROR      - Any other errors
+ **/
+int
+varnam_import_learnings_from_file(varnam *handle, const char *filepath,
+        void (*onfailure)(const char* line));
+
 
 /**
  * Detects the language for the supplied word. Current implementation works only for devanagari based scripts.
