@@ -120,10 +120,9 @@ varray_free(varray *array, void (*destructor)(void*))
             if (item != NULL) destructor(item);
         }
     }
-    array->used = 0;
-    array->index = -1;
 
-    free(array->memory);
+    if (array->memory != NULL)
+        free(array->memory);
     free(array);
 }
 
@@ -230,9 +229,8 @@ vpool_free(vpool *pool, void (*destructor)(void*))
     if (pool == NULL)
         return;
 
-    assert (pool);
     varray_free (pool->array, destructor);
-    varray_free (pool->free_pool, destructor);
+    varray_free (pool->free_pool, NULL);
     pool->next_slot = -1;
     pool->array = NULL;
     pool->free_pool = NULL;

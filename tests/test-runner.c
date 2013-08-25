@@ -40,6 +40,7 @@ int main(int argc, char **argv)
 
     runner = srunner_create (suite);
     srunner_add_suite (runner, util);
+    srunner_set_log (runner, "testrun.log");
     srunner_run_all (runner, CK_NORMAL);
     failed = srunner_ntests_failed (runner);
     srunner_free (runner);

@@ -43,6 +43,7 @@ initialize_internal()
         vi->config_use_dead_consonants = 0;
         vi->config_ignore_duplicate_tokens = 1;
         vi->config_use_indic_digits = 0;
+        vi->_config_mostly_learning_new_words = 0;
 
         /* suggestions */
         vi->known_words = NULL;
@@ -535,7 +536,8 @@ static void
 destroy_array(void *a)
 {
     varray *array = (varray*) a;
-    varray_free (array, NULL);
+    if (array != NULL)
+        varray_free (array, NULL);
 }
 
 void
@@ -557,7 +559,7 @@ varnam_destroy(varnam *handle)
     vpool_free (vi->words_pool, &destroy_word);
     vpool_free (vi->arrays_pool, &destroy_array);
 
-    varray_free (vi->tokens, &destroy_token);
+    varray_free (vi->tokens, NULL);
     varray_free (vi->renderers, &xfree);
 
     xfree(vi->message);

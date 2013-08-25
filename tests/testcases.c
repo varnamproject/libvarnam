@@ -107,7 +107,7 @@ reinitialize_varnam_instance(const char *filename)
 void
 execute_query (sqlite3* db, const char* sql)
 {
-    int rc, result;
+    int rc;
     sqlite3_stmt* stmt;
     strbuf* error;
 
@@ -126,7 +126,6 @@ execute_query (sqlite3* db, const char* sql)
     }
 
     sqlite3_finalize (stmt);
-    return result;
 }
 
 int
@@ -166,7 +165,7 @@ setup()
 void
 teardown()
 {
-/*    if (varnam_instance != NULL)
-        varnam_destroy (varnam_instance);*/
+    if (varnam_instance != NULL)
+        varnam_destroy (varnam_instance);
     varnam_instance = NULL;
 }
