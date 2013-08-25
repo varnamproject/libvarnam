@@ -106,6 +106,23 @@ START_TEST (initialize_on_already_existing_file)
 }
 END_TEST
 
+START_TEST (init_destroy_loop_memory_stress_test)
+{
+    int rc, i;
+    char* msg;
+    varnam* handle;
+    varray* output;
+
+    for (i = 0; i < 100; i++) {
+        rc = varnam_init ("../schemes/ml-unicode.vst", &handle, &msg);
+        ck_assert_int_eq (rc, VARNAM_SUCCESS);
+        rc = varnam_transliterate(handle, "navaneeth", &output);
+        ck_assert_int_eq (rc, VARNAM_SUCCESS);
+        varnam_destroy (handle);
+    }
+}
+END_TEST
+
 TCase* get_initialization_tests()
 {
     TCase* tcase = tcase_create("initialization");
@@ -115,5 +132,6 @@ TCase* get_initialization_tests()
     tcase_add_test (tcase, initialize_on_writeprotected_location);
     tcase_add_test (tcase, initialize_on_incorrect_location);
     tcase_add_test (tcase, initialize_on_already_existing_file);
+    tcase_add_test (tcase, init_destroy_loop_memory_stress_test);
     return tcase;
 }
