@@ -556,7 +556,7 @@ int
 varnam_export_words(varnam* handle, int words_per_file, const char* out_dir, int export_type,
     void (*callback)(int total_words, int processed, const char *current_word))
 {
-    if (handle == NULL || out_dir == NULL) {
+    if (handle == NULL || out_dir == NULL || words_per_file <= 0) {
         return VARNAM_ARGS_ERROR;
     }
 
@@ -576,7 +576,7 @@ get_file_type (FILE* infile)
 {
     char metadata[100];
 
-    if ((fgets (metadata, 100, infile)) == NULL) 
+    if ((fgets (metadata, 100, infile)) == NULL)
         return -1;
 
     if (strcmp (trimwhitespace (metadata), VARNAM_WORDS_EXPORT_METADATA) == 0)
@@ -594,11 +594,14 @@ varnam_import_learnings_from_file(varnam *handle, const char *filepath,
     int rc, filetype = -1;
     FILE *infile;
 
+    if (handle == NULL || filepath == NULL)
+        return VARNAM_ARGS_ERROR;
+
     reset_pool (handle);
 
     infile = fopen(filepath, "r");
     if (!infile) {
-        set_last_error (handle, "Couldn't open file '%s' for reading.\n", filepath);
+        set_last_error (handle, "Couldn't open file '%s' for reading", filepath);
         return VARNAM_ERROR;
     }
 
@@ -635,7 +638,7 @@ varnam_import_learnings_from_file(varnam *handle, const char *filepath,
             }
             break;
         case -1:
-            set_last_error (handle, "Couldn't read file '%s'. Unknown file type\n", filepath);
+            set_last_error (handle, "Couldn't read file '%s'. Unknown file type", filepath);
             fclose (infile);
             return VARNAM_ERROR;
     }

@@ -101,8 +101,58 @@ reinitialize_varnam_instance(const char *filename)
         ck_abort_msg (strbuf_to_s (error));
     }
 
-    printf ("Using %s\n", filename);
     varnam_instance = handle;
+}
+
+void
+execute_query (sqlite3* db, const char* sql)
+{
+    int rc, result;
+    sqlite3_stmt* stmt;
+    strbuf* error;
+
+    rc = sqlite3_prepare_v2 (db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        error = strbuf_init (50);
+        strbuf_addf (error, "Failed to prepare query: %s. Return code was: %d\n", sql, rc);
+        ck_abort_msg (strbuf_to_s (error));
+    }
+
+    rc = sqlite3_step (stmt);
+    if (rc != SQLITE_DONE) {
+        error = strbuf_init (50);
+        strbuf_addf (error, "Failed to execute query: %s. Return code was: %d\n", sql, rc);
+        ck_abort_msg (strbuf_to_s (error));
+    }
+
+    sqlite3_finalize (stmt);
+    return result;
+}
+
+int
+execute_query_int (sqlite3* db, const char* sql)
+{
+    int rc, result;
+    sqlite3_stmt* stmt;
+    strbuf* error;
+
+    rc = sqlite3_prepare_v2 (db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        error = strbuf_init (50);
+        strbuf_addf (error, "Failed to prepare query: %s. Return code was: %d\n", sql, rc);
+        ck_abort_msg (strbuf_to_s (error));
+    }
+
+    rc = sqlite3_step (stmt);
+    if (rc != SQLITE_ROW) {
+        error = strbuf_init (50);
+        strbuf_addf (error, "Failed to execute query: %s. Return code was: %d\n", sql, rc);
+        ck_abort_msg (strbuf_to_s (error));
+    }
+
+    result = sqlite3_column_int (stmt, 0);
+    sqlite3_finalize (stmt);
+    return result;
 }
 
 void
