@@ -38,6 +38,12 @@ execute_query (sqlite3* db, const char* sql);
 int
 execute_query_int (sqlite3* db, const char* sql);
 
+char*
+create_text_file (const char* contents);
+
+strbuf*
+read_text_file (const char* filename);
+
 void
 setup();
 
@@ -51,5 +57,6 @@ TCase* get_learning_tests();
 TCase* get_strbuf_tests();
 TCase* get_export_tests();
 TCase* get_token_creation_tests();
+TCase* get_varnamc_tests();
 
 #endif

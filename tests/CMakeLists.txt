@@ -20,6 +20,7 @@ list (APPEND TEST_FILES
   vst-compilation.c
   export-words.c
   strbuftest.c
+  varnamc_tests.c
   )
 
 set(test_executable_name runtests)

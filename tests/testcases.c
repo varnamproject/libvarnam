@@ -154,6 +154,43 @@ execute_query_int (sqlite3* db, const char* sql)
     return result;
 }
 
+char*
+create_text_file (const char* contents)
+{
+    FILE* fp;
+    char* filename;
+
+    filename = get_unique_filename ();
+    fp = fopen (filename, "w");
+    if (fp == NULL)
+        ck_abort_msg ("Failed to create a text file");
+    
+    fprintf (fp, "%s\n", contents);
+    fclose (fp);
+
+    return filename;
+}
+
+strbuf*
+read_text_file (const char* filename)
+{
+    FILE* fp;
+    char buffer[1000];
+    strbuf* contents;
+
+    fp = fopen (filename, "r");
+    if (fp == NULL)
+        ck_abort_msg ("Failed to open file for reading");
+
+    contents = strbuf_init (100);
+    while (fgets (buffer, 1000, fp) != NULL) {
+        strbuf_add (contents, buffer);
+    }
+
+    fclose (fp);
+    return contents;
+}
+
 void
 setup()
 {

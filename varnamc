@@ -1009,12 +1009,12 @@ end
 $learn_counter = 0
 $learn_passed_counter = 0
 $learn_failed_counter = 0
-$failure_log = File.open(get_file_path("varnamc-learn-failures.txt"), "w")
+$failure_log = nil
 
 $train_counter = 0
 $train_passed_counter = 0
 $train_failed_counter = 0
-$train_failure_log = File.open(get_file_path("varnamc-train-failures.txt"), "w")
+$train_failure_log = nil
 
 LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do |handle, word, status, data|
   if status == 0
@@ -1023,6 +1023,7 @@ LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do
   else
     puts "Failed to learn #{word}"
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    $failure_log = File.open(get_file_path("varnamc-learn-failures.txt"), "w") if $failure_log.nil?
     $failure_log.puts word + ' : ' + error_message
     $learn_failed_counter += 1
   end
@@ -1046,7 +1047,7 @@ def learn_from_file
 
   puts "Processed #{$learn_counter} word(s). #{$learn_passed_counter} word(s) passed. #{$learn_failed_counter} word(s) failed."
   puts "Failed words are logged to - #{$failure_log.path}" if $learn_failed_counter > 0
-  $failure_log.close
+  $failure_log.close if not $failure_log.nil?
 end
 
 def learn_words_in_the_file(fname)
@@ -1086,14 +1087,18 @@ def train_words_in_the_file(fname)
     text.each_line do |line|
         parts = line.split(' ')
         if not parts.length == 2
-            puts "Error at #{line}"
+            message = "Error at text: #{line.strip}. Invalid format. Each line should contain pattern and word separated with a single space"
+            puts message
+            $train_failure_log = File.open(get_file_path("varnamc-train-failures.txt"), "w") if $train_failure_log.nil?
+            $train_failure_log.puts message
+            $train_failed_counter += 1
         else
             pattern = parts[0]
             value = parts[1]
             error = perform_training(pattern, value)
             if not error.nil?
                 message = "Failed to train #{pattern} => #{value}. #{error.force_encoding('UTF-8')}"
-                puts message
+                $train_failure_log = File.open(get_file_path("varnamc-train-failures.txt"), "w") if $train_failure_log.nil?
                 $train_failure_log.puts message
                 $train_failed_counter += 1
             else
@@ -1115,7 +1120,7 @@ def train_from_file
 
   puts "Processed #{$train_counter} word(s). #{$train_passed_counter} word(s) passed. #{$train_failed_counter} word(s) failed."
   puts "Failed words are logged to - #{$train_failure_log.path}" if $train_failed_counter > 0
-  $train_failure_log.close
+  $train_failure_log.close if not $train_failure_log.nil?
 end
 
 def train_from_directory

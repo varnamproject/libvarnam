@@ -15,7 +15,7 @@
 
 int main(int argc, char **argv)
 {
-    Suite *suite, *util;
+    Suite *suite, *util, *commandline;
     SRunner *runner;
     int failed, exit_code;
 
@@ -38,8 +38,12 @@ int main(int argc, char **argv)
     util = suite_create ("util");
     suite_add_tcase (util, get_strbuf_tests());
 
+    commandline = suite_create ("commandline");
+    suite_add_tcase (commandline, get_varnamc_tests());
+
     runner = srunner_create (suite);
     srunner_add_suite (runner, util);
+    srunner_add_suite (runner, commandline);
     srunner_set_log (runner, "testrun.log");
     srunner_run_all (runner, CK_NORMAL);
     failed = srunner_ntests_failed (runner);
