@@ -6,10 +6,11 @@
 START_TEST (set_scheme_details)
 {
     int rc;
-    char *msg;
+    char *msg, *filename;
     varnam *handle;
 
-    rc = varnam_init (get_unique_filename(), &handle, &msg);
+    filename = get_unique_filename();
+    rc = varnam_init (filename, &handle, &msg);
     assert_success (rc);
 
     rc = varnam_set_scheme_details(handle, "ml", "ml-unicode", "Malayalam", "Navaneeth K N", "May 3 2012");
@@ -20,30 +21,38 @@ START_TEST (set_scheme_details)
     ck_assert_str_eq (varnam_get_scheme_display_name (handle), "Malayalam");
     ck_assert_str_eq (varnam_get_scheme_author (handle), "Navaneeth K N");
     ck_assert_str_eq (varnam_get_scheme_compiled_date (handle), "May 3 2012");
+
+    varnam_destroy (handle);
+    free (filename);
 }
 END_TEST
 
 START_TEST (enable_suggestions)
 {
     int rc;
-    char *msg;
+    char *msg, *filename;
     varnam *handle;
 
-    rc = varnam_init(get_unique_filename(), &handle, &msg);
+    filename = get_unique_filename();
+    rc = varnam_init(filename, &handle, &msg);
     assert_success (rc);
 
     rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "output/00-suggestions");
     assert_success (rc);
+
+    varnam_destroy (handle);
+    free (filename);
 }
 END_TEST
 
 START_TEST (normal_init)
 {
     int rc;
-    char *msg;
+    char *msg, *filename;
     varnam *handle;
 
-    rc = varnam_init (get_unique_filename(), &handle, &msg);
+    filename = get_unique_filename();
+    rc = varnam_init(filename, &handle, &msg);
     assert_success (rc);
 
     if (handle->internal->config_use_dead_consonants != 0)
@@ -58,6 +67,9 @@ START_TEST (normal_init)
     {
         ck_abort_msg ("varnam_config() is not changing value of use_dead_consonant option");
     }
+
+    varnam_destroy (handle);
+    free (filename);
 }
 END_TEST
 
@@ -68,11 +80,14 @@ START_TEST (initialize_on_writeprotected_location)
     varnam *handle;
 
     const char *filename = "/etc/varnam-test.vst";
-    rc = varnam_init(filename, &handle, &msg);
+    rc = varnam_init (filename, &handle, &msg);
     if (rc != VARNAM_STORAGE_ERROR)
     {
         ck_abort_msg ("VARNAM_STORAGE_ERROR expected. Never got");
     }
+
+    free (msg);
+    varnam_destroy (handle);
 }
 END_TEST
 
@@ -88,14 +103,17 @@ START_TEST (initialize_on_incorrect_location)
     {
         ck_abort_msg ("VARNAM_STORAGE_ERROR expected. Never got");
     }
+
+    free (msg);
+    varnam_destroy (handle);
 }
 END_TEST
 
 START_TEST (initialize_on_already_existing_file)
 {
     int rc;
-    char *msg;
-    varnam *handle;
+    char *msg = NULL;
+    varnam *handle = NULL;
 
     const char *filename = "initialization.c";
     rc = varnam_init(filename, &handle, &msg);
@@ -103,6 +121,9 @@ START_TEST (initialize_on_already_existing_file)
     {
         ck_abort_msg ("VARNAM_STORAGE_ERROR expected. Never got");
     }
+
+    free (msg);
+    varnam_destroy (handle);
 }
 END_TEST
 

@@ -20,6 +20,7 @@ static void
 setup_data()
 {
     int rc;
+    char* unique_filename = NULL;
 
     const char *filename = "../schemes/ml-unicode.vst";
     if (!file_exist (filename)) {
@@ -27,7 +28,8 @@ setup_data()
     }
     reinitialize_varnam_instance (filename);
 
-    rc = varnam_config (varnam_instance, VARNAM_CONFIG_ENABLE_SUGGESTIONS, get_unique_filename());
+    unique_filename = get_unique_filename ();
+    rc = varnam_config (varnam_instance, VARNAM_CONFIG_ENABLE_SUGGESTIONS, unique_filename);
     assert_success (rc);
 
     rc = varnam_learn (varnam_instance, word1);
@@ -38,6 +40,8 @@ setup_data()
 
     rc = varnam_learn (varnam_instance, word3);
     assert_success (rc);
+
+    free (unique_filename);
 }
 
 START_TEST (varnam_export)
@@ -117,6 +121,8 @@ START_TEST (varnam_export_full)
             ck_abort_msg (strbuf_to_s (error));
         }
     }
+
+    strbuf_destroy (f);
 }
 END_TEST
 

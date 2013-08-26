@@ -18,6 +18,7 @@ START_TEST (formatted_strings)
     struct strbuf *buffer = strbuf_init(100);
     strbuf_addf(buffer, "Character %c, Integer %d, String %s", 'a', 10, "Navaneeth");
     ck_assert_str_eq (expected, strbuf_to_s (buffer));
+    strbuf_destroy (buffer);
 }
 END_TEST
 
@@ -98,6 +99,7 @@ START_TEST (addf_should_not_add_newline)
     if (strbuf_endswith (string, "\n")) {
         ck_abort_msg ("Looks like strbuf_addf adding new lines.");
     }
+    strbuf_destroy (string);
 }
 END_TEST
 
@@ -106,6 +108,7 @@ START_TEST (addfln_should_add_newline)
     strbuf *string = strbuf_init (50);
     strbuf_addfln (string, "%s", "test");
     ck_assert_str_eq ("test\n", strbuf_to_s (string));
+    strbuf_destroy (string);
 }
 END_TEST
 

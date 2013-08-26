@@ -44,7 +44,7 @@ START_TEST (basic_transliteration)
 {
     vword* word;
     int rc;
-    varray *words = varray_init();
+    varray *words;
 
     rc = varnam_transliterate (varnam_instance, "aek", &words);
     assert_success (rc);
@@ -59,7 +59,7 @@ START_TEST (dependent_vowel_rendering)
 {
     int rc;
     vword* word;
-    varray *words = varray_init();
+    varray *words;
 
     rc = varnam_transliterate(varnam_instance, "aaa", &words);
     assert_success (rc);

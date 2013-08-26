@@ -18,6 +18,9 @@
 #include "vword.h"
 #include "renderer/renderers.h"
 
+static void
+destroy_varnam_internal(struct varnam_internal* vi);
+
 static struct varnam_internal*
 initialize_internal()
 {
@@ -85,9 +88,12 @@ int
 varnam_init(const char *scheme_file, varnam **handle, char **msg)
 {
     int rc;
-    varnam *c;
+    varnam *c = NULL;
     struct varnam_internal *vi;
     size_t filename_length;
+
+    *handle = NULL;
+    *msg = NULL;
 
     if(scheme_file == NULL)
         return VARNAM_ARGS_ERROR;
@@ -95,6 +101,9 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
     c = (varnam *) xmalloc(sizeof (varnam));
     if(!c)
         return VARNAM_MEMORY_ERROR;
+
+    c->scheme_file = NULL;
+    c->internal = NULL;
 
     vi = initialize_internal();
     if(!vi)
@@ -104,13 +113,6 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
     if(!vi->message)
         return VARNAM_MEMORY_ERROR;
 
-    rc = sqlite3_open(scheme_file, &vi->db);
-    if( rc ) {
-        asprintf(msg, "Can't open %s: %s\n", scheme_file, sqlite3_errmsg(vi->db));
-        sqlite3_close(vi->db);
-        return VARNAM_STORAGE_ERROR;
-    }
-
     filename_length = strlen(scheme_file);
     c->scheme_file = (char *) xmalloc(filename_length + 1);
     if(!c->scheme_file)
@@ -119,13 +121,24 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
     strncpy(c->scheme_file, scheme_file, filename_length + 1);
     c->internal = vi;
 
+    rc = sqlite3_open(scheme_file, &vi->db);
+    if( rc ) {
+        asprintf(msg, "Can't open %s: %s\n", scheme_file, sqlite3_errmsg(vi->db));
+        varnam_destroy (c);
+        return VARNAM_STORAGE_ERROR;
+    }
+
     rc = ensure_schema_exists(c, msg);
-    if (rc != VARNAM_SUCCESS)
+    if (rc != VARNAM_SUCCESS) {
+        varnam_destroy (c);
         return rc;
+    }
 
     rc = varnam_register_renderer (c, "ml-unicode", &ml_unicode_renderer, &ml_unicode_rtl_renderer);
-    if (rc != VARNAM_SUCCESS)
+    if (rc != VARNAM_SUCCESS) {
+        varnam_destroy (c);
         return rc;
+    }
 
     *handle = c;
     return VARNAM_SUCCESS;
@@ -469,7 +482,6 @@ enable_suggestions(varnam *handle, const char *file)
     if( rc )
     {
         set_last_error (handle, "Can't open %s: %s\n", file, sqlite3_errmsg(v_->known_words));
-        sqlite3_close (v_->known_words);
         v_->known_words = NULL;
         return VARNAM_ERROR;
     }
@@ -543,40 +555,36 @@ destroy_array(void *a)
 void
 varnam_destroy(varnam *handle)
 {
-    struct varnam_internal *vi;
-
     if (handle == NULL)
         return;
 
-    vi = handle->internal;
+    destroy_varnam_internal (handle->internal);
+    xfree(handle->scheme_file);
+    xfree(handle);
+}
 
-    destroy_all_statements (handle);
-
+static void
+destroy_varnam_internal(struct varnam_internal* vi)
+{
+    destroy_all_statements (vi);
     destroy_token (vi->virama);
-
     vpool_free (vi->tokens_pool, &destroy_token);
     vpool_free (vi->strings_pool, &strbuf_destroy);
     vpool_free (vi->words_pool, &destroy_word);
     vpool_free (vi->arrays_pool, &destroy_array);
-
     varray_free (vi->tokens, NULL);
     varray_free (vi->renderers, &xfree);
-
     xfree(vi->message);
     strbuf_destroy (vi->last_error);
-
     strbuf_destroy (vi->scheme_language_code);
     strbuf_destroy (vi->scheme_identifier);
     strbuf_destroy (vi->scheme_display_name);
     strbuf_destroy (vi->scheme_author);
     strbuf_destroy (vi->scheme_compiled_date);
     strbuf_destroy (vi->log_message);
+    sqlite3_close(vi->db);
+    if (vi->known_words != NULL)
+        sqlite3_close(vi->known_words);
 
-    sqlite3_close(handle->internal->db);
-    if (handle->internal->known_words != NULL)
-        sqlite3_close(handle->internal->known_words);
-
-    xfree(handle->internal);
-    xfree(handle->scheme_file);
-    xfree(handle);
+    xfree(vi);
 }

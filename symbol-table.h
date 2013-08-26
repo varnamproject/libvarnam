@@ -81,6 +81,6 @@ void
 print_tokens_array(varray *tokens);
 
 void
-destroy_all_statements(varnam *handle);
+destroy_all_statements(struct varnam_internal* vi);
 
 #endif

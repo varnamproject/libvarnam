@@ -6,7 +6,9 @@
 static void
 enable_suggestions()
 {
-    varnam_config (varnam_instance, VARNAM_CONFIG_ENABLE_SUGGESTIONS, get_unique_filename());
+    char* filename = get_unique_filename ();
+    varnam_config (varnam_instance, VARNAM_CONFIG_ENABLE_SUGGESTIONS, filename);
+    free (filename);
 }
 
 static void
@@ -116,6 +118,7 @@ START_TEST (words_with_repeating_characters_will_not_be_learned)
     string = strbuf_init (50);
     strbuf_addf (string, "'%s' looks incorrect. Not learning anything", word_to_learn);
     ck_assert_str_eq (varnam_get_last_error (varnam_instance), strbuf_to_s (string));
+    strbuf_destroy (string);
 }
 END_TEST
 
@@ -135,6 +138,7 @@ START_TEST (numbers_will_be_ignored_while_learning)
     strbuf_clear (string);
     strbuf_add (string, "Nothing to learn from '१०१'");
     ck_assert_str_eq (varnam_get_last_error (varnam_instance), strbuf_to_s (string));
+    strbuf_destroy (string);
 }
 END_TEST
 

@@ -698,22 +698,27 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
 }
 
 void
-destroy_all_statements(varnam *handle)
+destroy_all_statements(struct varnam_internal* v)
 {
-    sqlite3_finalize (v_->tokenize_using_pattern);
-    sqlite3_finalize (v_->tokenize_using_value);
-    sqlite3_finalize (v_->tokenize_using_value_and_match_type);
-    sqlite3_finalize (v_->can_find_more_matches_using_pattern);
-    sqlite3_finalize (v_->can_find_more_matches_using_value);
-    sqlite3_finalize (v_->learn_word);
-    sqlite3_finalize (v_->learn_pattern);
-    sqlite3_finalize (v_->get_word);
-    sqlite3_finalize (v_->get_suggestions);
-    sqlite3_finalize (v_->get_matches_for_word);
-    sqlite3_finalize (v_->possible_to_find_matches);
-    sqlite3_finalize (v_->update_confidence);
-    sqlite3_finalize (v_->update_learned_flag);
-    sqlite3_finalize (v_->delete_word);
-    sqlite3_finalize (v_->export_words);
-    sqlite3_finalize (v_->learned_words_count);
+    if (v == NULL)
+        return;
+
+    sqlite3_finalize (v->tokenize_using_pattern);
+    sqlite3_finalize (v->tokenize_using_value);
+    sqlite3_finalize (v->tokenize_using_value_and_match_type);
+    sqlite3_finalize (v->can_find_more_matches_using_pattern);
+    sqlite3_finalize (v->can_find_more_matches_using_value);
+    sqlite3_finalize (v->learn_word);
+    sqlite3_finalize (v->learn_pattern);
+    sqlite3_finalize (v->get_word);
+    sqlite3_finalize (v->get_suggestions);
+    sqlite3_finalize (v->get_best_match);
+    sqlite3_finalize (v->get_matches_for_word);
+    sqlite3_finalize (v->possible_to_find_matches);
+    sqlite3_finalize (v->update_confidence);
+    sqlite3_finalize (v->update_learned_flag);
+    sqlite3_finalize (v->delete_pattern);
+    sqlite3_finalize (v->delete_word);
+    sqlite3_finalize (v->export_words);
+    sqlite3_finalize (v->learned_words_count);
 }
