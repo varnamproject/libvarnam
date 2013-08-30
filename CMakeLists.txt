@@ -89,6 +89,9 @@ if (BUILD_TOOLS)
     add_subdirectory(tools)
 endif ()
 
+# Generate pkg-config file
+configure_file(varnam.pc.in varnam.pc @ONLY)
+configure_file(varnamstatic.pc.in varnamstatic.pc @ONLY)
 
 add_definitions(-DSQLITE_CASE_SENSITIVE_LIKE -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS)
 
@@ -107,6 +110,8 @@ INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME_STATIC} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME})
 INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
+INSTALL ( FILES varnam.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
+INSTALL ( FILES varnamstatic.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
 INSTALL ( FILES ${vst_files} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL_PROGRAMS(/bin FILES varnamc varnamruby.rb)
 

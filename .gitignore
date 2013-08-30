@@ -32,3 +32,5 @@ CTestTestfile.cmake
 cmake_install.cmake
 tests/runtests
 tests/testrun.log
+varnam.pc
+varnamstatic.pc

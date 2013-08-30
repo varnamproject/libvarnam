@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/libvarnam
+
+Name: Varnam
+Description: A transliteration library for Indian languages
+URL: http://varnamproject.com
+Version: @VARNAM_VERSION_MAJOR@.@VARNAM_VERSION_MINOR@.@VARNAM_VERSION_PATCH@
+Libs: -L${libdir} -lvarnam
+Cflags: -I${includedir} -DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF -DNEED_ASPRINTF

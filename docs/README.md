@@ -115,7 +115,7 @@ In short, `libvarnam` can be initialized using `varnam_init()`. `varnam_init()` 
 Following example shows a simple usage of `libvarnam`.
 
 ```c
-#include "varnam.h"
+#include <varnam.h>
 
 int main(int args, char **argv)
 {
@@ -147,6 +147,12 @@ int main(int args, char **argv)
 
   return 0;
 }
+```
+
+On a Linux machine, above example can be compiled using the following command:
+
+```shell
+gcc `pkg-config --cflags --libs varnam` -o example example.c
 ```
 
 <a name="supported_languages" />
