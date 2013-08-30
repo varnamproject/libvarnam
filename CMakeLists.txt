@@ -1,5 +1,5 @@
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.8.8)
 
 project(varnam)
 message ("Generating project ${PROJECT_NAME}")
@@ -19,7 +19,7 @@ option(BUILD_EXAMPLES "Build examples?" OFF)
 option(BUILD_TOOLS "Build tools?" OFF)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings")
+    set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings -fPIC")
     set(CMAKE_C_FLAGS_DEBUG "-g")
     set(CMAKE_C_FLAGS_RELEASE "-O2")
 ENDIF()
