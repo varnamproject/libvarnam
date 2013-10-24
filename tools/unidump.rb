@@ -1,3 +1,8 @@
+##
+# Copyright (C) Navaneeth.K.N
+#
+# This is part of libvarnam. See LICENSE.txt for the license
+##
 
 require 'unicode_utils'
 

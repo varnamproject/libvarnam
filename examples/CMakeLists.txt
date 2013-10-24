@@ -1,3 +1,9 @@
+##
+# Copyright (C) Navaneeth.K.N
+#
+# This is part of libvarnam. See LICENSE.txt for the license
+##
+
 cmake_minimum_required (VERSION 2.8)
 
 project (examples)

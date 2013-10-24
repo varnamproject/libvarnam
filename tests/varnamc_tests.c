@@ -1,3 +1,9 @@
+/* test-runner.c - driver program that executes the supplied test
+ *
+ * Copyright (C) Navaneeth.K.N
+ *
+ * This is part of libvarnam. See LICENSE.txt for the license
+ */
 
 #include "../varnam.h"
 #include <check.h>

@@ -1,5 +1,11 @@
 # encoding: utf-8
 
+##
+# Copyright (C) Maulik DS
+#
+# This is part of libvarnam. See LICENSE.txt for the license
+##
+
 language_code "gu"
 identifier "gu-unicode"
 display_name "Gujarati"

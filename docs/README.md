@@ -1,3 +1,4 @@
+
 - [Introduction](#introduction)
 - [News](#news)
 - [Installing](#installing)
@@ -149,7 +150,7 @@ int main(int args, char **argv)
 }
 ```
 
-On a Linux machine, above example can be compiled using the following command:
+On a GNU/Linux machine, above example can be compiled using the following command:
 
 ```shell
 gcc `pkg-config --cflags --libs varnam` -o example example.c
@@ -332,6 +333,12 @@ Thank you for your interest. You can look at [issues](https://github.com/navanee
     <td>Email</td><td>varnamproject [at] googlegroups.com</td>
   </tr>
 </table>
+
+# Copyright
+
+Copyright (C) Navaneeth.K.N
+
+This is part of libvarnam. See LICENSE.txt for the license
 
 <a name="license" />
 # License

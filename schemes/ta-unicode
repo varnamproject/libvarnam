@@ -1,5 +1,11 @@
 # encoding: utf-8
 
+##
+# Copyright (C) Navaneeth.K.N
+#
+# This is part of libvarnam. See LICENSE.txt for the license
+##
+
 language_code "ta"
 identifier "ta-unicode"
 display_name "Tamil"

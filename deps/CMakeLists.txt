@@ -1,4 +1,8 @@
-
+##
+# Copyright (C) Navaneeth.K.N
+#
+# This is part of libvarnam. See LICENSE.txt for the license
+##
 
 # This builds the 3rd party code that we uses. It uses very less level of warnings 
 # than the actual code

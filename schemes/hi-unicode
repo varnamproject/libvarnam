@@ -1,5 +1,11 @@
 # encoding: utf-8
 
+##
+# Copyright (C) Prateek Kumar Baheti
+#
+# This is part of libvarnam. See LICENSE.txt for the license
+##
+
 language_code "hi"
 identifier "hi-unicode"
 display_name "Hindi"
