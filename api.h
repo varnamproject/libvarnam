@@ -409,6 +409,20 @@ VARNAM_EXPORT extern int varnam_detect_lang(
     varnam *handle,
     const char *word);
 
+/**
+ * Checks the specified word is know to varnam
+ *
+ * handle - A valid varnam instance
+ * word   - Word to check for
+ *
+ * RETURN
+ *
+ * A boolean value indicating the whether the word is known to varnam.
+ **/
+VARNAM_EXPORT extern int varnam_is_known_word(
+        varnam *handle, 
+        const char *word);
+
 VARNAM_EXPORT extern void
 varnam_destroy(varnam *handle);
 

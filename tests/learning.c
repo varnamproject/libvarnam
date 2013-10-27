@@ -46,11 +46,11 @@ setup_test_data()
             VARNAM_TOKEN_CONSONANT, VARNAM_MATCH_POSSIBILITY, 0, 0, 0);
     assert_success (rc);
 
-    rc = varnam_create_token (varnam_instance, "0", "०", "", 
+    rc = varnam_create_token (varnam_instance, "0", "०", "",
             "", "", VARNAM_TOKEN_NUMBER, VARNAM_MATCH_EXACT, 0, 0, 0);
     assert_success (rc);
 
-    rc = varnam_create_token (varnam_instance, "1", "१", "", 
+    rc = varnam_create_token (varnam_instance, "1", "१", "",
             "", "", VARNAM_TOKEN_NUMBER, VARNAM_MATCH_EXACT, 0, 0, 0);
     assert_success (rc);
 }
@@ -148,6 +148,21 @@ START_TEST (numbers_will_be_ignored_while_learning)
 }
 END_TEST
 
+START_TEST (is_known_word)
+{
+    int rc;
+    varray *words;
+    const char *word_to_learn = "കഖ";
+    const char *invalid_word = "ഖക";
+
+    rc = varnam_learn (varnam_instance, word_to_learn);
+    assert_success (rc);
+
+    ck_assert_int_eq (varnam_is_known_word(varnam_instance, word_to_learn), 1);
+    ck_assert_int_eq (varnam_is_known_word(varnam_instance, invalid_word), 0);
+}
+END_TEST
+
 TCase* get_learning_tests()
 {
     TCase* tcase = tcase_create("learning");
@@ -160,5 +175,6 @@ TCase* get_learning_tests()
     tcase_add_test (tcase, words_with_repeating_characters_will_not_be_learned);
     tcase_add_test (tcase, numbers_will_be_ignored_while_learning);
     tcase_add_test (tcase, confidence_should_get_updated_for_existing_words);
+    tcase_add_test (tcase, is_known_word);
     return tcase;
 }

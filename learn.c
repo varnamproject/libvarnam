@@ -662,4 +662,28 @@ varnam_import_learnings_from_file(varnam *handle, const char *filepath,
     return VARNAM_SUCCESS;
 }
 
+int
+varnam_is_known_word(varnam* handle, const char* word)
+{
+    int rc;
+    sqlite3_int64 word_id;
 
+    if (handle == NULL || word == NULL)
+        return 0;
+
+    if (!is_words_store_available (handle)) {
+        return 0;
+    }
+
+    reset_pool (handle);
+
+    rc = vwt_get_word_id (handle, word, &word_id);
+    if (rc != VARNAM_SUCCESS) {
+        return 0;
+    }
+
+    if (word_id > 0)
+        return 1;
+    else
+        return 0;
+}
