@@ -22,15 +22,12 @@
 - [Contact](#contact)
 - [License](#license)
 
-<a name="introduction" />
 # Introduction
 
 `libvarnam` is a cross platform, self learning, open source library which support transliteration and reverse transliteration for Indian languages. At the core is a C shared library providing algorithms and patterns for transliteration. `libvarnam` has a simple learning module built-in which can learn words to improve the transliteration experience. 
 
-<a name="installing" />
 # Installing libvarnam
 
-<a name="installing_dependencies" />
 ## Dependencies
 
 <table>
@@ -45,7 +42,6 @@
   </tr>
 </table>
 
-<a name="installing_installation" />
 ## Installation
 
 `libvarnam` uses `CMake` as build system. `libvarnam` doesn't have any external dependencies. So building it is easy.
@@ -56,7 +52,6 @@ $ make
 $ make install
 ```
 
-<a name="getting_started" />
 # Getting started
 
 You can use `varnamc` which is a command line client to `libvarnam` to quickly try out `libvarnam`. 
@@ -106,10 +101,9 @@ Similarly if you want varnam to learn some word
 $ ./varnamc --symbols ml --learn വർണം
 ```
 
-<a name="public_api" />
 # Public API
 
-`api.h` defines the public API for `libvarnam`. Take a look at [api.h](https://github.com/navaneeth/libvarnam/blob/master/api.h) for available functions.
+`api.h` defines the public API for `libvarnam`. Take a look at api.h in the source for available functions.
 
 In short, `libvarnam` can be initialized using `varnam_init()`. `varnam_init()` will initialize a handle which needs to be passed to all other functions. `varnam_transliterate()` can transliterate a word. `varnam_learn()` can be used to learn a word. 
 
@@ -156,19 +150,16 @@ On a GNU/Linux machine, above example can be compiled using the following comman
 gcc `pkg-config --cflags --libs varnam` -o example example.c
 ```
 
-<a name="supported_languages" />
 # Supported languages
 
 * Hindi
 * Malayalam
 * Gujarati (Experimental)
 
-<a name="adding_a_new_language" />
 # Adding a new language
 
 A new language can be added to `libvarnam` by adding a new scheme file. A scheme file is a simple Ruby file which can be used to specify the symbols for a language. The best way to write a new scheme file is to refer to an existing one. All the scheme files are stored under `schemes/` directory.
 
-<a name="adding_a_new_language_metadata" />
 ## Metadata
 
 A scheme file often starts with metadata.
@@ -180,7 +171,6 @@ A scheme file often starts with metadata.
 <tr><td>author</td><td>Author of the scheme file</td></tr>
 </table>
 
-<a name="adding_a_new_language_syntax" />
 ## Syntax
 
 ```ruby
@@ -202,7 +192,6 @@ options = {:accept_if => starts_with | ends_with | in_between, :priority => 0..9
 
 Given the above mapping, varnam will replace token `a` with `a-value` and token `b` with `b-value`. Multiple patterns can be specified in an array. In this case, both `a` and `aa` will resolve to `b-value`.
 
-<a name="adding_a_new_language_symbol_types" />
 ## Symbol types
 
 The following functions are available in the scheme files to define different types of symbols. 
@@ -217,12 +206,10 @@ The following functions are available in the scheme files to define different ty
 * numbers
 * others
 
-<a name="adding_a_new_language_other_functions" />
 ## Other functions
 
 Following functions are available in a scheme file.
 
-<a name="adding_a_new_language_other_functions_infer_dead_consonants" />
 ### infer_dead_consonants
 
 Usage
@@ -241,11 +228,9 @@ consonants 'ka' => 'क'
 
 In this case, varnam will create a consonant `ka` which will resolve to `क` and a dead consonant `k` which resolves to `क्`.
 
-<a name="adding_a_new_language_other_functions_generate_cv" />
 ### generate_cv
 
 When this function is called, varnam will autogenerate consonant-vowel combinations. Consider the following statements.
-
 
 ```ruby
 vowels 'aa' => ['आ', 'ा']
@@ -256,7 +241,6 @@ generate_cv
 ```
 In this case, varnam will generate consonant-vowel combinations like, `kaa` => 'का'
 
-<a name="adding_a_new_language_other_functions_list" />
 ### list
 
 Creates a custom list and adds the tokens into the list.
@@ -271,7 +255,7 @@ consonants_with_inherent_a_sound.each do |c|
   puts c
 end
 ```
-<a name="adding_a_new_language_other_functions_combine" />
+
 ### combine
 
 `combine` function can be used to generate combination of tokens. Consider the following scheme file for *Hindi*.
@@ -289,7 +273,6 @@ It takes a list as the first argument and hash as the second argument. List coul
 
 `combine` function returns a hash that can be passed to token creation functions like `consonants` or `vowels`.
 
-<a name="adding_a_new_language_other_functions_setting_priority_for_a_token" />
 ### Setting priority for a token
 
 When defining a token, you can assign some priority to it. When varnam does the tokenization, high priority tokens will appear first in the list.
@@ -300,7 +283,6 @@ consonants({:priority => :high}, 'ka' => 'क')
 
 This will generate consonant `ka` with priority set to `high`.
 
-<a name="adding_a_new_language_other_functions_setting_accept_condition_for_a_token" />
 ### Setting accept condition for a token
 
 Each token can have an optional accept condition. Accept condition can have 1 of 3 possible values. `starts_with`, `ends_with` and `in_between`. 
@@ -311,12 +293,10 @@ consonants({:accept_if => :starts_with}, 'ka' => 'क')
 
 In this case, varnam will accept token `ka` only if the pattern starts with `ka`.
 
-<a name="contributing" />
 # Contributing
 
 Thank you for your interest. You can look at [issues](https://github.com/navaneeth/libvarnam/issues) and pick one which you find interesting to work with. Submit a pull request after the fix.
 
-<a name="contact" />
 # Contact
 
 <table>
@@ -340,10 +320,7 @@ Copyright (C) Navaneeth.K.N
 
 This is part of libvarnam. See LICENSE.txt for the license
 
-<a name="license" />
-# License
-
-## The MIT License (MIT)
+# The MIT License (MIT)
 
 Copyright (c) 2013 Navaneeth.K.N
 
