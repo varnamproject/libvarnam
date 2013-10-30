@@ -2,7 +2,7 @@
 
 # encoding: utf-8
 
-## 
+##
 ## Copyright (C) Navaneeth.K.N
 ##
 ## This is part of libvarnam. See LICENSE.txt for the license
@@ -283,11 +283,9 @@ def initialize_varnam_handle
   end
 
   # Configuring suggestions
-  if $options[:learnings_file].nil?
-      $options[:learnings_file] = get_file_path "#{File.basename($vst_file_name, ".")}.learnings"
-  end
-  configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
-    Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
+  $options[:learnings_file] = get_learnings_file $vst_file_name
+  puts $options[:learnings_file]
+  configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
   if configured != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     error error_message
@@ -297,10 +295,29 @@ end
 
 def get_file_path(fname)
   if $options[:output_directory].nil?
-    return fname
+    return File.join(Dir.home, ".varnam", fname)
   else
     return File.join($options[:output_directory], fname)
   end
+end
+
+def get_learnings_file(symbols_file_name)
+  return $options[:learnings_file] if not $options[:learnings_file].nil?
+
+  # we use the standard $HOME/.varnam/suggestions
+  make_suggestions_dir_if_required
+  return get_file_path(File.join("suggestions", "#{File.basename(symbols_file_name, ".")}.learnings"))
+end
+
+def make_suggestions_dir_if_required
+  out_dir = File.join(Dir.home, '.varnam')
+  if not $options[:output_directory].nil?
+      out_dir = $options[:output_directory]
+  end
+  Dir.mkdir out_dir if not Dir.exists?(out_dir)
+
+  suggestions_dir = File.join(out_dir, 'suggestions')
+  Dir.mkdir suggestions_dir if not Dir.exists?(suggestions_dir)
 end
 
 def do_action
@@ -1263,7 +1280,7 @@ def export_words
   exporttype = Varnam::VARNAM_EXPORT_WORDS if $options[:action] == 'export-words'
   exporttype = Varnam::VARNAM_EXPORT_FULL if $options[:action] == 'export-full'
 
-  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 10000000, outDir.strip, 
+  done = VarnamLibrary.varnam_export_words($varnam_handle.get_pointer(0), 10000000, outDir.strip,
                                            exporttype, ExportCallback);
   if done != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
