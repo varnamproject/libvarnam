@@ -103,6 +103,7 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
         return VARNAM_MEMORY_ERROR;
 
     c->scheme_file = NULL;
+    c->suggestions_file = NULL;
     c->internal = NULL;
 
     vi = initialize_internal();
@@ -142,6 +143,18 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
 
     *handle = c;
     return VARNAM_SUCCESS;
+}
+
+const char*
+varnam_get_scheme_file (varnam *handle)
+{
+  return handle->scheme_file;
+}
+
+const char*
+varnam_get_suggestions_file (varnam *handle)
+{
+  return handle->suggestions_file;
 }
 
 static strbuf*
@@ -561,6 +574,7 @@ static int
 enable_suggestions(varnam *handle, const char *file)
 {
     int rc;
+    strbuf *tmp;
 
     if (v_->known_words != NULL) {
         sqlite3_close (v_->known_words);
@@ -578,9 +592,16 @@ enable_suggestions(varnam *handle, const char *file)
         return VARNAM_ERROR;
     }
 
-    varnam_debug (handle, "%s will be used to store known words", file);
+    rc = vwt_ensure_schema_exists (handle);
+    if (rc != VARNAM_SUCCESS) {
+      return rc;
+    }
 
-    return vwt_ensure_schema_exists (handle);
+    tmp = strbuf_init (20);
+    strbuf_add (tmp, file);
+    handle->suggestions_file = strbuf_detach (tmp);
+
+    return VARNAM_SUCCESS;
 }
 
 int
@@ -652,6 +673,7 @@ varnam_destroy(varnam *handle)
 
     destroy_varnam_internal (handle->internal);
     xfree(handle->scheme_file);
+    xfree(handle->suggestions_file);
     xfree(handle);
 }
 

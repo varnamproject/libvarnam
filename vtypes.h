@@ -144,6 +144,7 @@ struct varnam_internal
 
 typedef struct varnam {
     char *scheme_file;
+    char *suggestions_file;
     struct varnam_internal *internal;
 } varnam;
 

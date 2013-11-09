@@ -84,6 +84,7 @@ START_TEST (initialize_using_lang_code)
   int rc;
   char *errMsg = NULL;
   varnam *handle;
+  strbuf *tmp;
 
   rc = varnam_init_from_lang ("ml", &handle, &errMsg);
   if (errMsg != NULL) {
@@ -91,6 +92,12 @@ START_TEST (initialize_using_lang_code)
   }
 
   assert_success (rc);
+  ck_assert_str_eq ("/usr/local/share/varnam/vst/ml.vst", varnam_get_scheme_file (handle));
+  tmp = strbuf_init (10);
+  strbuf_addf (tmp, "%s/.local/share/varnam/suggestions/ml.vst.learnings", getenv ("HOME"));
+  ck_assert_str_eq (strbuf_to_s (tmp), varnam_get_suggestions_file (handle));
+
+  strbuf_destroy (tmp);
   varnam_destroy (handle);
 }
 END_TEST

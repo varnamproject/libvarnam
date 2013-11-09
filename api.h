@@ -34,6 +34,18 @@ VARNAM_EXPORT extern int
 varnam_init(const char *scheme_file, varnam **handle, char **msg);
 
 /**
+ * Gets the scheme file currently used
+ **/
+VARNAM_EXPORT extern const char*
+varnam_get_scheme_file (varnam *handle);
+
+/**
+ * Gets the suggestions file
+ **/
+VARNAM_EXPORT extern const char*
+varnam_get_suggestions_file (varnam *handle);
+
+/**
  * Initializes the varnam library from the language code
  *
  * This searches for the symbols file in the following locations
