@@ -181,9 +181,16 @@ const char *ZWJ();
 char *trimwhitespace(char *str);
 bool is_special_character(char c);
 
+int get_stat(const char *pathname);
+bool is_directory(const char *pathname);
+bool is_path_exists(const char *pathname);
+
 /* Constants */
 
 #define MAX_PATH_LENGTH 4096
 #define MAX_PATTERN_LENGTH 20
+#define V_PATHNAME_INVALID 0
+#define V_PATHNAME_DIRECTORY 1
+#define V_PATHNAME_FILE 2
 
 #endif

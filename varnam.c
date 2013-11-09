@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) Navaneeth.K.N
  *
  * This is part of libvarnam. See LICENSE.txt for the license
@@ -142,6 +142,98 @@ varnam_init(const char *scheme_file, varnam **handle, char **msg)
 
     *handle = c;
     return VARNAM_SUCCESS;
+}
+
+static strbuf*
+find_symbols_file_path (const char *langCode)
+{
+  int i;
+  strbuf *path;
+  const char* symbolsFileSearchPath[] = {
+    "/usr/local/share/varnam/vst",
+    "/usr/share/varnam/vst",
+    "schemes"
+  };
+
+  path = strbuf_init (50);
+  for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
+    strbuf_addf (path, "%s/%s.vst", symbolsFileSearchPath[i], langCode);
+    if (is_path_exists (strbuf_to_s (path)))
+      return path;
+
+    strbuf_clear (path);
+  }
+
+  return NULL;
+}
+
+static strbuf*
+find_learnings_file_path (const char *langCode)
+{
+  char *tmp;
+  strbuf *path;
+
+  path = strbuf_init (20);
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
+  tmp = getenv ("APPDATA");
+  if (tmp != NULL) {
+    strbuf_addf (path, "%s\\varnam\\suggestions\\", tmp);
+    if (!is_directory (strbuf_to_s (path))) {
+      strbuf_clear (path);
+    }
+  }
+#else
+  tmp = getenv ("XDG_DATA_HOME");
+  if (tmp == NULL) {
+    tmp = getenv ("HOME");
+    if (tmp != NULL) {
+      strbuf_addf (path, "%s/.local/share/varnam/suggestions/", tmp);
+    }
+  }
+  else {
+    strbuf_addf (path, "%s/varnam/suggestions/", tmp);
+  }
+
+  if (!strbuf_is_blank (path) && !is_directory (strbuf_to_s (path))) {
+    strbuf_clear (path);
+  }
+#endif
+
+  strbuf_addf (path, "%s.vst.learnings", langCode);
+  return path;
+}
+
+int
+varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage)
+{
+  strbuf *symbolsFilePath, *learningsFilePath, *error;
+  int rc;
+
+  if (langCode == NULL)
+    return VARNAM_ARGS_ERROR;
+
+  *handle = NULL;
+  *errorMessage = NULL;
+
+  symbolsFilePath = find_symbols_file_path (langCode);
+  if (symbolsFilePath == NULL) {
+    error = strbuf_init (20);
+    strbuf_addf (error, "Failed to find symbols file for: %s", langCode);
+    *errorMessage = strbuf_detach (error);
+    return VARNAM_ERROR;
+  }
+  learningsFilePath = find_learnings_file_path (langCode);
+
+  rc = varnam_init (strbuf_to_s (symbolsFilePath), handle, errorMessage);
+  if (rc == VARNAM_SUCCESS) {
+    rc = varnam_config (*handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, strbuf_to_s (learningsFilePath));
+  }
+
+  strbuf_destroy (symbolsFilePath);
+  strbuf_destroy (learningsFilePath);
+
+  return rc;
 }
 
 const char*
@@ -375,7 +467,7 @@ varnam_create_token(
         return VARNAM_ARGS_ERROR;
     }
 
-    if (accept_condition != VARNAM_TOKEN_ACCEPT_ALL && 
+    if (accept_condition != VARNAM_TOKEN_ACCEPT_ALL &&
             accept_condition != VARNAM_TOKEN_ACCEPT_IF_STARTS_WITH &&
             accept_condition != VARNAM_TOKEN_ACCEPT_IF_IN_BETWEEN &&
             accept_condition != VARNAM_TOKEN_ACCEPT_IF_ENDS_WITH) {

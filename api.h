@@ -33,6 +33,31 @@
 VARNAM_EXPORT extern int
 varnam_init(const char *scheme_file, varnam **handle, char **msg);
 
+/**
+ * Initializes the varnam library from the language code
+ *
+ * This searches for the symbols file in the following locations
+ *
+ * /usr/local/share/varnam/vst, /usr/share/varnam/vst, schemes/
+ *
+ * Suggestions file will be searched in the following locations
+ *
+ * XDG_DATA_HOME/varnam/suggestions, HOME/.local/share/varnam/suggestions
+ *
+ * langCode       - Language code in ISO 639-1 format
+ * handle         - Varnam handle to be initialized.
+ * errorMessage   - Set when any error happens
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS       - Successfully initialized
+ * VARNAM_ARGS_ERROR    - When mandatory arguements are NULL
+ * VARNAM_MEMORY_ERROR  - No sufficient memory to initialize
+ * VARNAM_STORAGE_ERROR - Errors related to underlying file
+ * */
+VARNAM_EXPORT extern int
+varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage);
+
 VARNAM_EXPORT extern const char*
 varnam_version();
 
@@ -420,7 +445,7 @@ VARNAM_EXPORT extern int varnam_detect_lang(
  * A boolean value indicating the whether the word is known to varnam.
  **/
 VARNAM_EXPORT extern int varnam_is_known_word(
-        varnam *handle, 
+        varnam *handle,
         const char *word);
 
 VARNAM_EXPORT extern void

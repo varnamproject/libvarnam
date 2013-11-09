@@ -79,6 +79,34 @@ START_TEST (normal_init)
 }
 END_TEST
 
+START_TEST (initialize_using_lang_code)
+{
+  int rc;
+  char *errMsg = NULL;
+  varnam *handle;
+
+  rc = varnam_init_from_lang ("ml", &handle, &errMsg);
+  if (errMsg != NULL) {
+    printf ("init_from_lang failed: %s\n", errMsg);
+  }
+
+  assert_success (rc);
+  varnam_destroy (handle);
+}
+END_TEST
+
+START_TEST (initialize_using_invalid_lang_code)
+{
+  int rc;
+  char *errMsg = NULL;
+  varnam *handle;
+  rc = varnam_init_from_lang ("mll", &handle, &errMsg);
+  assert_error (rc);
+  ck_assert (errMsg != NULL);
+  varnam_destroy (handle);
+}
+END_TEST
+
 START_TEST (initialize_on_writeprotected_location)
 {
     int rc;
@@ -156,6 +184,8 @@ TCase* get_initialization_tests()
     tcase_add_test (tcase, set_scheme_details);
     tcase_add_test (tcase, enable_suggestions);
     tcase_add_test (tcase, normal_init);
+    tcase_add_test (tcase, initialize_using_lang_code);
+    tcase_add_test (tcase, initialize_using_invalid_lang_code);
     tcase_add_test (tcase, initialize_on_writeprotected_location);
     tcase_add_test (tcase, initialize_on_incorrect_location);
     tcase_add_test (tcase, initialize_on_already_existing_file);
