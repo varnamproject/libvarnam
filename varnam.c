@@ -18,6 +18,29 @@
 #include "vword.h"
 #include "renderer/renderers.h"
 
+strbuf *varnam_suggestions_dir = NULL;
+strbuf *varnam_symbols_dir = NULL;
+
+void
+varnam_set_symbols_dir (const char *dir)
+{
+    if (varnam_symbols_dir == NULL) {
+        varnam_symbols_dir = strbuf_init (20);
+    }
+    strbuf_clear (varnam_symbols_dir);
+    strbuf_add (varnam_symbols_dir, dir);
+}
+
+void
+varnam_set_suggestions_dir (const char *dir)
+{
+    if (varnam_suggestions_dir == NULL) {
+        varnam_suggestions_dir = strbuf_init (20);
+    }
+    strbuf_clear (varnam_suggestions_dir);
+    strbuf_add (varnam_suggestions_dir, dir);
+}
+
 static void
 destroy_varnam_internal(struct varnam_internal* vi);
 
@@ -169,6 +192,14 @@ find_symbols_file_path (const char *langCode)
   };
 
   path = strbuf_init (50);
+  if (varnam_symbols_dir != NULL) {
+    strbuf_addf (path, "%s/%s.vst", strbuf_to_s (varnam_symbols_dir), langCode);
+    if (!is_path_exists (strbuf_to_s (path)))
+        return NULL;
+
+    return path;
+  }
+
   for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
     strbuf_addf (path, "%s/%s.vst", symbolsFileSearchPath[i], langCode);
     if (is_path_exists (strbuf_to_s (path)))
@@ -236,7 +267,14 @@ varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage
     *errorMessage = strbuf_detach (error);
     return VARNAM_ERROR;
   }
-  learningsFilePath = find_learnings_file_path (langCode);
+
+  if (varnam_suggestions_dir != NULL) {
+      learningsFilePath = strbuf_init (20);
+      strbuf_add (learningsFilePath, varnam_suggestions_dir);
+  }
+  else {
+      learningsFilePath = find_learnings_file_path (langCode);
+  }
 
   rc = varnam_init (strbuf_to_s (symbolsFilePath), handle, errorMessage);
   if (rc == VARNAM_SUCCESS) {
@@ -675,6 +713,8 @@ varnam_destroy(varnam *handle)
     xfree(handle->scheme_file);
     xfree(handle->suggestions_file);
     xfree(handle);
+    strbuf_destroy (varnam_suggestions_dir);
+    strbuf_destroy (varnam_symbols_dir);
 }
 
 static void

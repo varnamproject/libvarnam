@@ -179,7 +179,12 @@ int strbuf_addvf(struct strbuf *string, const char *format, va_list args)
 
 void strbuf_destroy(void *s)
 {
-    strbuf *string = (strbuf*) s;
+    strbuf *string;
+
+    if (s == NULL)
+        return;
+
+    string = (strbuf*) s;
     if(string->buffer != NULL) {
         xfree(string->buffer);
     }
