@@ -33,7 +33,7 @@ int main()
     varray *words; /* Used to store transliterated words */
 
     /* Initialize varnam handle */
-    rc = varnam_init ("../schemes/ml-unicode.vst", &handle, &msg);
+    rc = varnam_init ("../schemes/ml.vst", &handle, &msg);
     if (rc != VARNAM_SUCCESS)
     {
         printf("Initialization failed. Reason - %s\n", msg);

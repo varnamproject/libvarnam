@@ -171,24 +171,7 @@ optparse = OptionParser.new do |opts|
     if File.exist?(value)
       $options[:symbols_file] = value
     else
-      # When no file name is provided, varnamc searches in predefined locations
-      # for a symbols file
-        symbols_search_path = ['./schemes', '/usr/local/share/varnam/vst', '/usr/share/varnam/vst']
-        symbols_search_path.each do |path|
-        file = File.join(path, "#{value}-unicode.vst")
-        if File.exist?(file)
-          $options[:symbols_file] = file
-          puts "Using #{file}"
-          break
-        end
-      end
-
-      if $options[:symbols_file].nil?
-        puts "Failed to load #{value}-unicode.vst."
-        puts "Search paths - #{symbols_search_path.to_s}"
-        puts "If symbols file is in a non-standard path, you can specify full path to the symbols file"
-        exit(1)
-      end
+      $options[:lang_code] = value;
     end
   end
 
@@ -266,15 +249,27 @@ def initialize_varnam_handle
     $vst_file_name = $options[:symbols_file]
   end
 
-  if $vst_file_name.nil?
+  initialized = false;
+  $varnam_handle = FFI::MemoryPointer.new :pointer
+  init_error_msg = FFI::MemoryPointer.new(:pointer, 1)
+  if not $vst_file_name.nil?
+    initialized = VarnamLibrary.varnam_init($vst_file_name, $varnam_handle, init_error_msg)
+    # Configuring suggestions
+    $options[:learnings_file] = get_learnings_file $vst_file_name
+    puts $options[:learnings_file]
+    configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
+    if configured != 0
+        error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+        error error_message
+        exit(1)
+    end
+  elsif not $options[:lang_code].nil?
+    initialized = VarnamLibrary.varnam_init_from_lang($options[:lang_code], $varnam_handle, init_error_msg)
+  else
     puts "varnamc : Can't load symbols file. Use --symbols option to specify the symbols file"
     exit(1)
   end
 
-  $varnam_handle = FFI::MemoryPointer.new :pointer
-  init_error_msg = FFI::MemoryPointer.new(:pointer, 1)
-
-  initialized = VarnamLibrary.varnam_init($vst_file_name, $varnam_handle, init_error_msg)
   if (initialized != 0)
     ptr = init_error_msg.read_pointer()
     msg = ptr.nil? ? "" : ptr.read_string
@@ -282,15 +277,6 @@ def initialize_varnam_handle
     exit(1)
   end
 
-  # Configuring suggestions
-  $options[:learnings_file] = get_learnings_file $vst_file_name
-  puts $options[:learnings_file]
-  configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
-  if configured != 0
-    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-    error error_message
-    exit(1)
-  end
 end
 
 def get_file_path(fname)

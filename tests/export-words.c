@@ -22,9 +22,9 @@ setup_data()
     int rc;
     char* unique_filename = NULL;
 
-    const char *filename = "../schemes/ml-unicode.vst";
+    const char *filename = "../schemes/ml.vst";
     if (!file_exist (filename)) {
-        ck_abort_msg ("../schemes/ml-unicode.vst is not available");
+        ck_abort_msg ("../schemes/ml.vst is not available");
     }
     reinitialize_varnam_instance (filename);
 

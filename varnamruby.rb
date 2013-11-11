@@ -33,6 +33,7 @@ module VarnamLibrary
   end
 
   attach_function :varnam_init, [:string, :pointer, :pointer], :int
+  attach_function :varnam_init_from_lang, [:string, :pointer, :pointer], :int
   attach_function :varnam_version, [], :string
   attach_function :varnam_transliterate, [:pointer, :string, :pointer], :int
   attach_function :varnam_reverse_transliterate, [:pointer, :string, :pointer], :int

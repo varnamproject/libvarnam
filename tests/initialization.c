@@ -176,7 +176,7 @@ START_TEST (init_destroy_loop_memory_stress_test)
     varray* output;
 
     for (i = 0; i < 100; i++) {
-        rc = varnam_init ("../schemes/ml-unicode.vst", &handle, &msg);
+        rc = varnam_init ("../schemes/ml.vst", &handle, &msg);
         ck_assert_int_eq (rc, VARNAM_SUCCESS);
         rc = varnam_transliterate(handle, "navaneeth", &output);
         ck_assert_int_eq (rc, VARNAM_SUCCESS);
