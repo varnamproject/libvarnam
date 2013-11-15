@@ -83,4 +83,7 @@ print_tokens_array(varray *tokens);
 void
 destroy_all_statements(struct varnam_internal* vi);
 
+int
+vst_make_prefix_tree (varnam *handle);
+
 #endif

@@ -567,7 +567,6 @@ varnam_create_token(
                 if (buffered) vst_discard_changes(handle);
                 return rc;
             }
-
         }
     }
 
@@ -581,6 +580,11 @@ varnam_create_token(
     if (rc != VARNAM_SUCCESS)
     {
         if (buffered) vst_discard_changes(handle);
+    }
+
+    if (!buffered) {
+        rc = vst_make_prefix_tree (handle);
+        if (rc != VARNAM_SUCCESS) return rc;
     }
 
     return rc;
@@ -602,8 +606,14 @@ varnam_get_all_tokens(
 int
 varnam_flush_buffer(varnam *handle)
 {
+    int rc;
+
     if (handle == NULL)
         return VARNAM_ARGS_ERROR;
+
+    rc = vst_make_prefix_tree (handle);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
 
     return vst_flush_changes(handle);
 }

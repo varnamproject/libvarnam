@@ -38,6 +38,10 @@
 #define VARNAM_TOKEN_NON_JOINER        11
 #define VARNAM_TOKEN_JOINER            12
 
+/* token flags */
+#define VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN (1 << 0)
+#define VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_VALUE   (1 << 1)
+
 /* configuration options */
 #define VARNAM_CONFIG_USE_DEAD_CONSONANTS      100
 #define VARNAM_CONFIG_IGNORE_DUPLICATE_TOKEN   101
@@ -149,7 +153,7 @@ typedef struct varnam {
 } varnam;
 
 typedef struct token {
-    int id, type, match_type, priority, accept_condition;
+    int id, type, match_type, priority, accept_condition, flags;
     char tag[VARNAM_SYMBOL_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];

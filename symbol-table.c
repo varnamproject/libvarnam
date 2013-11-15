@@ -22,7 +22,7 @@ ensure_schema_exists(varnam *handle, char **msg)
     const char *sql =
         "pragma page_size=4096;"
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create table if not exists symbols (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, value3 TEXT, tag TEXT, match_type INTEGER, priority INTEGER DEFAULT 0, accept_condition INTEGER);";
+        "create table if not exists symbols (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern TEXT, value1 TEXT, value2 TEXT, value3 TEXT, tag TEXT, match_type INTEGER, priority INTEGER DEFAULT 0, accept_condition INTEGER, flags INTEGER DEFAULT 0);";
 
     const char *indexes =
         "create index if not exists index_metadata on metadata (key);"
@@ -133,6 +133,113 @@ already_persisted(
     }
 
     sqlite3_finalize( stmt );
+
+    return VARNAM_SUCCESS;
+}
+
+/*
+ * Makes a prefix tree.
+ *
+ * Iterates over all the symbols, finds if a symbol can have more matches, if yes mark it in the flags and move on
+ * flags will be a bit field which represents more matches for values and pattern
+ * */
+int
+vst_make_prefix_tree (varnam *handle)
+{
+    int rc, symbolId, flags = 0;
+    sqlite3 *db;
+    sqlite3_stmt *selectSymbolsStmt = NULL, *patternChildrenStmt = NULL, *valueChildrenStmt = NULL, *updateFlagsStmt = NULL;
+    strbuf *pattern, *value;
+
+    db = handle->internal->db;
+
+    rc = sqlite3_prepare_v2 (db, "select id, pattern, value1 from symbols;", -1, &selectSymbolsStmt, NULL);
+    if (rc != SQLITE_OK) {
+        set_last_error (handle, "Failed to prepare statement to get all symbols: %s", sqlite3_errmsg(db));
+        sqlite3_finalize (selectSymbolsStmt);
+        return VARNAM_ERROR;
+    }
+
+    rc = sqlite3_prepare_v2 (db, "select count(id) from symbols where pattern <> ?1 and pattern like ?1 || '%';", -1, &patternChildrenStmt, NULL);
+    if (rc != SQLITE_OK) {
+        set_last_error (handle, "Failed to prepare statement to get children for pattern: %s", sqlite3_errmsg(db));
+        sqlite3_finalize (patternChildrenStmt);
+        return VARNAM_ERROR;
+    }
+
+    rc = sqlite3_prepare_v2 (db, "select count(id) from symbols where (value1 <> ?1 and value2 <> ?1) and (value1 like ?1 || '%' or value2 like ?1 || '%');", 
+            -1, &valueChildrenStmt, NULL);
+    if (rc != SQLITE_OK) {
+        set_last_error (handle, "Failed to prepare statement to get children for value: %s", sqlite3_errmsg(db));
+        sqlite3_finalize (valueChildrenStmt);
+        return VARNAM_ERROR;
+    }
+
+    rc = sqlite3_prepare_v2 (db, "update symbols set flags = ?1 where id = ?2;", -1, &updateFlagsStmt, NULL);
+    if (rc != SQLITE_OK) {
+        set_last_error (handle, "Failed to prepare statement to update flags for symbols: %s", sqlite3_errmsg(db));
+        sqlite3_finalize (updateFlagsStmt);
+        return VARNAM_ERROR;
+    }
+
+    pattern = get_pooled_string (handle);
+    value = get_pooled_string (handle);
+    for (;;) {
+        flags = 0;
+
+        rc = sqlite3_step (selectSymbolsStmt);
+        if (rc == SQLITE_DONE)
+            break;
+        else if (rc != SQLITE_ROW) {
+            set_last_error (handle, "Failed to select all symbols: %s", sqlite3_errmsg(db));
+            sqlite3_finalize (selectSymbolsStmt);
+            return VARNAM_ERROR;
+        }
+
+        symbolId = sqlite3_column_int (selectSymbolsStmt, 0);
+        strbuf_add (pattern, (const char*) sqlite3_column_text (selectSymbolsStmt, 1));
+        strbuf_add (value, (const char*) sqlite3_column_text (selectSymbolsStmt, 2));
+
+        sqlite3_bind_text (patternChildrenStmt, 1, strbuf_to_s (pattern), -1, NULL);
+        rc = sqlite3_step (patternChildrenStmt);
+        if (rc != SQLITE_ROW) {
+            set_last_error (handle, "Failed to find children for pattern: %s", sqlite3_errmsg(db));
+            sqlite3_finalize (patternChildrenStmt);
+            return VARNAM_ERROR;
+        }
+        if (sqlite3_column_int (patternChildrenStmt, 0) > 0)
+            flags = VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN;
+        sqlite3_reset (patternChildrenStmt);
+
+        sqlite3_bind_text (valueChildrenStmt, 1, strbuf_to_s (value), -1, NULL);
+        rc = sqlite3_step (valueChildrenStmt);
+        if (rc != SQLITE_ROW) {
+            set_last_error (handle, "Failed to find children for value: %s", sqlite3_errmsg(db));
+            sqlite3_finalize (valueChildrenStmt);
+            return VARNAM_ERROR;
+        }
+        if (sqlite3_column_int (valueChildrenStmt, 0) > 0)
+            flags = flags | VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_VALUE;
+        sqlite3_reset (valueChildrenStmt);
+
+        sqlite3_bind_int (updateFlagsStmt, 1, flags);
+        sqlite3_bind_int (updateFlagsStmt, 2, symbolId);
+        rc = sqlite3_step (updateFlagsStmt);
+        if (rc != SQLITE_DONE) {
+            set_last_error (handle, "Failed to make prefix tree: %s", sqlite3_errmsg(db));
+            sqlite3_finalize (updateFlagsStmt);
+            return VARNAM_ERROR;
+        }
+        sqlite3_reset (updateFlagsStmt);
+
+        strbuf_clear (pattern);
+        strbuf_clear (value);
+    }
+
+    sqlite3_finalize (selectSymbolsStmt);
+    sqlite3_finalize (patternChildrenStmt);
+    sqlite3_finalize (valueChildrenStmt);
+    sqlite3_finalize (updateFlagsStmt);
 
     return VARNAM_SUCCESS;
 }
@@ -272,7 +379,7 @@ vst_get_virama(varnam* handle, struct token **output)
 
     db = handle->internal->db;
 
-    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
+    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
         set_last_error (handle, "Failed to get virama : %s", sqlite3_errmsg(db));
@@ -296,7 +403,8 @@ vst_get_virama(varnam* handle, struct token **output)
                         (const char*) sqlite3_column_text(stmt, 6),
                         (const char*) sqlite3_column_text(stmt, 7),
                         (int) sqlite3_column_int(stmt, 8),
-                        (int) sqlite3_column_int(stmt, 9));
+                        (int) sqlite3_column_int(stmt, 9),
+                        (int) sqlite3_column_int(stmt, 10));
 
         v_->virama = *output;
     }
@@ -327,7 +435,7 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
 
     varray_clear (tokens);
 
-    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition from symbols where type = ?1;", -1, &stmt, NULL );
+    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where type = ?1;", -1, &stmt, NULL );
     if(rc != SQLITE_OK)
     {
         set_last_error (handle, "Failed to get all tokens : %s", sqlite3_errmsg(db));
@@ -351,7 +459,8 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
                                     (const char*) sqlite3_column_text(stmt, 6),
                                     (const char*) sqlite3_column_text(stmt, 7),
                                     (int) sqlite3_column_int(stmt, 8),
-                                    (int) sqlite3_column_int(stmt, 9));
+                                    (int) sqlite3_column_int(stmt, 9),
+                                    (int) sqlite3_column_int(stmt, 10));
 
             varray_push (tokens, tok);
         }
@@ -466,7 +575,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
     case VARNAM_TOKENIZER_PATTERN:
         if (v_->tokenize_using_pattern == NULL)
         {
-            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition from symbols where pattern = ?1 and match_type = 1;",
+            rc = sqlite3_prepare_v2( v_->db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where pattern = ?1 and match_type = 1;",
                                      -1, &v_->tokenize_using_pattern, NULL );
             if (rc != SQLITE_OK) {
                 set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -480,7 +589,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition from symbols where value1 = ?1 or value2 = ?1 group by pattern order by priority desc, id asc;",
+                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where value1 = ?1 or value2 = ?1 group by pattern order by priority desc, id asc;",
                                          -1, &v_->tokenize_using_value, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -493,7 +602,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value_and_match_type == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2 group by pattern order by priority desc, id asc;",
+                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2 group by pattern order by priority desc, id asc;",
                                          -1, &v_->tokenize_using_value_and_match_type, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -540,7 +649,8 @@ read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokeni
                                     (const char*) sqlite3_column_text( stmt, 6 ),
                                     (const char*) sqlite3_column_text( stmt, 7 ),
                                     sqlite3_column_int( stmt, 8 ),
-                                    sqlite3_column_int( stmt, 9 ));
+                                    sqlite3_column_int( stmt, 9 ),
+                                    sqlite3_column_int( stmt, 10 ));
             assert (tok);
 
             if (!cleared) {
@@ -606,6 +716,7 @@ can_find_more_matches(varnam *handle, struct strbuf *lookup, int tokenize_using,
 
     snprintf( candidate, 500, "%s%s", strbuf_to_s (lookup), "%");
     sqlite3_bind_text (stmt, 1, candidate, -1, NULL);
+    printf ("candidate: %s\n", candidate);
 
     *possible = false;
     rc = sqlite3_step( stmt );
@@ -643,7 +754,6 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
         strbuf_clear (lookup);
         strbuf_add_bytes (lookup, input, bytes_read);
 
-
 #ifdef _VARNAM_VERBOSE
     printf("Finding token for %s\n", strbuf_to_s (lookup));
 #endif
@@ -677,7 +787,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
             token = get_pooled_token (handle, -99,
                                       VARNAM_TOKEN_OTHER,
                                       VARNAM_MATCH_EXACT,
-                                      strbuf_to_s (lookup), strbuf_to_s (lookup), "", "", "", 0, VARNAM_TOKEN_ACCEPT_ALL);
+                                      strbuf_to_s (lookup), strbuf_to_s (lookup), "", "", "", 0, VARNAM_TOKEN_ACCEPT_ALL, 0);
             assert (token);
             varray_push (tokens, token);
             matchpos = (int) lookup->length;
