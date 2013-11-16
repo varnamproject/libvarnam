@@ -580,6 +580,7 @@ varnam_create_token(
     if (rc != VARNAM_SUCCESS)
     {
         if (buffered) vst_discard_changes(handle);
+        return rc;
     }
 
     if (!buffered) {

@@ -676,15 +676,34 @@ read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokeni
     return VARNAM_SUCCESS;
 }
 
-static bool
-can_find_more_matches(varnam *handle, struct strbuf *lookup, int tokenize_using, bool *possible)
+static int
+can_find_more_matches(varnam *handle, varray *tokens, struct strbuf *lookup, int tokenize_using, bool *possible)
 {
     int rc;
     sqlite3_stmt *stmt = NULL;
     char candidate[500];
+    vtoken *token;
 
     assert (tokenize_using == VARNAM_TOKENIZER_PATTERN
         || tokenize_using == VARNAM_TOKENIZER_VALUE);
+
+    if (!varray_is_empty (tokens)) {
+        token = varray_get (tokens, 0);
+        if (tokenize_using == VARNAM_TOKENIZER_PATTERN) {
+            if (token->flags & VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN)
+                *possible = true;
+            else
+                *possible = false;
+        }
+        else {
+            if (token->flags & VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_VALUE)
+                *possible = true;
+            else
+                *possible = false;
+        }
+
+        return VARNAM_SUCCESS;
+    }
 
     switch (tokenize_using)
     {
@@ -781,6 +800,8 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
         }
 #endif
 
+        rc = can_find_more_matches (handle, tokens, lookup, tokenize_using, &possibility);
+        if (rc) return rc;
         if (varray_is_empty (tokens))
         {
             /* We couldn't find any tokens. So adding lookup as the match */
@@ -792,8 +813,6 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
             varray_push (tokens, token);
             matchpos = (int) lookup->length;
         }
-        rc = can_find_more_matches (handle, lookup, tokenize_using, &possibility);
-        if (rc) return rc;
         if (possibility && *inputcopy != '\0') continue;
 
         varray_push (result, tokens);

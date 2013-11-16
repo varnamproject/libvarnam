@@ -38,8 +38,7 @@ END_TEST
 
 START_TEST (get_all_tokens)
 {
-    int rc, count = 0, i;
-    struct token *current;
+    int rc;
     varray *tokens;
 
     rc = varnam_create_token(varnam_instance, "pattern", "value1", "value2","","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0, 0);
@@ -66,6 +65,46 @@ START_TEST (get_all_tokens)
     rc = varnam_get_all_tokens(varnam_instance, VARNAM_TOKEN_CONSONANT, &tokens);
     assert_success (rc);
     ck_assert_int_eq (2, varray_length (tokens));
+}
+END_TEST
+
+START_TEST (prefix_tree)
+{
+    int rc, i;
+    struct token *current;
+    varray *tokens;
+
+    rc = varnam_create_token(varnam_instance, "a", "value1", "value2","","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0, 0);
+    assert_success (rc);
+
+    rc = varnam_create_token(varnam_instance, "aa", "value11", "value21", "","", VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0, 0);
+    assert_success (rc);
+
+    rc = varnam_create_token(varnam_instance, "b", "value12", "value22", "", "",VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0, 0);
+    assert_success (rc);
+
+    rc = varnam_create_token(varnam_instance, "ba", "value12", "value22", "", "",VARNAM_TOKEN_VOWEL, VARNAM_MATCH_EXACT, 0, 0, 0);
+    assert_success (rc);
+
+    rc = varnam_get_all_tokens(varnam_instance, VARNAM_TOKEN_VOWEL, &tokens);
+    assert_success (rc);
+
+    for (i = 0; i < varray_length (tokens); i++) {
+        current = (vtoken*) varray_get (tokens, i);
+        if (strcmp ("a", current->pattern) == 0) {
+            ck_assert (current->flags & VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN);
+            ck_assert (current->flags & VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_VALUE);
+        }
+        if (strcmp ("aa", current->pattern) == 0) {
+            ck_assert (current->flags == 0);
+        }
+        if (strcmp ("b", current->pattern) == 0) {
+            ck_assert (current->flags & VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN);
+        }
+        if (strcmp ("ba", current->pattern) == 0) {
+            ck_assert (current->flags == 0);
+        }
+    }
 }
 END_TEST
 
@@ -177,7 +216,7 @@ END_TEST
 START_TEST (maxlength_check)
 {
     int rc, i;
-    char *msg; char pattern[VARNAM_SYMBOL_MAX + 2]; char value1[VARNAM_SYMBOL_MAX + 2]; char value2[VARNAM_SYMBOL_MAX + 2];
+    char pattern[VARNAM_SYMBOL_MAX + 2]; char value1[VARNAM_SYMBOL_MAX + 2]; char value2[VARNAM_SYMBOL_MAX + 2];
 
     for (i = 0; i < VARNAM_SYMBOL_MAX + 1; i++)
     {
@@ -211,5 +250,6 @@ TCase* get_token_creation_tests()
     tcase_add_test (tcase, create_possibility_match_duplicates);
     tcase_add_test (tcase, only_valid_matchtypes);
     tcase_add_test (tcase, maxlength_check);
+    tcase_add_test (tcase, prefix_tree);
     return tcase;
 }
