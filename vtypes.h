@@ -125,6 +125,9 @@ struct varnam_internal
 
     struct varray_t *tokens;
 
+    struct strbuf *lastLearnedWord;
+    sqlite3_int64 lastLearnedWordId;
+
     /* Prepared statements */
     sqlite3_stmt *tokenize_using_pattern;
     sqlite3_stmt *tokenize_using_value;

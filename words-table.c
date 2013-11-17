@@ -197,6 +197,11 @@ vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
 
     assert (v_->known_words);
 
+    if (v_->lastLearnedWord != NULL && strcmp (word, strbuf_to_s (v_->lastLearnedWord)) == 0) {
+        *word_id = v_->lastLearnedWordId;
+        return VARNAM_SUCCESS;
+    }
+
     if (v_->get_word == NULL)
     {
         rc = sqlite3_prepare_v2( v_->known_words, "select id, word, confidence, learned_on from words where word = ?1 limit 1", -1, &v_->get_word, NULL );
@@ -326,6 +331,12 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
 
     assert (v_->known_words);
 
+    if (v_->lastLearnedWord == NULL) {
+        v_->lastLearnedWord = strbuf_init (20);
+    }
+
+    strbuf_clear (v_->lastLearnedWord);
+
     if (!v_->_config_mostly_learning_new_words) {
         rc = try_update_word_confidence (handle, word, &confidence_updated);
         if (rc) return rc;
@@ -333,6 +344,8 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
         if (!confidence_updated) {
             rc = try_insert_new_word (handle, word, confidence, &new_word_id);
             if (rc) return rc;
+            strbuf_add (v_->lastLearnedWord, word);
+            v_->lastLearnedWordId = new_word_id;
         }
     }
     else {
@@ -345,6 +358,9 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
             rc = try_update_word_confidence (handle, word, &confidence_updated);
             if (rc) return rc;
         }
+
+        strbuf_add (v_->lastLearnedWord, word);
+        v_->lastLearnedWordId = new_word_id;
     }
 
     /*varnam_log (handle, "Learned word %s", word);*/

@@ -57,6 +57,8 @@ initialize_internal()
         vi->log_callback = NULL;
         vi->log_message = strbuf_init(100);
         vi->vst_buffering = 0;
+        vi->lastLearnedWord = NULL;
+        vi->lastLearnedWordId = 0;
 
         /* scheme details buffers */
         vi->scheme_language_code = strbuf_init(2);
@@ -747,6 +749,7 @@ destroy_varnam_internal(struct varnam_internal* vi)
     strbuf_destroy (vi->scheme_author);
     strbuf_destroy (vi->scheme_compiled_date);
     strbuf_destroy (vi->log_message);
+    strbuf_destroy (vi->lastLearnedWord);
     sqlite3_close(vi->db);
     if (vi->known_words != NULL)
         sqlite3_close(vi->known_words);
