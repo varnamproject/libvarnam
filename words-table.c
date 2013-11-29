@@ -120,13 +120,15 @@ vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
 int
 vwt_compact_file (varnam *handle)
 {
-    const char *sql =
-        "VACUUM;";
+    /*const char *sql =*/
+        /*"VACUUM;";*/
 
-    assert (handle);
-    assert (v_->known_words);
+    /*assert (handle);*/
+    /*assert (v_->known_words);*/
 
-    return execute_sql (handle, v_->known_words, sql);
+    /*return execute_sql (handle, v_->known_words, sql);*/
+    /* Not doing any compacting */
+    return VARNAM_SUCCESS;
 }
 
 int
