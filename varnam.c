@@ -105,6 +105,9 @@ initialize_internal()
         vi->delete_word = NULL;
         vi->export_words = NULL;
         vi->learned_words_count = NULL;
+
+        vi->tokens_cache = NULL;
+        vi->noMatchesCache = NULL;
     }
     return vi;
 }

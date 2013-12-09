@@ -10,6 +10,7 @@
 #define VARNAMLIB_H_INCLUDED_103830
 
 #include "deps/sqlite3.h"
+#include "deps/uthash.h"
 
 #define VARNAM_SYMBOL_MAX           30
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
@@ -83,6 +84,14 @@ struct strbuf;
 struct token;
 struct vpool_t;
 
+typedef void (*vcache_value_free_cb)(void*);
+typedef struct {
+    char *key;
+    void *value;
+    vcache_value_free_cb cb;
+    UT_hash_handle hh;
+} vcache_entry;
+
 struct varnam_internal
 {
     /* file handles */
@@ -147,6 +156,10 @@ struct varnam_internal
     sqlite3_stmt *delete_word;
     sqlite3_stmt *export_words;
     sqlite3_stmt *learned_words_count;
+
+    /* in-memory caches */
+    vcache_entry *tokens_cache;
+    vcache_entry *noMatchesCache; /* Contains all the patterns which don't have a match */
 };
 
 typedef struct varnam {
