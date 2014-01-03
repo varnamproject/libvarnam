@@ -719,6 +719,20 @@ destroy_array(void *a)
         varray_free (array, NULL);
 }
 
+static void
+clear_cache (vcache_entry **cache)
+{
+    vcache_entry *current, *tmp;
+    HASH_ITER(hh, *cache, current, tmp) {
+        HASH_DEL(*cache, current);  /* delete; users advances to next */
+        xfree (current->key);
+        if (current->cb != NULL) {
+            current->cb (current->value);
+        }
+        xfree (current);
+    }
+}
+
 void
 varnam_destroy(varnam *handle)
 {
@@ -757,5 +771,7 @@ destroy_varnam_internal(struct varnam_internal* vi)
     if (vi->known_words != NULL)
         sqlite3_close(vi->known_words);
 
+    clear_cache (&vi->tokens_cache);
+    clear_cache (&vi->noMatchesCache);
     xfree(vi);
 }

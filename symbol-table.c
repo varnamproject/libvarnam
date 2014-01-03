@@ -686,7 +686,7 @@ can_find_more_matches(varnam *handle, varray *tokens, struct strbuf *lookup, int
     assert (tokenize_using == VARNAM_TOKENIZER_PATTERN
         || tokenize_using == VARNAM_TOKENIZER_VALUE);
 
-    if (!varray_is_empty (tokens)) {
+    if (tokens != NULL && !varray_is_empty (tokens)) {
         token = varray_get (tokens, 0);
         if (tokenize_using == VARNAM_TOKENIZER_PATTERN) {
             if (token->flags & VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN)
@@ -748,6 +748,13 @@ can_find_more_matches(varnam *handle, varray *tokens, struct strbuf *lookup, int
     return VARNAM_SUCCESS;;
 }
 
+static void
+destroy_tokens_cb (void *value)
+{
+    varray *array = value;
+    varray_free (array, &destroy_token);
+}
+
 int
 vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_type, varray *result)
 {
@@ -755,7 +762,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
     const unsigned char *ustring; const char *inputcopy;
     struct strbuf *lookup, *cacheKey;
     vtoken *token;
-    varray *tokens = NULL, *cachedEntry = NULL;
+    varray *tokens = NULL, *cachedEntry = NULL, *tmpTokens = NULL;
     bool possibility, tokensAvailable = false;
 
     if (input == NULL || *input == '\0') return VARNAM_SUCCESS;
@@ -774,51 +781,45 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
         strbuf_add_bytes (lookup, input, bytes_read);
         strbuf_addf (cacheKey, "%s%d%d", strbuf_to_s (lookup), tokenize_using, match_type);
 
-#ifdef _VARNAM_VERBOSE
-    printf("Finding token for %s\n", strbuf_to_s (lookup));
-#endif
-
-       cachedEntry = lru_find_in_cache (&v_->tokens_cache, strbuf_to_s (cacheKey)); 
-       if (cachedEntry != NULL) {
-           tokens = cachedEntry;
-           tokensAvailable = true;
- #ifdef _VARNAM_VERBOSE
-           printf("Found token for %s from cache\n", strbuf_to_s (lookup));
-#endif
-      }
-       else if (lru_key_exists (&v_->noMatchesCache, strbuf_to_s (cacheKey))){
-           tokensAvailable = false;
-       }
-       else {
-           rc = read_all_tokens_and_add_to_array (handle,
-                   strbuf_to_s (lookup),
-                   tokenize_using,
-                   match_type,
-                   &tokens, &tokensAvailable);
-           if (rc) return rc;
-           if (tokensAvailable) {
-               lru_add_to_cache (&v_->tokens_cache, strbuf_to_s (cacheKey), tokens, NULL);
-           }
-           else {
-               /* this caching speeds up lookup which are not exists */
-               lru_add_to_cache (&v_->noMatchesCache, strbuf_to_s (cacheKey), NULL, NULL);
-           }
-       }
-
-       if (tokensAvailable) {
-            matchpos = bytes_read;
-#ifdef _VARNAM_VERBOSE
-            printf("Found token for %s\n", strbuf_to_s (lookup));
-#endif
+        cachedEntry = lru_find_in_cache (&v_->tokens_cache, strbuf_to_s (cacheKey)); 
+        if (cachedEntry != NULL) {
+            tokens = get_pooled_array (handle);
+            varray_copy (cachedEntry, tokens);
+            assert (varray_length (tokens) > 0);
+            tokensAvailable = true;
         }
-#ifdef _VARNAM_VERBOSE
+        else if (lru_key_exists (&v_->noMatchesCache, strbuf_to_s (cacheKey))){
+            tokensAvailable = false;
+        }
         else {
-            printf("No token found for %s\n", strbuf_to_s (lookup));
+            rc = read_all_tokens_and_add_to_array (handle,
+                    strbuf_to_s (lookup),
+                    tokenize_using,
+                    match_type,
+                    &tmpTokens, &tokensAvailable);
+            if (rc) return rc;
+            if (tokensAvailable) {
+                assert (varray_length (tmpTokens) > 0);
+                lru_add_to_cache (&v_->tokens_cache, strbuf_to_s (cacheKey), tmpTokens, destroy_tokens_cb);
+                tokens = get_pooled_array (handle);
+                varray_copy (tmpTokens, tokens);
+            }
+            else {
+                /* this caching speeds up lookup which are not exists */
+                lru_add_to_cache (&v_->noMatchesCache, strbuf_to_s (cacheKey), NULL, NULL);
+            }
         }
-#endif
 
-        rc = can_find_more_matches (handle, tokens, lookup, tokenize_using, &possibility);
-        if (rc) return rc;
+        if (tokensAvailable) {
+            matchpos = bytes_read;
+            rc = can_find_more_matches (handle, tokens, lookup, tokenize_using, &possibility);
+            if (rc) return rc;
+        }
+        else {
+            rc = can_find_more_matches (handle, NULL, lookup, tokenize_using, &possibility);
+            if (rc) return rc;
+        }
+
         if (tokens == NULL || varray_is_empty (tokens))
         {
             /* We couldn't find any tokens. So adding lookup as the match */
@@ -838,6 +839,7 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
         varray_push (result, tokens);
         bytes_read = 0;
         tokens = NULL;
+        tokensAvailable = false;
 
         input = input + matchpos;
         inputcopy = input;
