@@ -1,12 +1,12 @@
 language: c
 before_install:
   - wget http://www.cmake.org/files/v2.8/cmake-2.8.12.1-Linux-i386.sh
-  - sudo sh cmake-2.8.12.1-Linux-i386.sh --skip-license --prefix=/usr
+  - sudo sh cmake-2.8.12.1-Linux-i386.sh --skip-license --prefix=.
   - ls /usr/bin
 compiler:
   - gcc
   - clang
 # Change this to your needs
-script: cmake . && make
+script: ./bin/cmake . && make
 notifications:
     email: navaneethkn@gmail.com
