@@ -6,9 +6,7 @@
 
 # This builds the 3rd party code that we uses. It uses very less level of warnings 
 # than the actual code
-IF(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -fPIC")
-ENDIF()
+set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -fPIC")
 
 IF(MSVC)
     set(CMAKE_C_FLAGS "/Wall")
