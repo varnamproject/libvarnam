@@ -1,7 +1,6 @@
 language: c
 before_install:
-  - cd /tmp && wget http://www.cmake.org/files/v2.8/cmake-2.8.12.1.tar.gz && tar -xvf cmake-2.8.12.1.tar.gz && cd cmake-2.8.12.1
-  - ./configure --prefix=/usr && make && sudo make install
+  - cd /tmp && wget https://dl.dropboxusercontent.com/u/52296034/cmake12.zip && mkdir cmake && unzip cmake12.zip -d cmake && cd cmake && sudo cp -r . /usr && cmake --version
   - cd $TRAVIS_BUILD_DIR
 compiler:
   - gcc
