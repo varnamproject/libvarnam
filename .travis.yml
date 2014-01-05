@@ -1,8 +1,8 @@
 language: c
 before_install:
-  - wget http://www.cmake.org/files/v2.8/cmake-2.8.12.1-Linux-i386.sh
-  - sudo sh cmake-2.8.12.1-Linux-i386.sh --skip-license --prefix=.
-  - ls /usr/bin
+  - cd /tmp && wget http://www.cmake.org/files/v2.8/cmake-2.8.12.1.tar.gz && tar -xvf cmake-2.8.12.1.tar.gz && cd cmake-2.8.12.1
+  - ./configure --prefix=/usr && make && sudo make install
+  - cd $TRAVIS_BUILD_DIR
 compiler:
   - gcc
   - clang
