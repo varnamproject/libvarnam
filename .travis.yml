@@ -6,6 +6,6 @@ compiler:
   - gcc
   - clang
 # Change this to your needs
-script: ./bin/cmake . && make
+script: cmake . && make && sudo make install
 notifications:
     email: navaneethkn@gmail.com
