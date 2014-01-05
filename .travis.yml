@@ -1,0 +1,11 @@
+language: c
+before_install:
+  - cd /tmp && wget https://dl.dropboxusercontent.com/u/52296034/cmake12.zip && mkdir cmake && unzip cmake12.zip -d cmake && cd cmake && sudo cp -r . /usr && cmake --version
+  - cd $TRAVIS_BUILD_DIR
+compiler:
+  - gcc
+  - clang
+# Change this to your needs
+script: cmake . && make && sudo make install
+notifications:
+    email: navaneethkn@gmail.com

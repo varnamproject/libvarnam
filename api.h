@@ -12,6 +12,25 @@
 #include "util.h"
 #include "varray.h"
 
+extern strbuf *varnam_suggestions_dir;
+extern strbuf *varnam_symbols_dir;
+
+/**
+ * Sets the symbols directory where varnam will look for symbol files while initializing using varnam_init_from_lang
+ * This is useful if you keep the symbol files in a non-standard location
+ *
+ **/
+VARNAM_EXPORT void
+varnam_set_symbols_dir (const char *dir);
+
+/**
+ * Sets the suggestions directory where all the learning data will be stored. This value will be used
+ * when initializing using varnam_init_from_lang
+ *
+ **/
+VARNAM_EXPORT void
+varnam_set_suggestions_dir (const char *dir);
+
 /**
  * Initializes the varnam library.
  *

@@ -14,7 +14,7 @@
 #include "varray.h"
 
 struct token*
-Token(int id, int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* value3, const char* tag, int priority, int accept_condition);
+Token(int id, int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* value3, const char* tag, int priority, int accept_condition, int flags);
 
 struct token*
 get_pooled_token (
@@ -28,7 +28,7 @@ get_pooled_token (
     const char* value3,
     const char* tag,
     int priority,
-    int accept_condition);
+    int accept_condition, int flags);
 
 varray*
 product_tokens(varnam *handle, varray *tokens);

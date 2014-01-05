@@ -38,6 +38,9 @@ void
 varray_push(varray *array, void *data);
 
 void
+varray_copy(varray *source, varray *destination);
+
+void
 varray_remove_at(varray *array, int index);
 
 int

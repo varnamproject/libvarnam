@@ -185,8 +185,16 @@ int get_stat(const char *pathname);
 bool is_directory(const char *pathname);
 bool is_path_exists(const char *pathname);
 
-/* Constants */
+void*
+lru_find_in_cache (vcache_entry **cache, char *key);
 
+void
+lru_add_to_cache (vcache_entry **cache, char *key, void *value, vcache_value_free_cb cb);
+
+int
+lru_key_exists (vcache_entry **cache, char *key);
+
+/* Constants */
 #define MAX_PATH_LENGTH 4096
 #define MAX_PATTERN_LENGTH 20
 #define V_PATHNAME_INVALID 0

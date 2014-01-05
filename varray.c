@@ -43,6 +43,21 @@ varray_push(varray *array, void *data)
     array->used = array->used + size;
 }
 
+void
+varray_copy(varray *source, varray *destination)
+{
+    int i;
+    void *item;
+
+    if (source == NULL) return;
+    if (destination == NULL) return;
+
+    for (i = 0; i < varray_length (source); i++) {
+        item = varray_get (source, i);
+        varray_push (destination, item);
+    }
+}
+
 void*
 varray_get_last_item(varray *array)
 {

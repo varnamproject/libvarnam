@@ -30,17 +30,8 @@ vwt_ensure_schema_exists(varnam *handle)
 
     const char *tables =
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
-        "create table if not exists words (id integer primary key, word text unique, confidence integer default 1, learned_on date);"
+        "create table if not exists words (id integer primary key, word text unique, confidence integer default 1, learned_on integer);"
         "create table if not exists patterns_content (pattern text, word_id integer, learned integer default 0, primary key(pattern, word_id));";
-        /* "create virtual table if not exists patterns using fts4(content='patterns_content', pattern text, word_id integer, prefix=\"3,4,5,6,7,8,9,10\");"; */
-
-    /* const char *triggers1 = */
-    /*     "create trigger if not exists pc_bu before update on patterns_content begin delete from patterns where docid = old.rowid; end;" */
-    /*     "create trigger if not exists pc_bd before delete on patterns_content begin delete from patterns where docid = old.rowid; end;"; */
-
-    /* const char *triggers2 = */
-    /*     "create trigger if not exists pc_au after  update on patterns_content begin insert into patterns (docid, pattern, word_id) values (new.rowid, new.pattern, new.word_id); end;" */
-    /*     "create trigger if not exists pc_ai after  insert on patterns_content begin insert into patterns (docid, pattern, word_id) values (new.rowid, new.pattern, new.word_id); end;"; */
 
     char *zErrMsg = 0;
     int rc;
@@ -58,20 +49,6 @@ vwt_ensure_schema_exists(varnam *handle)
         sqlite3_free(zErrMsg);
         return VARNAM_ERROR;
     }
-
-    /* rc = sqlite3_exec(v_->known_words, triggers1, NULL, 0, &zErrMsg); */
-    /* if( rc != SQLITE_OK ){ */
-    /*     set_last_error (handle, "Failed to initialize file for storing known words. First set of triggers failed. : %s", zErrMsg); */
-    /*     sqlite3_free(zErrMsg); */
-    /*     return VARNAM_ERROR; */
-    /* } */
-
-    /* rc = sqlite3_exec(v_->known_words, triggers2, NULL, 0, &zErrMsg); */
-    /* if( rc != SQLITE_OK ){ */
-    /*     set_last_error (handle, "Failed to initialize file for storing known words. Second set of triggers failed. : %s", zErrMsg); */
-    /*     sqlite3_free(zErrMsg); */
-    /*     return VARNAM_ERROR; */
-    /* } */
 
     return VARNAM_SUCCESS;
 }
@@ -143,13 +120,15 @@ vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
 int
 vwt_compact_file (varnam *handle)
 {
-    const char *sql =
-        "VACUUM;";
+    /*const char *sql =*/
+        /*"VACUUM;";*/
 
-    assert (handle);
-    assert (v_->known_words);
+    /*assert (handle);*/
+    /*assert (v_->known_words);*/
 
-    return execute_sql (handle, v_->known_words, sql);
+    /*return execute_sql (handle, v_->known_words, sql);*/
+    /* Not doing any compacting */
+    return VARNAM_SUCCESS;
 }
 
 int
@@ -220,6 +199,11 @@ vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id)
 
     assert (v_->known_words);
 
+    if (v_->lastLearnedWord != NULL && strcmp (word, strbuf_to_s (v_->lastLearnedWord)) == 0) {
+        *word_id = v_->lastLearnedWordId;
+        return VARNAM_SUCCESS;
+    }
+
     if (v_->get_word == NULL)
     {
         rc = sqlite3_prepare_v2( v_->known_words, "select id, word, confidence, learned_on from words where word = ?1 limit 1", -1, &v_->get_word, NULL );
@@ -277,7 +261,7 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
 static int
 try_insert_new_word (varnam* handle, const char* word, int confidence, sqlite3_int64* new_word_id) {
     int rc;
-    const char *sql = "insert or ignore into words (word, confidence, learned_on) values(trim(?1), ?2, date());";
+    const char *sql = "insert or ignore into words (word, confidence, learned_on) values(trim(?1), ?2, strftime('%s', datetime(), 'localtime'));";
 
     *new_word_id = -1;
 
@@ -349,6 +333,12 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
 
     assert (v_->known_words);
 
+    if (v_->lastLearnedWord == NULL) {
+        v_->lastLearnedWord = strbuf_init (20);
+    }
+
+    strbuf_clear (v_->lastLearnedWord);
+
     if (!v_->_config_mostly_learning_new_words) {
         rc = try_update_word_confidence (handle, word, &confidence_updated);
         if (rc) return rc;
@@ -356,6 +346,8 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
         if (!confidence_updated) {
             rc = try_insert_new_word (handle, word, confidence, &new_word_id);
             if (rc) return rc;
+            strbuf_add (v_->lastLearnedWord, word);
+            v_->lastLearnedWordId = new_word_id;
         }
     }
     else {
@@ -368,6 +360,9 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
             rc = try_update_word_confidence (handle, word, &confidence_updated);
             if (rc) return rc;
         }
+
+        strbuf_add (v_->lastLearnedWord, word);
+        v_->lastLearnedWordId = new_word_id;
     }
 
     /*varnam_log (handle, "Learned word %s", word);*/
@@ -1286,7 +1281,7 @@ vwt_import_words (varnam* handle, FILE* file, void (*onfailure)(const char* line
     strbuf* line; strbuf* id; strbuf* word; strbuf* confidence;
     varray* parts;
     sqlite3_stmt* stmt = NULL;
-    const char* sql = "insert into words (id, word, confidence, learned_on) values (?1, ?2, ?3, date());";
+    const char* sql = "insert into words (id, word, confidence, learned_on) values (?1, ?2, ?3, strftime('%s', datetime(), 'localtime'));";
 
     rc = sqlite3_prepare_v2 (v_->known_words, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {

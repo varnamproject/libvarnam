@@ -20,6 +20,7 @@ module VarnamLibrary
     :match_type, :int,
     :priority, :int,
     :accept_condition, :int,
+    :flags, :int,
     :tag, [:char, VARNAM_SYMBOL_MAX],
     :pattern, [:char, VARNAM_SYMBOL_MAX],
     :value1, [:char, VARNAM_SYMBOL_MAX],
@@ -33,6 +34,7 @@ module VarnamLibrary
   end
 
   attach_function :varnam_init, [:string, :pointer, :pointer], :int
+  attach_function :varnam_init_from_lang, [:string, :pointer, :pointer], :int
   attach_function :varnam_version, [], :string
   attach_function :varnam_transliterate, [:pointer, :string, :pointer], :int
   attach_function :varnam_reverse_transliterate, [:pointer, :string, :pointer], :int
@@ -52,7 +54,7 @@ module VarnamLibrary
   attach_function :varnam_import_learnings_from_file, [:pointer, :string, :pointer], :int
 end
 
-VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type, :priority, :accept_condition)
+VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type, :priority, :accept_condition, :flags)
 VarnamWord = Struct.new(:text, :confidence)
 
 module Varnam

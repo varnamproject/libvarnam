@@ -18,6 +18,29 @@
 #include "vword.h"
 #include "renderer/renderers.h"
 
+strbuf *varnam_suggestions_dir = NULL;
+strbuf *varnam_symbols_dir = NULL;
+
+void
+varnam_set_symbols_dir (const char *dir)
+{
+    if (varnam_symbols_dir == NULL) {
+        varnam_symbols_dir = strbuf_init (20);
+    }
+    strbuf_clear (varnam_symbols_dir);
+    strbuf_add (varnam_symbols_dir, dir);
+}
+
+void
+varnam_set_suggestions_dir (const char *dir)
+{
+    if (varnam_suggestions_dir == NULL) {
+        varnam_suggestions_dir = strbuf_init (20);
+    }
+    strbuf_clear (varnam_suggestions_dir);
+    strbuf_add (varnam_suggestions_dir, dir);
+}
+
 static void
 destroy_varnam_internal(struct varnam_internal* vi);
 
@@ -34,6 +57,8 @@ initialize_internal()
         vi->log_callback = NULL;
         vi->log_message = strbuf_init(100);
         vi->vst_buffering = 0;
+        vi->lastLearnedWord = NULL;
+        vi->lastLearnedWordId = 0;
 
         /* scheme details buffers */
         vi->scheme_language_code = strbuf_init(2);
@@ -80,6 +105,9 @@ initialize_internal()
         vi->delete_word = NULL;
         vi->export_words = NULL;
         vi->learned_words_count = NULL;
+
+        vi->tokens_cache = NULL;
+        vi->noMatchesCache = NULL;
     }
     return vi;
 }
@@ -169,6 +197,14 @@ find_symbols_file_path (const char *langCode)
   };
 
   path = strbuf_init (50);
+  if (varnam_symbols_dir != NULL) {
+    strbuf_addf (path, "%s/%s.vst", strbuf_to_s (varnam_symbols_dir), langCode);
+    if (!is_path_exists (strbuf_to_s (path)))
+        return NULL;
+
+    return path;
+  }
+
   for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
     strbuf_addf (path, "%s/%s.vst", symbolsFileSearchPath[i], langCode);
     if (is_path_exists (strbuf_to_s (path)))
@@ -236,7 +272,14 @@ varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage
     *errorMessage = strbuf_detach (error);
     return VARNAM_ERROR;
   }
-  learningsFilePath = find_learnings_file_path (langCode);
+
+  if (varnam_suggestions_dir != NULL) {
+      learningsFilePath = strbuf_init (20);
+      strbuf_add (learningsFilePath, varnam_suggestions_dir);
+  }
+  else {
+      learningsFilePath = find_learnings_file_path (langCode);
+  }
 
   rc = varnam_init (strbuf_to_s (symbolsFilePath), handle, errorMessage);
   if (rc == VARNAM_SUCCESS) {
@@ -529,7 +572,6 @@ varnam_create_token(
                 if (buffered) vst_discard_changes(handle);
                 return rc;
             }
-
         }
     }
 
@@ -543,6 +585,12 @@ varnam_create_token(
     if (rc != VARNAM_SUCCESS)
     {
         if (buffered) vst_discard_changes(handle);
+        return rc;
+    }
+
+    if (!buffered) {
+        rc = vst_make_prefix_tree (handle);
+        if (rc != VARNAM_SUCCESS) return rc;
     }
 
     return rc;
@@ -564,8 +612,14 @@ varnam_get_all_tokens(
 int
 varnam_flush_buffer(varnam *handle)
 {
+    int rc;
+
     if (handle == NULL)
         return VARNAM_ARGS_ERROR;
+
+    rc = vst_make_prefix_tree (handle);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
 
     return vst_flush_changes(handle);
 }
@@ -665,6 +719,20 @@ destroy_array(void *a)
         varray_free (array, NULL);
 }
 
+static void
+clear_cache (vcache_entry **cache)
+{
+    vcache_entry *current, *tmp;
+    HASH_ITER(hh, *cache, current, tmp) {
+        HASH_DEL(*cache, current);  /* delete; users advances to next */
+        xfree (current->key);
+        if (current->cb != NULL) {
+            current->cb (current->value);
+        }
+        xfree (current);
+    }
+}
+
 void
 varnam_destroy(varnam *handle)
 {
@@ -675,6 +743,8 @@ varnam_destroy(varnam *handle)
     xfree(handle->scheme_file);
     xfree(handle->suggestions_file);
     xfree(handle);
+    strbuf_destroy (varnam_suggestions_dir);
+    strbuf_destroy (varnam_symbols_dir);
 }
 
 static void
@@ -696,9 +766,12 @@ destroy_varnam_internal(struct varnam_internal* vi)
     strbuf_destroy (vi->scheme_author);
     strbuf_destroy (vi->scheme_compiled_date);
     strbuf_destroy (vi->log_message);
+    strbuf_destroy (vi->lastLearnedWord);
     sqlite3_close(vi->db);
     if (vi->known_words != NULL)
         sqlite3_close(vi->known_words);
 
+    clear_cache (&vi->tokens_cache);
+    clear_cache (&vi->noMatchesCache);
     xfree(vi);
 }

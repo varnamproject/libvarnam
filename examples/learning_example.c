@@ -102,7 +102,7 @@ int main(int argc, char **argv)
         varnam_destroy (handle);
         return 1;
     }
-
+    
     varnam_destroy (handle);
 
     return 0;

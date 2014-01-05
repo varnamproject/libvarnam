@@ -10,6 +10,7 @@
 #define VARNAMLIB_H_INCLUDED_103830
 
 #include "deps/sqlite3.h"
+#include "deps/uthash.h"
 
 #define VARNAM_SYMBOL_MAX           30
 #define VARNAM_LIB_TEMP_BUFFER_SIZE 100
@@ -37,6 +38,10 @@
 #define VARNAM_TOKEN_OTHER             10
 #define VARNAM_TOKEN_NON_JOINER        11
 #define VARNAM_TOKEN_JOINER            12
+
+/* token flags */
+#define VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN (1 << 0)
+#define VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_VALUE   (1 << 1)
 
 /* configuration options */
 #define VARNAM_CONFIG_USE_DEAD_CONSONANTS      100
@@ -78,6 +83,14 @@ struct varnam_token_rendering;
 struct strbuf;
 struct token;
 struct vpool_t;
+
+typedef void (*vcache_value_free_cb)(void*);
+typedef struct {
+    char *key;
+    void *value;
+    vcache_value_free_cb cb;
+    UT_hash_handle hh;
+} vcache_entry;
 
 struct varnam_internal
 {
@@ -121,6 +134,9 @@ struct varnam_internal
 
     struct varray_t *tokens;
 
+    struct strbuf *lastLearnedWord;
+    sqlite3_int64 lastLearnedWordId;
+
     /* Prepared statements */
     sqlite3_stmt *tokenize_using_pattern;
     sqlite3_stmt *tokenize_using_value;
@@ -140,6 +156,10 @@ struct varnam_internal
     sqlite3_stmt *delete_word;
     sqlite3_stmt *export_words;
     sqlite3_stmt *learned_words_count;
+
+    /* in-memory caches */
+    vcache_entry *tokens_cache;
+    vcache_entry *noMatchesCache; /* Contains all the patterns which don't have a match */
 };
 
 typedef struct varnam {
@@ -149,7 +169,7 @@ typedef struct varnam {
 } varnam;
 
 typedef struct token {
-    int id, type, match_type, priority, accept_condition;
+    int id, type, match_type, priority, accept_condition, flags;
     char tag[VARNAM_SYMBOL_MAX];
     char pattern[VARNAM_SYMBOL_MAX];
     char value1[VARNAM_SYMBOL_MAX];
