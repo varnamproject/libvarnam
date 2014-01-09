@@ -589,7 +589,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where value1 = ?1 or value2 = ?1 group by pattern order by priority desc, id asc;",
+                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where value1 = ?1 or value2 = ?1 group by lower(pattern) order by priority desc, id asc;",
                                          -1, &v_->tokenize_using_value, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
@@ -602,7 +602,7 @@ prepare_tokenization_stmt (varnam *handle, int tokenize_using, int match_type, s
         {
             if (v_->tokenize_using_value_and_match_type == NULL)
             {
-                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2 group by pattern order by priority desc, id asc;",
+                rc = sqlite3_prepare_v2( v_->db, "select min(id) as id, type, match_type, lower(pattern) as pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where (value1 = ?1 or value2 = ?1) and match_type = ?2 group by lower(pattern) order by priority desc, id asc;",
                                          -1, &v_->tokenize_using_value_and_match_type, NULL );
                 if (rc != SQLITE_OK) {
                     set_last_error (handle, "Failed to tokenize : %s", sqlite3_errmsg(v_->db));
