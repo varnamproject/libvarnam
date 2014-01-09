@@ -1,6 +1,8 @@
 language: c
 before_install:
+  - ruby --version
   - sudo apt-get install check
+  - sudo gem install ffi
   - cd /tmp && wget https://dl.dropboxusercontent.com/u/52296034/cmake12.zip && mkdir cmake && unzip cmake12.zip -d cmake && cd cmake && sudo cp -r . /usr && cmake --version
   - cd $TRAVIS_BUILD_DIR
 compiler:
