@@ -10,6 +10,6 @@ compiler:
   - gcc
   - clang
 # Change this to your needs
-script: cmake -DBUILD_TESTS=true -DBUILD_TOOLS=true . && make && && make vst && sudo make install && cd tests && ./runtests
+script: cmake -DBUILD_TESTS=true -DBUILD_TOOLS=true . && make && make vst && sudo make install && cd tests && ./runtests
 notifications:
     email: varnamproject-discuss@nongnu.org
