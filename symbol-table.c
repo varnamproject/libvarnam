@@ -856,6 +856,29 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
     return VARNAM_SUCCESS;
 }
 
+int
+vst_stamp_version (varnam *handle)
+{
+    char *zErrMsg = 0;
+    int rc;
+    strbuf *sql;
+
+    assert(handle);
+    assert(handle->internal->db);
+
+    sql = strbuf_init (30);
+    strbuf_addf (sql, "PRAGMA user_version=%d;", VARNAM_SCHEMA_SYMBOLS_VERSION);
+    rc = sqlite3_exec(v_->db, strbuf_to_s (sql), NULL, 0, &zErrMsg);
+    if( rc != SQLITE_OK ){
+        set_last_error (handle, "Failed to stamp schema version : %s", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return VARNAM_STORAGE_ERROR;
+    }
+
+    strbuf_destroy (sql);
+    return VARNAM_SUCCESS;
+}
+
 void
 destroy_all_statements(struct varnam_internal* v)
 {

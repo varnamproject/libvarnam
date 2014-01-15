@@ -78,6 +78,10 @@
 #define VARNAM_PATTERNS_EXPORT_METADATA "filetype:varnam_patterns_export"
 #define VARNAM_WORDS_EXPORT_METADATA "filetype:varnam_words_export"
 
+/* Schema version number */
+#define VARNAM_SCHEMA_SYMBOLS_VERSION 20140115
+#define VARNAM_SCHEMA_WORDS_VERSION 20140115 
+
 struct varnam_rule;
 struct varnam_token_rendering;
 struct strbuf;

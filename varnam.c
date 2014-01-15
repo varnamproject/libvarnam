@@ -591,6 +591,9 @@ varnam_create_token(
     if (!buffered) {
         rc = vst_make_prefix_tree (handle);
         if (rc != VARNAM_SUCCESS) return rc;
+
+        rc = vst_stamp_version (handle);
+        if (rc != VARNAM_SUCCESS) return rc;
     }
 
     return rc;
@@ -618,6 +621,10 @@ varnam_flush_buffer(varnam *handle)
         return VARNAM_ARGS_ERROR;
 
     rc = vst_make_prefix_tree (handle);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
+
+    rc = vst_stamp_version (handle);
     if (rc != VARNAM_SUCCESS)
         return rc;
 

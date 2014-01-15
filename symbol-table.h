@@ -86,4 +86,7 @@ destroy_all_statements(struct varnam_internal* vi);
 int
 vst_make_prefix_tree (varnam *handle);
 
+int
+vst_stamp_version (varnam *handle);
+
 #endif
