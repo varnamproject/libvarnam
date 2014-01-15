@@ -137,6 +137,69 @@ already_persisted(
     return VARNAM_SUCCESS;
 }
 
+static int
+find_prefixes_and_update_flags (varnam *handle, sqlite3_stmt *stmtToExecute, sqlite3_stmt *stmtToUpdate)
+{
+    /* map which keeps (pattern OR value OR value1) -> id */
+    typedef struct {
+        const char *symbol;
+        int id;
+        UT_hash_handle hh;
+    } symbol_id_map;
+
+    int rc, symbolId;
+    const char *tmp; const char *symbol;
+    strbuf *symbolPrefix;
+    symbol_id_map *symbolIdMap = NULL, *symbolIdItem = NULL, *tmpSymbolIdItem;
+    sqlite3 *db;
+    sqlite3_stmt *stmt = stmtToExecute;
+
+    db = handle->internal->db;
+
+    symbolPrefix = get_pooled_string (handle);
+    for (;;) {
+        rc = sqlite3_step (stmt);
+        if (rc == SQLITE_DONE)
+            break;
+        else if (rc != SQLITE_ROW) {
+            set_last_error (handle, "Failed to execute statement: %s", sqlite3_errmsg(db));
+            return VARNAM_ERROR;
+        }
+
+        symbolId = sqlite3_column_int (stmt, 0);
+        symbol = tmp = (const char*) sqlite3_column_text (stmt, 1);
+        strbuf_clear (symbolPrefix);
+        while (*tmp != '\0') {
+            strbuf_addc (symbolPrefix, *tmp);
+            HASH_FIND_STR (symbolIdMap, strbuf_to_s (symbolPrefix), symbolIdItem);
+            if (symbolIdItem) {
+                /* we got a symbol id. This means this prefix will have children */
+                sqlite3_bind_text(stmtToUpdate, 1, strbuf_to_s (symbolPrefix),  -1, NULL);
+                rc = sqlite3_step (stmtToUpdate);
+                if (rc != SQLITE_DONE) {
+                    set_last_error (handle, "Failed to update flags: %d, %s", rc, sqlite3_errmsg(db));
+                    return VARNAM_ERROR;
+                }
+                sqlite3_clear_bindings (stmtToUpdate);
+                sqlite3_reset (stmtToUpdate);
+            }
+            tmp++;
+        }
+
+        symbolIdItem = xmalloc (sizeof (symbol_id_map));
+        symbolIdItem->symbol = strdup (symbol);
+        symbolIdItem->id = symbolId;
+        HASH_ADD_KEYPTR (hh, symbolIdMap, symbolIdItem->symbol, strlen(symbolIdItem->symbol), symbolIdItem);
+    }
+
+    HASH_ITER (hh, symbolIdMap, symbolIdItem, tmpSymbolIdItem) {
+        xfree (symbolIdItem->symbol);
+        xfree (symbolIdItem);
+    }
+
+    return VARNAM_SUCCESS;
+}
+
 /*
  * Makes a prefix tree.
  *
@@ -146,101 +209,46 @@ already_persisted(
 int
 vst_make_prefix_tree (varnam *handle)
 {
-    int rc, symbolId, flags = 0;
+    int rc, i, mask;
     sqlite3 *db;
-    sqlite3_stmt *selectSymbolsStmt = NULL, *patternChildrenStmt = NULL, *valueChildrenStmt = NULL, *updateFlagsStmt = NULL;
-    strbuf *pattern, *value;
-
+    sqlite3_stmt *stmt, *updateStmt;
+    strbuf *query;
+    const char *columnNames[] = {"pattern", "value1", "value2"};
+    
     db = handle->internal->db;
 
-    rc = sqlite3_prepare_v2 (db, "select id, pattern, value1 from symbols;", -1, &selectSymbolsStmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to prepare statement to get all symbols: %s", sqlite3_errmsg(db));
-        sqlite3_finalize (selectSymbolsStmt);
-        return VARNAM_ERROR;
-    }
-
-    rc = sqlite3_prepare_v2 (db, "select count(id) from symbols where pattern <> ?1 and pattern like ?1 || '%';", -1, &patternChildrenStmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to prepare statement to get children for pattern: %s", sqlite3_errmsg(db));
-        sqlite3_finalize (patternChildrenStmt);
-        return VARNAM_ERROR;
-    }
-
-    rc = sqlite3_prepare_v2 (db, "select count(id) from symbols where (value1 <> ?1 and value2 <> ?1) and (value1 like ?1 || '%' or value2 like ?1 || '%');", 
-            -1, &valueChildrenStmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to prepare statement to get children for value: %s", sqlite3_errmsg(db));
-        sqlite3_finalize (valueChildrenStmt);
-        return VARNAM_ERROR;
-    }
-
-    rc = sqlite3_prepare_v2 (db, "update symbols set flags = ?1 where id = ?2;", -1, &updateFlagsStmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to prepare statement to update flags for symbols: %s", sqlite3_errmsg(db));
-        sqlite3_finalize (updateFlagsStmt);
-        return VARNAM_ERROR;
-    }
-
-    pattern = get_pooled_string (handle);
-    value = get_pooled_string (handle);
-    for (;;) {
-        flags = 0;
-
-        rc = sqlite3_step (selectSymbolsStmt);
-        if (rc == SQLITE_DONE)
-            break;
-        else if (rc != SQLITE_ROW) {
-            set_last_error (handle, "Failed to select all symbols: %s", sqlite3_errmsg(db));
-            sqlite3_finalize (selectSymbolsStmt);
+    query = get_pooled_string (handle);
+    for (i = 0; i < ARRAY_SIZE (columnNames); i++) {
+        strbuf_clear (query);
+        strbuf_addf (query, "select id, %s from symbols group by %s order by length(%s) asc;", columnNames[i], columnNames[i], columnNames[i]);
+        rc = sqlite3_prepare_v2 (db, strbuf_to_s (query), -1, &stmt, NULL);
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to prepare statement to get all %s: %s", columnNames[i], sqlite3_errmsg(db));
+            sqlite3_finalize (stmt);
             return VARNAM_ERROR;
         }
 
-        symbolId = sqlite3_column_int (selectSymbolsStmt, 0);
-        strbuf_add (pattern, (const char*) sqlite3_column_text (selectSymbolsStmt, 1));
-        strbuf_add (value, (const char*) sqlite3_column_text (selectSymbolsStmt, 2));
+        if (strcmp ("pattern", columnNames[i]) == 0)
+            mask = VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN;
+        else
+            mask = VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_VALUE;
 
-        sqlite3_bind_text (patternChildrenStmt, 1, strbuf_to_s (pattern), -1, NULL);
-        rc = sqlite3_step (patternChildrenStmt);
-        if (rc != SQLITE_ROW) {
-            set_last_error (handle, "Failed to find children for pattern: %s", sqlite3_errmsg(db));
-            sqlite3_finalize (patternChildrenStmt);
+        strbuf_clear (query);
+        strbuf_addf (query, "update symbols set flags = flags | %d where %s = ?1;", mask, columnNames[i]);
+        rc = sqlite3_prepare_v2 (db, strbuf_to_s (query), -1, &updateStmt, NULL);
+        if (rc != SQLITE_OK) {
+            set_last_error (handle, "Failed to prepare statement update flags for %s: %s", columnNames[i], sqlite3_errmsg(db));
+            sqlite3_finalize (updateStmt);
             return VARNAM_ERROR;
         }
-        if (sqlite3_column_int (patternChildrenStmt, 0) > 0)
-            flags = VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN;
-        sqlite3_reset (patternChildrenStmt);
 
-        sqlite3_bind_text (valueChildrenStmt, 1, strbuf_to_s (value), -1, NULL);
-        rc = sqlite3_step (valueChildrenStmt);
-        if (rc != SQLITE_ROW) {
-            set_last_error (handle, "Failed to find children for value: %s", sqlite3_errmsg(db));
-            sqlite3_finalize (valueChildrenStmt);
-            return VARNAM_ERROR;
-        }
-        if (sqlite3_column_int (valueChildrenStmt, 0) > 0)
-            flags = flags | VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_VALUE;
-        sqlite3_reset (valueChildrenStmt);
-
-        sqlite3_bind_int (updateFlagsStmt, 1, flags);
-        sqlite3_bind_int (updateFlagsStmt, 2, symbolId);
-        rc = sqlite3_step (updateFlagsStmt);
-        if (rc != SQLITE_DONE) {
-            set_last_error (handle, "Failed to make prefix tree: %s", sqlite3_errmsg(db));
-            sqlite3_finalize (updateFlagsStmt);
-            return VARNAM_ERROR;
-        }
-        sqlite3_reset (updateFlagsStmt);
-
-        strbuf_clear (pattern);
-        strbuf_clear (value);
+        rc = find_prefixes_and_update_flags (handle, stmt, updateStmt);
+        sqlite3_finalize (stmt);
+        sqlite3_finalize (updateStmt);
+        if (rc != VARNAM_SUCCESS)
+            return rc;
     }
-
-    sqlite3_finalize (selectSymbolsStmt);
-    sqlite3_finalize (patternChildrenStmt);
-    sqlite3_finalize (valueChildrenStmt);
-    sqlite3_finalize (updateFlagsStmt);
-
+    
     return VARNAM_SUCCESS;
 }
 
