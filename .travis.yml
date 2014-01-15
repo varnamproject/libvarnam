@@ -1,5 +1,6 @@
 language: c
 before_install:
+  - mkdir -p ~/.local/share/varnam/suggestions
   - ruby --version
   - sudo apt-get install libgemplugin-ruby
   - sudo apt-get install check
