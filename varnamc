@@ -499,8 +499,6 @@ def _persist_key_values(pattern, values, token_type, match_type, priority, accep
   vtoken = VarnamToken.new(token_type, pattern, value1, value2, value3, tag, match_type, priority, accept_condition)
   _context.tokens[token_type].push(vtoken)
   push_to_current_custom_list vtoken
-
-  inform "Persisting #{match} - #{pattern} => #{value1},#{value2},#{value3}"
 end
 
 def flush_unsaved_changes
