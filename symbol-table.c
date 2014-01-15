@@ -683,13 +683,18 @@ read_all_tokens_and_add_to_array (varnam *handle, const char *lookup, int tokeni
     return VARNAM_SUCCESS;
 }
 
+static int possibleToFindMatches = 1;
+static int notPossibleToFindMatches = 0;
+
 static int
 can_find_more_matches(varnam *handle, varray *tokens, struct strbuf *lookup, int tokenize_using, bool *possible)
 {
     int rc;
+    int *cachedEntry;
     sqlite3_stmt *stmt = NULL;
     char candidate[500];
     vtoken *token;
+    strbuf *cacheKey;
 
     assert (tokenize_using == VARNAM_TOKENIZER_PATTERN
         || tokenize_using == VARNAM_TOKENIZER_VALUE);
@@ -709,6 +714,14 @@ can_find_more_matches(varnam *handle, varray *tokens, struct strbuf *lookup, int
                 *possible = false;
         }
 
+        return VARNAM_SUCCESS;
+    }
+
+    cacheKey = get_pooled_string (handle);
+    strbuf_addf (cacheKey, "%s%d", strbuf_to_s (lookup), tokenize_using);
+    cachedEntry = lru_find_in_cache (&v_->tokenizationPossibility, strbuf_to_s (cacheKey));
+    if (cachedEntry) {
+        *possible = *cachedEntry;
         return VARNAM_SUCCESS;
     }
 
@@ -752,6 +765,12 @@ can_find_more_matches(varnam *handle, varray *tokens, struct strbuf *lookup, int
     }
 
     sqlite3_reset (stmt);
+
+    /* caching for future use */
+    if (*possible)
+        lru_add_to_cache (&v_->tokenizationPossibility, strbuf_to_s (cacheKey), &possibleToFindMatches, NULL);
+    else
+        lru_add_to_cache (&v_->tokenizationPossibility, strbuf_to_s (cacheKey), &notPossibleToFindMatches, NULL);
 
     return VARNAM_SUCCESS;;
 }

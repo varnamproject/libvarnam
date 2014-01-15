@@ -108,6 +108,7 @@ initialize_internal()
 
         vi->tokens_cache = NULL;
         vi->noMatchesCache = NULL;
+        vi->tokenizationPossibility = NULL;
     }
     return vi;
 }
@@ -780,5 +781,6 @@ destroy_varnam_internal(struct varnam_internal* vi)
 
     clear_cache (&vi->tokens_cache);
     clear_cache (&vi->noMatchesCache);
+    clear_cache (&vi->tokenizationPossibility);
     xfree(vi);
 }

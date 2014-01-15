@@ -164,6 +164,7 @@ struct varnam_internal
     /* in-memory caches */
     vcache_entry *tokens_cache;
     vcache_entry *noMatchesCache; /* Contains all the patterns which don't have a match */
+    vcache_entry *tokenizationPossibility; /* Contains patterns and a value indicating whether further tokenization is possible */
 };
 
 typedef struct varnam {
