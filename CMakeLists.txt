@@ -108,6 +108,9 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              VERSION ${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
+# a custom target to compile scheme files
+add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/hi)
+
 file(GLOB vst_files  "schemes/*.vst")
 
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
