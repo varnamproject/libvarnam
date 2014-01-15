@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	varray *words;
 
 	/* Initialization */
-	rc = varnam_init ("../schemes/ml-unicode.vst", &handle, &msg);
+	rc = varnam_init_from_lang ("ml", &handle, &msg);
 	if (rc != VARNAM_SUCCESS)
 	{
 		printf("Initialization failed. Reason - %s", msg);
@@ -45,15 +45,6 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	print_transliteration_output ("malayalam", words);
-
-	/* To learn, we need to enable suggestions using varnam_config */
-	rc = varnam_config(handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "learning-example-suggestions.varnam");
-	if (rc != VARNAM_SUCCESS)
-	{
-		printf("Error in configuring. Reason %s\n", varnam_get_last_error(handle));
-		varnam_destroy (handle);
-		return 1;
-	}
 
 	printf("Learning the word മലയാളം\n");
 	rc = varnam_learn (handle, "മലയാളം");

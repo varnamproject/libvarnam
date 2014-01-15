@@ -4,6 +4,7 @@ before_install:
   - ruby --version
   - sudo apt-get install libgemplugin-ruby
   - sudo apt-get install check
+  - sudo apt-get install valgrind
   - gem install ffi
   - cd /tmp && wget https://dl.dropboxusercontent.com/u/52296034/cmake12.zip && mkdir cmake && unzip cmake12.zip -d cmake && cd cmake && sudo cp -r . /usr && cmake --version
   - cd $TRAVIS_BUILD_DIR
@@ -11,6 +12,10 @@ compiler:
   - gcc
   - clang
 # Change this to your needs
-script: cmake -DBUILD_TESTS=true -DBUILD_TOOLS=true . && make && make vst && sudo make install && cd tests && ./runtests
+script: 
+  - cmake -DBUILD_EXAMPLES=true -DBUILD_TESTS=true -DBUILD_TOOLS=true . && make && make vst && sudo make install && cd tests && ./runtests && cd ..
+  - cd examples
+  - valgrind --tool=memcheck --leak-check=full --error-exitcode=1 ./learning
+  - valgrind --tool=memcheck --leak-check=full --error-exitcode=1 ./transliteration
 notifications:
     email: varnamproject-discuss@nongnu.org
