@@ -111,6 +111,8 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
 # a custom target to compile scheme files
 add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/hi)
 
+# Makes the distro
+add_custom_target (distro command ./makedistro.sh "${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}")
 
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME_STATIC} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
