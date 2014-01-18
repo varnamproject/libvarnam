@@ -45,8 +45,11 @@ void
 lru_add_to_cache (vcache_entry **cache, char *key, void *value, vcache_value_free_cb cb)
 {
     vcache_entry *entry, *tmp_entry;
+    strbuf *keyCopy;
     entry = malloc(sizeof(vcache_entry));
-    entry->key = strdup (key);
+    keyCopy = strbuf_init (16);
+    strbuf_add (keyCopy, key);
+    entry->key = strbuf_detach (keyCopy);
     entry->value = value;
     entry->cb = cb;
     HASH_ADD_KEYPTR(hh, *cache, entry->key, strlen(entry->key), entry);

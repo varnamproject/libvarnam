@@ -149,7 +149,7 @@ find_prefixes_and_update_flags (varnam *handle, sqlite3_stmt *stmtToExecute, sql
 
     int rc, symbolId;
     const char *tmp; const char *symbol;
-    strbuf *symbolPrefix;
+    strbuf *symbolPrefix, *symbolCopy;
     symbol_id_map *symbolIdMap = NULL, *symbolIdItem = NULL, *tmpSymbolIdItem;
     sqlite3 *db;
     sqlite3_stmt *stmt = stmtToExecute;
@@ -187,7 +187,9 @@ find_prefixes_and_update_flags (varnam *handle, sqlite3_stmt *stmtToExecute, sql
         }
 
         symbolIdItem = xmalloc (sizeof (symbol_id_map));
-        symbolIdItem->symbol = strdup (symbol);
+        symbolCopy = strbuf_init (16);
+        strbuf_add (symbolCopy, symbol);
+        symbolIdItem->symbol = strbuf_detach (symbolCopy);
         symbolIdItem->id = symbolId;
         HASH_ADD_KEYPTR (hh, symbolIdMap, symbolIdItem->symbol, strlen(symbolIdItem->symbol), symbolIdItem);
     }
