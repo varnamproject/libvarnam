@@ -1,3 +1,8 @@
+3.1.1 / Jan 18, 2014
+=======================
+* Fixing a segfault
+
+
 3.1.0 / Jan 16, 2014
 =======================
 * Performance improvements to learn
