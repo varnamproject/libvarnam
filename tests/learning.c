@@ -151,7 +151,6 @@ END_TEST
 START_TEST (is_known_word)
 {
     int rc;
-    varray *words;
     const char *word_to_learn = "കഖ";
     const char *invalid_word = "ഖക";
 
@@ -160,6 +159,26 @@ START_TEST (is_known_word)
 
     ck_assert_int_eq (varnam_is_known_word(varnam_instance, word_to_learn), 1);
     ck_assert_int_eq (varnam_is_known_word(varnam_instance, invalid_word), 0);
+}
+END_TEST
+
+START_TEST (learn_from_multiple_open_handles)
+{
+    int rc;
+    const char *word_to_learn = "കഖ";
+    varnam *handle1, *handle2;
+    char *msg;
+
+    rc = varnam_init_from_lang ("ml", &handle1, &msg);
+    assert_success (rc);
+    rc = varnam_init_from_lang ("ml", &handle2, &msg);
+    assert_success (rc);
+
+    rc = varnam_learn (handle1, word_to_learn);
+    assert_success (rc);
+
+    rc = varnam_learn (handle2, word_to_learn);
+    assert_success (rc);
 }
 END_TEST
 
@@ -176,5 +195,6 @@ TCase* get_learning_tests()
     tcase_add_test (tcase, numbers_will_be_ignored_while_learning);
     tcase_add_test (tcase, confidence_should_get_updated_for_existing_words);
     tcase_add_test (tcase, is_known_word);
+    tcase_add_test (tcase, learn_from_multiple_open_handles);
     return tcase;
 }
