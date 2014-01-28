@@ -409,7 +409,9 @@ varnam_learn(varnam *handle, const char *word)
         return rc;
     }
 
-    vwt_end_changes (handle);
+    rc = vwt_end_changes (handle);
+    if (rc != VARNAM_SUCCESS)
+        return rc;
 
 #ifdef _RECORD_EXEC_TIME
     V_REPORT_TIME_TAKEN("varnam_learn")
