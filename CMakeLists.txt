@@ -23,7 +23,7 @@ option(BUILD_TESTS "Build tests?" OFF)
 option(BUILD_EXAMPLES "Build examples?" OFF)
 option(BUILD_TOOLS "Build tools?" OFF)
 
-set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings -fPIC")
+set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wno-long-long -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings -fPIC")
 set(CMAKE_C_FLAGS_DEBUG "-g")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 
