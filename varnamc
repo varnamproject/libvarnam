@@ -55,6 +55,7 @@ end
 
 require_relative './varnamruby.rb'
 require 'optparse'
+require 'fileutils'
 
 # Defining command line options
 $options[:action] = nil
@@ -256,7 +257,6 @@ def initialize_varnam_handle
     initialized = VarnamLibrary.varnam_init($vst_file_name, $varnam_handle, init_error_msg)
     # Configuring suggestions
     $options[:learnings_file] = get_learnings_file $vst_file_name
-    puts $options[:learnings_file]
     configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
     if configured != 0
         error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
@@ -265,6 +265,15 @@ def initialize_varnam_handle
     end
   elsif not $options[:lang_code].nil?
     initialized = VarnamLibrary.varnam_init_from_lang($options[:lang_code], $varnam_handle, init_error_msg)
+    if initialized == 0 and not $options[:learnings_file].nil?
+      # User has specified explicit learnings file. Use that instead of the default one
+      configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])
+      if configured != 0
+        error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+        error error_message
+        exit(1)
+      end
+    end
   else
     puts "varnamc : Can't load symbols file. Use --symbols option to specify the symbols file"
     exit(1)
@@ -281,7 +290,7 @@ end
 
 def get_file_path(fname)
   if $options[:output_directory].nil?
-    return File.join(Dir.home, ".varnam", fname)
+    return File.join(Dir.home, ".local/share/varnam", fname)
   else
     return File.join($options[:output_directory], fname)
   end
@@ -290,20 +299,17 @@ end
 def get_learnings_file(symbols_file_name)
   return $options[:learnings_file] if not $options[:learnings_file].nil?
 
-  # we use the standard $HOME/.varnam/suggestions
+  # we use the standard $HOME/.local/share/varnam/suggestions
   make_suggestions_dir_if_required
   return get_file_path(File.join("suggestions", "#{File.basename(symbols_file_name, ".")}.learnings"))
 end
 
 def make_suggestions_dir_if_required
-  out_dir = File.join(Dir.home, '.varnam')
+  out_dir = File.join(Dir.home, '.local/share/varnam/suggestions')
   if not $options[:output_directory].nil?
       out_dir = $options[:output_directory]
   end
-  Dir.mkdir out_dir if not Dir.exists?(out_dir)
-
-  suggestions_dir = File.join(out_dir, 'suggestions')
-  Dir.mkdir suggestions_dir if not Dir.exists?(suggestions_dir)
+  FileUtils.mkdir_p out_dir if not Dir.exists?(out_dir)  
 end
 
 def do_action
