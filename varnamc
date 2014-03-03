@@ -53,7 +53,24 @@ else
   puts "Using #{$options[:library]}"
 end
 
-require_relative './varnamruby.rb'
+varnamruby_searchpaths = [".", "/usr/local/lib", "/usr/lib"]
+varnamruby_loaded = false
+varnamruby_searchpaths.each do |p|
+  begin
+    require "#{p}/varnamruby.rb"
+    varnamruby_loaded = true
+    break
+  rescue LoadError
+    # Trying next possibility
+  end
+end
+
+if not varnamruby_loaded
+  puts "Failed to find varnamruby.rb. Search paths: #{varnamruby_searchpaths}"
+  puts "This could be because you have a corrupted installation or a bug in varnamc"
+  exit(1)
+end
+
 require 'optparse'
 require 'fileutils'
 
@@ -309,7 +326,7 @@ def make_suggestions_dir_if_required
   if not $options[:output_directory].nil?
       out_dir = $options[:output_directory]
   end
-  FileUtils.mkdir_p out_dir if not Dir.exists?(out_dir)  
+  FileUtils.mkdir_p out_dir if not Dir.exists?(out_dir)
 end
 
 def do_action
