@@ -93,15 +93,10 @@ vwt_discard_changes(varnam *handle)
 int
 vwt_optimize_for_huge_transaction(varnam *handle)
 {
-    int rc;
-
     assert (handle);
     assert (v_->known_words);
 
-    rc = execute_sql (handle, v_->known_words, "PRAGMA synchronous = OFF;");
-    if (rc) return rc;
-
-    return execute_sql (handle, v_->known_words, "PRAGMA journal_mode = MEMORY;");
+    return execute_sql (handle, v_->known_words, "PRAGMA synchronous = OFF;");
 }
 
 int
@@ -109,7 +104,6 @@ vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
 {
     /* const char *sql = */
     /*     "pragma journal_mode=wal;"; */
-
     /* assert (handle); */
     /* assert (v_->known_words); */
 
