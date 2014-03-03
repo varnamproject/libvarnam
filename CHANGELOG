@@ -1,3 +1,11 @@
+3.1.2 / Mar 03, 2014
+=======================
+* Fixed a bug which was causing transliteration to fail while learn was happening
+* Fixed out of source build
+* Fixed varnamc export
+* Using 30000 as export size
+* Installing varnamruby.rb to the correct location (prefix/lib)
+
 3.1.1 / Jan 18, 2014
 =======================
 * Fixing a segfault
@@ -35,7 +43,7 @@
 * Several improvements to tokenization algorithm which improves quality of learning.
 * Noice reduction while tokenization.
 * Improved symbols file for Malayalam.
-* varnam_export_words() function to export words learned. 
+* varnam_export_words() function to export words learned.
 * Accept condition for tokens which specifies rules for token acceptance based on the token position.
 
 1.0.1 / Nov 1, 2012
