@@ -126,6 +126,7 @@ INSTALL ( FILES schemes/hi.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/
 INSTALL ( FILES schemes/ml.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL ( FILES varnamruby.rb DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL_PROGRAMS(/bin FILES varnamc)
+INSTALL ( FILES varnamc.1 DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1)
 
 IF(MSVC)
         target_link_libraries(${VARNAM_LIBRARY_NAME})

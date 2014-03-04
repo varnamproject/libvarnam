@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 tmp_dir_create_command="mktemp -d"
 unamestr=`uname`
 if [[ "$unamestr" == 'Darwin' ]]; then
