@@ -114,13 +114,23 @@ add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --com
 # Makes the distro
 add_custom_target (distro COMMAND ./makedistro.sh "${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}")
 
-INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME_STATIC} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+## The following variable is used to install libraries on multiarch supported environments, like Debian & Ubuntu
+## Debian's build script will set the VARNAM_LIB_ARCH environment variable to indicate the architecture specific directory
+## https://wiki.debian.org/Multiarch
+set(VARNAM_LIB_INSTALL_DIR "")
+if(DEFINED ENV{VARNAM_LIB_ARCH})
+  set(VARNAM_LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib/$ENV{VARNAM_LIB_ARCH})
+else()
+  set(VARNAM_LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
+INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME} DESTINATION ${VARNAM_LIB_INSTALL_DIR})
+INSTALL ( TARGETS ${VARNAM_LIBRARY_NAME_STATIC} DESTINATION ${VARNAM_LIB_INSTALL_DIR})
 INSTALL ( FILES ${VARNAM_INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME})
 INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
 INSTALL ( FILES deps/uthash.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
-INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnam.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
-INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnamstatic.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
+INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnam.pc DESTINATION ${VARNAM_LIB_INSTALL_DIR}/pkgconfig)
+INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnamstatic.pc DESTINATION ${VARNAM_LIB_INSTALL_DIR}/pkgconfig)
 # Add all the vst files here
 INSTALL ( FILES schemes/hi.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL ( FILES schemes/ml.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
