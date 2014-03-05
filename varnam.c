@@ -217,6 +217,27 @@ find_symbols_file_path (const char *langCode)
   return NULL;
 }
 
+static bool
+make_directory (const char *dirName)
+{
+  int rc;
+  strbuf *command;
+
+  command = strbuf_init (20);
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
+  strbuf_addf (command, "mkdir %s", dirName);
+#else
+  strbuf_addf (command, "mkdir -p %s", dirName);
+#endif
+  rc = system (strbuf_to_s (command));
+  strbuf_destroy (command);
+  if (rc == 0)
+    return true;
+  else
+    return false;
+}
+
 static strbuf*
 find_learnings_file_path (const char *langCode)
 {
@@ -245,11 +266,22 @@ find_learnings_file_path (const char *langCode)
     strbuf_addf (path, "%s/varnam/suggestions/", tmp);
   }
 
-  if (!strbuf_is_blank (path) && !is_directory (strbuf_to_s (path))) {
-    strbuf_clear (path);
+  if (!strbuf_is_blank (path)) {
+    if (is_path_exists (strbuf_to_s (path))) {
+        if (!is_directory (strbuf_to_s (path))) {
+            /* Suggestions will be configured in the current directory */
+           strbuf_clear (path);
+        }
+    }
+    else {
+        if (!make_directory (strbuf_to_s (path))) {
+            /* Suggestions will be configured in the current directory */
+            strbuf_clear (path);
+        }
+    }
   }
 #endif
-
+  
   strbuf_addf (path, "%s.vst.learnings", langCode);
   return path;
 }
