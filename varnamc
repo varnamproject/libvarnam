@@ -27,13 +27,14 @@ if not gem_available?('ffi')
 end
 
 $options = {}
+$libvarnam_major_version = 3
 
 def find_libvarnam
   return $options[:library] if not $options[:library].nil?
   # Trying to find out libvarnam in the predefined locations if
   # absolute path to the library is not specified
-  libvarnam_search_paths = ['.', '/usr/local/lib', '/usr/lib']
-  libvarnam_names = ['libvarnam.so', 'libvarnam.dylib', 'varnam.dll']
+  libvarnam_search_paths = ['.', '/usr/local/lib', '/usr/local/lib/i386-linux-gnu', '/usr/local/lib/x86_64-linux-gnu', '/usr/lib/i386-linux-gnu', '/usr/lib/x86_64-linux-gnu', '/usr/lib']
+  libvarnam_names = ['libvarnam.so', "libvarnam.so.#{$libvarnam_major_version}", 'libvarnam.dylib', 'varnam.dll']
   libvarnam_search_paths.each do |path|
     libvarnam_names.each do |fname|
       fullpath = File.join(path, fname)
