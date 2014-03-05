@@ -276,7 +276,7 @@ varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage
 
   if (varnam_suggestions_dir != NULL) {
       learningsFilePath = strbuf_init (20);
-      strbuf_add (learningsFilePath, varnam_suggestions_dir);
+      strbuf_add (learningsFilePath, strbuf_to_s (varnam_suggestions_dir));
   }
   else {
       learningsFilePath = find_learnings_file_path (langCode);
@@ -285,6 +285,13 @@ varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage
   rc = varnam_init (strbuf_to_s (symbolsFilePath), handle, errorMessage);
   if (rc == VARNAM_SUCCESS) {
     rc = varnam_config (*handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, strbuf_to_s (learningsFilePath));
+    if (rc != VARNAM_SUCCESS) {
+        error = strbuf_init (20);
+        strbuf_add (error, varnam_get_last_error (*handle));
+        *errorMessage = strbuf_detach (error);
+        varnam_destroy (*handle);
+        *handle = NULL;
+    }
   }
 
   strbuf_destroy (symbolsFilePath);
