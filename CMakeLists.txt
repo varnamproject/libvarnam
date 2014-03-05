@@ -138,6 +138,15 @@ INSTALL ( FILES varnamruby.rb DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL_PROGRAMS(/bin FILES varnamc)
 INSTALL ( FILES varnamc.1 DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1)
 
+# uninstall target
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
 IF(MSVC)
         target_link_libraries(${VARNAM_LIBRARY_NAME})
 else()

@@ -34,3 +34,4 @@ tests/runtests
 tests/testrun.log
 varnam.pc
 varnamstatic.pc
+cmake_uninstall.cmake
