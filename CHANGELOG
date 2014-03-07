@@ -1,3 +1,12 @@
+3.1.3 / Mar 07, 2014
+=======================
+* varnam_init_from_lang will make the suggestions directory
+* Fixed varnam_init_from_lang() to set errors correctly
+* Adding MultiArch directories to varnamc search path
+* Added uninstall target
+* MultiArch support to the build system
+* Added manpages for varnamc
+
 3.1.2 / Mar 03, 2014
 =======================
 * Fixed a bug which was causing transliteration to fail while learn was happening
