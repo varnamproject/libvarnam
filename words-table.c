@@ -31,7 +31,7 @@ vwt_ensure_schema_exists(varnam *handle)
     const char *tables =
         "create table if not exists metadata (key TEXT UNIQUE, value TEXT);"
         "create table if not exists words (id integer primary key, word text unique, confidence integer default 1, learned_on integer);"
-        "create table if not exists patterns_content (pattern text, word_id integer, learned integer default 0, primary key(pattern, word_id));";
+        "create table if not exists patterns_content (pattern text, word_id integer, learned integer default 0, primary key(pattern, word_id))without rowid;";
 
     char *zErrMsg = 0;
     int rc;
