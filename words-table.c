@@ -354,9 +354,10 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
             rc = try_update_word_confidence (handle, word, &confidence_updated);
             if (rc) return rc;
         }
-
-        strbuf_add (v_->lastLearnedWord, word);
-        v_->lastLearnedWordId = new_word_id;
+        else {
+            strbuf_add (v_->lastLearnedWord, word);
+            v_->lastLearnedWordId = new_word_id;
+        }
     }
 
     /*varnam_log (handle, "Learned word %s", word);*/
