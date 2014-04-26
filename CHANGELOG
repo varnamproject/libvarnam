@@ -1,0 +1,66 @@
+3.1.3 / Mar 07, 2014
+=======================
+* varnam_init_from_lang will make the suggestions directory
+* Fixed varnam_init_from_lang() to set errors correctly
+* Adding MultiArch directories to varnamc search path
+* Added uninstall target
+* MultiArch support to the build system
+* Added manpages for varnamc
+
+3.1.2 / Mar 03, 2014
+=======================
+* Fixed a bug which was causing transliteration to fail while learn was happening
+* Fixed out of source build
+* Fixed varnamc export
+* Using 30000 as export size
+* Installing varnamruby.rb to the correct location (prefix/lib)
+
+3.1.1 / Jan 18, 2014
+=======================
+* Fixing a segfault
+
+
+3.1.0 / Jan 16, 2014
+=======================
+* Performance improvements to learn
+* New API function - varnam_init_from_lang
+* Schema version gets stamped on VST files
+* vanamc compile no longer generates verbose output
+* `make vst` target to generate VST files
+* Fixing duplicate tokens appearing in tokens list
+* Learned on will be a unix timestamp
+* New API function - varnam_is_known_word
+* Fixes to Malayalam symbols
+
+2.2.0 / Jun 16, 2013
+=======================
+* While learning a word, few more unwanted tokens will be rejected.
+* varnamc learn will use the output directory if specified.
+* Small corrections to Malayalam scheme file.
+* Major improvements to Hindi scheme file.
+* Learn errors will be logged in the learn failures file.
+* varnamc is usable outside the source directory
+
+2.1.0 / Jun 02, 2013
+=======================
+* Support for Hindi.
+* Support for custom lists in the scheme file.
+* Improvements to learning algorithm.
+
+2.0.0 / Mar 30, 2013
+=======================
+* Several improvements to tokenization algorithm which improves quality of learning.
+* Noice reduction while tokenization.
+* Improved symbols file for Malayalam.
+* varnam_export_words() function to export words learned.
+* Accept condition for tokens which specifies rules for token acceptance based on the token position.
+
+1.0.1 / Nov 1, 2012
+=======================
+* Initial release
+
+
+Copyright (C) Navaneeth.K.N
+
+This is part of libvarnam. See LICENSE.txt for the license
+
