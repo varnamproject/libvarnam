@@ -676,6 +676,8 @@ enable_suggestions(varnam *handle, const char *file)
 {
     int rc;
     strbuf *tmp;
+    char file_name[7];
+    FILE *suggestions_file;
 
     if (v_->known_words != NULL) {
         sqlite3_close (v_->known_words);
@@ -685,6 +687,26 @@ enable_suggestions(varnam *handle, const char *file)
     if (file == NULL)
         return VARNAM_SUCCESS;
 
+    suggestions_file = fopen(file, "r");
+ 	
+ 	if(!suggestions_file)
+ 	{
+ 		printf("ERROR: Suggestions file not found \n");
+ 		return VARNAM_SUCCESS;
+ 	}
+
+    fread(file_name, 6, 1, suggestions_file);
+    
+    if(strcmp(file_name,"SQLite") != 0)
+    {
+    	printf("ERROR : Suggestions file should be a valid sqlite database\n");
+    	printf("Suggestions not enabled\n");
+    	return VARNAM_SUCCESS;
+    }
+
+    printf("FILE TYPE : %s\n",file_name);
+    fclose(suggestions_file);
+    
     rc = sqlite3_open(file, &v_->known_words);
     if( rc )
     {
