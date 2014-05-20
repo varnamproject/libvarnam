@@ -325,3 +325,8 @@ bool is_path_exists(const char *pathname)
   return get_stat (pathname) != V_PATHNAME_INVALID; 
 }
 
+bool is_file_valid(const char *pathname)
+{
+  //Returns a 1 if file is valid. Else 0
+  return (is_path_exists(pathname) && !is_directory(pathname));
+}
