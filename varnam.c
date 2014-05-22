@@ -682,9 +682,9 @@ enable_suggestions(varnam *handle, const char *file)
         v_->known_words = NULL;
     }
 
-    if(!is_file_valid(file))
+    if(!is_file_exists(file))
     {
-        printf("Specified file is invalid. Recheck path");
+        set_last_error(handle,"can't open %s. File does not exist",file);
         return VARNAM_SUCCESS;
     }
     
