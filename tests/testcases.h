@@ -32,6 +32,8 @@ reinitialize_varnam_instance(const char *filename);
 int
 file_exist (const char *filename);
 
+int is_file_exists(const char *filename);
+
 void
 execute_query (sqlite3* db, const char* sql);
 
