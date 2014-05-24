@@ -22,11 +22,6 @@ file_exist (const char *filename)
     return (stat (filename, &buffer) == 0);
 }
 
-int
-is_file_exists(const char *filename)
-{
-    return is_file_exists(filename);
-}
 char*
 get_unique_filename()
 {
