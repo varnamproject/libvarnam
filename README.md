@@ -1,1 +1,4 @@
-docs/README.md
+libvarnam
+=========
+
+A cross platform transliteration library for Indian languages
