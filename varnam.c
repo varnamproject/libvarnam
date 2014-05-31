@@ -682,9 +682,15 @@ enable_suggestions(varnam *handle, const char *file)
         v_->known_words = NULL;
     }
 
+    if(!is_file_exists(file))
+    {
+        set_last_error(handle,"can't open %s. File does not exist",file);
+        return VARNAM_SUCCESS;
+    }
+    
     if (file == NULL)
         return VARNAM_SUCCESS;
-
+    
     rc = sqlite3_open(file, &v_->known_words);
     if( rc )
     {
