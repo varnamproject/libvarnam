@@ -684,7 +684,6 @@ enable_suggestions(varnam *handle, const char *file)
 
     if(is_file_exists(file) == 1)
     {
-        printf("\nFile invalidated\n");
         set_last_error(handle,"can't open %s. File does not exist",file);
         return VARNAM_MISUSE;
     }
