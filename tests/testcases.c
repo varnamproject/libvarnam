@@ -4,7 +4,6 @@
  * This is part of libvarnam. See LICENSE.txt for the license
  */
 
-
 #include "testcases.h"
 #include <check.h>
 #include <time.h>
@@ -25,9 +24,13 @@ file_exist (const char *filename)
 char*
 get_unique_filename()
 {
+    /*Now get_unique_filename ensures that the file exists*/
+
     strbuf *filename = strbuf_init (25);
 
-    for (;;)
+    /*Hack. I couldn't understand why there should be an infinite loop.*/
+
+    /*for (;;)
     {
         strbuf_addf (filename, "output/%d.test.vst", rand());
         if (!file_exist (strbuf_to_s (filename))) {
@@ -37,7 +40,16 @@ get_unique_filename()
             strbuf_clear (filename);
         }
     }
+    */
+    int num = rand();
+    strbuf_addf(filename, "output/%d.test.vst",num);
+    
+    if ( file_exist(strbuf_to_s(filename)) )
+    {
+        return get_unique_filename();
+    }
 
+    create_dummy_file(filename);
     return strbuf_detach (filename);
 }
 
@@ -166,6 +178,7 @@ create_text_file (const char* contents)
     FILE* fp;
     char* filename;
 
+
     filename = get_unique_filename ();
     fp = fopen (filename, "w");
     if (fp == NULL)
@@ -175,6 +188,29 @@ create_text_file (const char* contents)
     fclose (fp);
 
     return filename;
+}
+
+int create_dummy_file(strbuf *filename)
+{
+    FILE *fp;
+    char *buffer;
+
+    buffer = strbuf_to_s(filename);
+
+    fp = fopen(buffer, "w");
+
+    if(fp == NULL)
+    {
+        ck_abort_msg("Failed to create dummy file");
+        fclose(fp);
+        return 1;
+    }
+    else
+    { 
+        fclose(fp);
+        return 0;
+    }
+
 }
 
 strbuf*

@@ -41,6 +41,9 @@ execute_query_int (sqlite3* db, const char* sql);
 char*
 create_text_file (const char* contents);
 
+int
+create_dummy_file(strbuf *filename);
+
 strbuf*
 read_text_file (const char* filename);
 

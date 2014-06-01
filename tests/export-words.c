@@ -21,14 +21,14 @@ setup_data()
 {
     int rc;
     char* unique_filename = NULL;
-
+   
     const char *filename = "../schemes/ml.vst";
     if (!file_exist (filename)) {
         ck_abort_msg ("../schemes/ml.vst is not available");
     }
     reinitialize_varnam_instance (filename);
 
-    unique_filename = get_unique_filename ();
+    unique_filename = get_unique_filename();
     rc = varnam_config (varnam_instance, VARNAM_CONFIG_ENABLE_SUGGESTIONS, unique_filename);
     assert_success (rc);
 
