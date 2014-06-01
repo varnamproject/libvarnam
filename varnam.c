@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include "varray.h"
 #include "api.h"
@@ -682,8 +683,15 @@ enable_suggestions(varnam *handle, const char *file)
         v_->known_words = NULL;
     }
 
+    if(is_file_exists(file) == 1)
+    {
+        printf("\nFile invalidated\n");
+        set_last_error(handle,"can't open %s. File does not exist",file);
+        return VARNAM_MISUSE;
+    }
+
     if (file == NULL)
-        return VARNAM_SUCCESS;
+        return VARNAM_MISUSE;
 
     rc = sqlite3_open(file, &v_->known_words);
     if( rc )
