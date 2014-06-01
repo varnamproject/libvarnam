@@ -6,7 +6,6 @@
 
 #include <string.h>
 #include <stdarg.h>
-#include <stdlib.h>
 
 #include "varray.h"
 #include "api.h"

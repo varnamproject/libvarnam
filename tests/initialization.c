@@ -5,7 +5,6 @@
  */
 
 #include <check.h>
-#include <time.h>
 #include "testcases.h"
 #include "../varnam.h"
 
