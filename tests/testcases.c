@@ -25,20 +25,11 @@ file_exist (const char *filename)
 char*
 get_unique_filename()
 {
-    strbuf *filename = strbuf_init (25);
-
-    for (;;)
-    {
-        strbuf_addf (filename, "output/%d.test.vst", rand());
-        if (!file_exist (strbuf_to_s (filename))) {
-            break;
-        }
-        else {
-            strbuf_clear (filename);
-        }
-    }
-
-    return strbuf_detach (filename);
+  static int fileUniqueId = 1;
+  strbuf *filename = strbuf_init (25);
+  strbuf_addf (filename, "output/%d.test.vst", fileUniqueId);
+  fileUniqueId = fileUniqueId + 1;
+  return strbuf_detach (filename);
 }
 
 void

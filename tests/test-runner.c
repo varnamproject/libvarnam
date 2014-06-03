@@ -25,9 +25,6 @@ int main(int argc, char **argv)
         fprintf (stderr, "Failed to cleanup test output directory. Process returned %d", exit_code);
     }
 
-    /* A random seed value */
-    srand(time(NULL));
-
     suite = suite_create ("core");
     suite_add_tcase (suite, get_initialization_tests());
     suite_add_tcase (suite, get_transliteration_tests());
@@ -45,6 +42,8 @@ int main(int argc, char **argv)
     srunner_add_suite (runner, util);
     srunner_add_suite (runner, commandline);
     srunner_set_log (runner, "testrun.log");
+    srunner_set_xml (runner, "testrun.xml");
+    srunner_set_fork_status (runner, CK_NOFORK);
     srunner_run_all (runner, CK_NORMAL);
     failed = srunner_ntests_failed (runner);
     srunner_free (runner);
