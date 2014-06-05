@@ -682,6 +682,12 @@ enable_suggestions(varnam *handle, const char *file)
         v_->known_words = NULL;
     }
 
+    if(is_file_exists(file) == 1)
+    {
+        set_last_error(handle,"can't open %s. File does not exist",file);
+        return VARNAM_MISUSE;
+    }
+
     if (file == NULL)
         return VARNAM_SUCCESS;
 

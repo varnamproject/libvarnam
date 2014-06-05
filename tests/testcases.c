@@ -25,10 +25,13 @@ file_exist (const char *filename)
 char*
 get_unique_filename()
 {
+  FILE *fp;
   static int fileUniqueId = 1;
   strbuf *filename = strbuf_init (25);
   strbuf_addf (filename, "output/%d.test.vst", fileUniqueId);
+  fp = fopen(strbuf_to_s(filename),"w");
   fileUniqueId = fileUniqueId + 1;
+  fclose(fp);
   return strbuf_detach (filename);
 }
 

@@ -9,5 +9,6 @@ require 'fileutils'
 
 FileUtils.rm_rf("output")
 Dir::mkdir("output")
+File.new("output/00-suggestions.vst", 'w')
 sleep 1
 exit(0)

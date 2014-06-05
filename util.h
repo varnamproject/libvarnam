@@ -184,6 +184,7 @@ bool is_special_character(char c);
 int get_stat(const char *pathname);
 bool is_directory(const char *pathname);
 bool is_path_exists(const char *pathname);
+bool is_file_exists(const char *pathname);
 
 void*
 lru_find_in_cache (vcache_entry **cache, char *key);
