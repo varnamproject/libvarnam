@@ -112,6 +112,46 @@ START_TEST (addfln_should_add_newline)
 }
 END_TEST
 
+START_TEST (get_each_character)
+{
+  varray *chars;
+  strbuf *str = strbuf_init (20);
+  strbuf_add(str, "test");
+  chars = strbuf_chars(str);
+  ck_assert_int_eq (4, varray_length(chars));
+  ck_assert_str_eq ("t", (const char*)  varray_get(chars, 0));
+  ck_assert_str_eq ("e", (const char*)  varray_get(chars, 1));
+  ck_assert_str_eq ("s", (const char*)  varray_get(chars, 2));
+  ck_assert_str_eq ("t", (const char*)  varray_get(chars, 3));
+
+  strbuf_clear (str);
+  strbuf_add(str, "t");
+  chars = strbuf_chars(str);
+  ck_assert_int_eq (1, varray_length(chars));
+  ck_assert_str_eq ("t", (const char*)  varray_get(chars, 0));
+
+  strbuf_clear (str);
+  chars = strbuf_chars(str);
+  ck_assert_int_eq (0, varray_length(chars));
+}
+END_TEST
+
+START_TEST (get_each_character_should_be_unicode_aware)
+{
+  varray *chars;
+  strbuf *str = strbuf_init (20);
+  strbuf_add(str, "മലയാളം");
+  chars = strbuf_chars(str);
+  ck_assert_int_eq (6, varray_length(chars));
+  ck_assert_str_eq ("മ",  (const char*)  varray_get(chars, 0));
+  ck_assert_str_eq ("ല",  (const char*)  varray_get(chars, 1));
+  ck_assert_str_eq ("യ",  (const char*)  varray_get(chars, 2));
+  ck_assert_str_eq ("ാ", (const char*)  varray_get(chars, 3));
+  ck_assert_str_eq ("ള", (const char*)  varray_get(chars, 4));
+  ck_assert_str_eq ("ം", (const char*)  varray_get(chars, 5));
+}
+END_TEST
+
 TCase* get_strbuf_tests()
 {
     TCase* tcase = tcase_create("strbuf");
@@ -123,5 +163,7 @@ TCase* get_strbuf_tests()
     tcase_add_test (tcase, split_string);
     tcase_add_test (tcase, addf_should_not_add_newline);
     tcase_add_test (tcase, addfln_should_add_newline);
+    tcase_add_test (tcase, get_each_character);
+    tcase_add_test (tcase, get_each_character_should_be_unicode_aware);
     return tcase;
 }
