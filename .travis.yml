@@ -13,7 +13,7 @@ compiler:
   - clang
 # Change this to your needs
 script: 
-  - cmake -DBUILD_EXAMPLES=true -DBUILD_TESTS=true -DBUILD_TOOLS=true . && make && make vst && sudo make install && cd tests && ./runtests && cd ..
+  - cmake -DBUILD_EXAMPLES=true -DBUILD_TESTS=true -DBUILD_TOOLS=true . && make && make vst && sudo make install && make test
   - cd examples
   - valgrind --tool=memcheck --leak-check=full --error-exitcode=1 ./learning
   - valgrind --tool=memcheck --leak-check=full --error-exitcode=1 ./transliteration

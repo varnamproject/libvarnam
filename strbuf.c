@@ -185,7 +185,7 @@ varray*
 strbuf_chars(strbuf *b)
 {
   const unsigned char *ustring; const char *inputcopy;
-  int bytes_read;
+  int bytes_read = 0;
   varray *chars;
   strbuf *tmp;
 
