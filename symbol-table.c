@@ -755,7 +755,7 @@ can_find_more_matches(varnam *handle, varray *tokens, struct strbuf *lookup, int
         break;
     }
 
-    snprintf( candidate, 500, "%s%s", strbuf_to_s (lookup), "%");
+    portable_snprintf( candidate, 500, "%s%s", strbuf_to_s (lookup), "%");
     sqlite3_bind_text (stmt, 1, candidate, -1, NULL);
 
     *possible = false;
