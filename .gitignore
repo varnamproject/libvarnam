@@ -36,3 +36,12 @@ varnam.pc
 varnamstatic.pc
 cmake_uninstall.cmake
 tests/testrun.xml
+*.vcxproj
+*.filters
+*.sln
+*.sdf
+*.opensdf
+Debug/
+Win32/
+*.dir
+
