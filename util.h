@@ -18,7 +18,6 @@
   #define true  1
 #endif
 
-#include "varray.h"
 #include "vtypes.h"
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
@@ -68,9 +67,9 @@ building a DLL on windows.
 
 #if defined (_WIN32)
   #if defined(varnam_EXPORTS)
-    #define  VARNAM_EXPORT __declspec(dllexport)
+    #define VARNAM_EXPORT __declspec(dllexport)
   #else
-    #define  VARNAM_EXPORT __declspec(dllimport)
+    #define VARNAM_EXPORT __declspec(dllimport)
   #endif /* varnam_EXPORTS */
 #else /* defined (_WIN32) */
  #define VARNAM_EXPORT

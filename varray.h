@@ -9,8 +9,8 @@
 #ifndef VARNAM_ARRAY_H_INCLUDED_0924
 #define VARNAM_ARRAY_H_INCLUDED_0924
 
-#include "vtypes.h"
 #include "util.h"
+#include "vtypes.h"
 
 /**
  * Array to hold pointers. This expands automatically.
@@ -31,80 +31,80 @@ typedef struct vpool_t
     varray *free_pool;
 } vpool;
 
-varray*
+VARNAM_EXPORT extern varray* 
 varray_init();
 
-void
+VARNAM_EXPORT extern void
 varray_push(varray *array, void *data);
 
-void
+VARNAM_EXPORT extern void
 varray_copy(varray *source, varray *destination);
 
-void
+VARNAM_EXPORT extern void
 varray_remove_at(varray *array, int index);
 
-int
+VARNAM_EXPORT extern int
 varray_length(varray *array);
 
-bool
+VARNAM_EXPORT extern bool
 varray_is_empty (varray *array);
 
-bool
+VARNAM_EXPORT extern bool
 varray_exists (varray *array, void *item, bool (*equals)(void *left, void *right));
 
-void
+VARNAM_EXPORT extern void
 varray_clear(varray *array);
 
-void*
+VARNAM_EXPORT extern void*
 varray_get(varray *array, int index);
 
-void*
+VARNAM_EXPORT extern void*
 varray_get_last_item(varray *array);
 
-void*
+VARNAM_EXPORT extern void*
 varray_pop_last_item(varray *array);
 
-void
+VARNAM_EXPORT extern void
 varray_insert(varray *array, int index, void *data);
 
-void
+VARNAM_EXPORT extern void
 varray_free(varray *array, void (*destructor)(void*));
 
-vpool*
+VARNAM_EXPORT extern vpool*
 vpool_init();
 
 /**
  * Returns next item from the pool. NULL otherwise
  **/
-void*
+VARNAM_EXPORT extern void*
 vpool_get(vpool *pool);
 
-void
+VARNAM_EXPORT extern void
 vpool_add(vpool *pool, void *item);
 
 /**
  * Returns the element back to the pool
  */
-void
+VARNAM_EXPORT extern void
 vpool_return(vpool *pool, void *item);
 
-void
+VARNAM_EXPORT extern void
 vpool_reset(vpool *pool);
 
 /**
  * Free the items contained in the pool and finally the pool itself
  *
  **/
-void
+VARNAM_EXPORT extern void
 vpool_free(vpool *pool, void (*destructor)(void*));
 
-varray*
+VARNAM_EXPORT extern varray*
 get_pooled_array (varnam *handle);
 
-void
+VARNAM_EXPORT extern void
 return_array_to_pool (varnam *handle, varray *array);
 
-void
+VARNAM_EXPORT extern void
 reset_pool(varnam *handle);
 
 #endif
