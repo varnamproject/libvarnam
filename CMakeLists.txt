@@ -109,7 +109,7 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
 # a custom target to compile scheme files
-add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/hi)
+add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/ml-inscript && ./varnamc --compile schemes/hi)
 add_custom_target (test command cd tests && ./runtests)
 
 # Makes the distro
@@ -132,9 +132,12 @@ INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${
 INSTALL ( FILES deps/uthash.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
 INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnam.pc DESTINATION ${VARNAM_LIB_INSTALL_DIR}/pkgconfig)
 INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnamstatic.pc DESTINATION ${VARNAM_LIB_INSTALL_DIR}/pkgconfig)
+
 # Add all the vst files here
 INSTALL ( FILES schemes/hi.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL ( FILES schemes/ml.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
+INSTALL ( FILES schemes/ml-inscript.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
+
 INSTALL ( FILES varnamruby.rb DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL_PROGRAMS(/bin FILES varnamc)
 INSTALL ( FILES varnamc.1 DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1)

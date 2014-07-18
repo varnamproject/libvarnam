@@ -14,6 +14,7 @@ cp -r . $target_dir
 cd $target_dir
 git clean -f -x -d
 ./varnamc --compile schemes/ml
+./varnamc --compile schemes/ml-inscript
 ./varnamc --compile schemes/hi
 rm -rf .git
 cd ..
