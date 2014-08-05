@@ -22,7 +22,13 @@ static int grow_buffer(struct strbuf *string)
 
     assert(string != NULL);
 
-    toallocate = string->allocated + (string->allocated / 2);
+    if (string->allocated < 2) {
+        toallocate = 2;
+    }
+    else {
+        toallocate = string->allocated + (string->allocated / 2);
+    }
+
     tmp = (char*) realloc(string->buffer, toallocate);
     if(tmp) {
         string->buffer = tmp;
