@@ -264,7 +264,7 @@ int strbuf_is_blank(struct strbuf *string)
 int strbuf_endswith(struct strbuf *string, const char *str)
 {
     int str_length, buffer_length;
-    char substring[100];
+    char substring[100] = "";
 
     if(!str) return 0;
 
