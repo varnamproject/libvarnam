@@ -654,8 +654,9 @@ varnam_get_all_tokens(
 
 /*For use with ibus*/
 /*To Do : Document properly*/
+/*allocated - size already allocated to char *word_breakers*/
 int
-varnam_word_breakers(varnam *handle, char *word_breakers, int max_count)
+varnam_word_breakers(varnam *handle, char *word_breakers, int allocated)
 {
     int rc;
     strbuf *list = get_pooled_string(handle);
@@ -667,7 +668,10 @@ varnam_word_breakers(varnam *handle, char *word_breakers, int max_count)
         return VARNAM_ERROR;
     }
     else
-    {   
+    {
+        if(list->length > allocated)
+            word_breakers = (char*)realloc(word_breakers, allocated + (list->length - allocated + 1));   
+
         strcpy(word_breakers, strbuf_to_s(list));
         return VARNAM_SUCCESS;
     }
