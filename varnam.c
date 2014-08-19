@@ -652,6 +652,27 @@ varnam_get_all_tokens(
     return vst_get_all_tokens (handle, token_type, v_->tokens);
 }
 
+/*For use with ibus*/
+/*To Do : Document properly*/
+int
+varnam_word_breakers(varnam *handle, char *word_breakers, int max_count)
+{
+    int rc;
+    strbuf *list = get_pooled_string(handle);
+
+    rc = vst_get_word_breakers(handle, list);
+    if(rc != VARNAM_SUCCESS)
+    {
+        set_last_error(handle, "Could not obtain word breakers");
+        return VARNAM_ERROR;
+    }
+    else
+    {   
+        strcpy(word_breakers, strbuf_to_s(list));
+        return VARNAM_SUCCESS;
+    }
+}
+
 int
 varnam_flush_buffer(varnam *handle)
 {
