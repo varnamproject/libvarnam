@@ -878,6 +878,52 @@ vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_t
 }
 
 int
+vst_get_word_breakers(varnam *handle, strbuf *list)
+{
+    int rc;
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    char *sql = "select pattern from symbols where type=?1";
+
+    db = handle->internal->db;
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if(rc != SQLITE_OK)
+    {
+        set_last_error(handle, "Failed to prepare statement : %s", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return VARNAM_ERROR;
+    }
+
+    rc = sqlite3_bind_int(stmt, 1, VARNAM_WORD_BREAKER);
+    if(rc != SQLITE_OK)
+    {
+        sqlite3_finalize(stmt);
+        set_last_error(handle, "Could not bind : %s", sqlite3_errmsg(db));
+        return VARNAM_ERROR;
+    }
+
+    rc = sqlite3_step(stmt);
+
+    while(rc == SQLITE_ROW)  
+    {
+        strbuf_add(list, sqlite3_column_text(stmt, 0));
+        printf("%s\n", strbuf_to_s(list));
+        rc = sqlite3_step(stmt);
+    }
+
+    if(rc != SQLITE_DONE)
+    {
+        set_last_error(handle, "%s", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return VARNAM_ERROR;
+    }
+
+    sqlite3_finalize(stmt);
+    return VARNAM_SUCCESS;
+}
+
+int
 vst_stamp_version (varnam *handle)
 {
     char *zErrMsg = 0;

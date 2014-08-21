@@ -1301,4 +1301,9 @@ def export_words
 
 end
 
+def word_breakers(options={}, hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_WORD_BREAKER, options)
+end
+
 do_action

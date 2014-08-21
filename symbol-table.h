@@ -77,6 +77,9 @@ vst_get_metadata (varnam *handle, const char* key, struct strbuf *output);
 int
 vst_tokenize (varnam *handle, const char *input, int tokenize_using, int match_type, varray *result);
 
+int
+vst_get_word_breakers(varnam *handle, strbuf *list);
+
 void
 print_tokens_array(varray *tokens);
 
