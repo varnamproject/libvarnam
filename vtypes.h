@@ -79,7 +79,7 @@
 #define VARNAM_WORDS_EXPORT_METADATA "filetype:varnam_words_export"
 
 /* Schema version number */
-#define VARNAM_SCHEMA_SYMBOLS_VERSION 20140115
+#define VARNAM_SCHEMA_SYMBOLS_VERSION 20140815
 #define VARNAM_SCHEMA_WORDS_VERSION 20140115 
 
 struct varnam_rule;
@@ -129,6 +129,8 @@ struct varnam_internal
     /* internal configuration options */
     int _config_mostly_learning_new_words;
 
+    int stemrules_count;
+
 
     /* instance pools */
     struct vpool_t *tokens_pool;
@@ -160,11 +162,17 @@ struct varnam_internal
     sqlite3_stmt *delete_word;
     sqlite3_stmt *export_words;
     sqlite3_stmt *learned_words_count;
+    sqlite3_stmt *get_stemrule;
+    sqlite3_stmt *get_last_syllable;
+    sqlite3_stmt *check_exception;
+    sqlite3_stmt *persist_stemrule;
+    sqlite3_stmt *persist_stem_exception;
 
     /* in-memory caches */
     vcache_entry *tokens_cache;
     vcache_entry *noMatchesCache; /* Contains all the patterns which don't have a match */
     vcache_entry *tokenizationPossibility; /* Contains patterns and a value indicating whether further tokenization is possible */
+    vcache_entry *cached_stems; 
 };
 
 typedef struct varnam {

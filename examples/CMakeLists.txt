@@ -16,5 +16,3 @@ add_executable(learning learning.c)
 
 target_link_libraries(transliteration ${VARNAM_LIBRARY_NAME})
 target_link_libraries(learning ${VARNAM_LIBRARY_NAME})
-
-

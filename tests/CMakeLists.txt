@@ -27,6 +27,7 @@ list (APPEND TEST_FILES
   export-words.c
   strbuftest.c
   varnamc_tests.c
+  stemmer_tests.c
   )
 
 set(test_executable_name runtests)

@@ -73,6 +73,8 @@ initialize_internal()
         vi->config_use_indic_digits = 0;
         vi->_config_mostly_learning_new_words = 0;
 
+        vi->stemrules_count = -1;
+
         /* suggestions */
         vi->known_words = NULL;
 
@@ -105,10 +107,16 @@ initialize_internal()
         vi->delete_word = NULL;
         vi->export_words = NULL;
         vi->learned_words_count = NULL;
+        vi->get_stemrule = NULL;
+        vi->get_last_syllable = NULL;
+        vi->check_exception = NULL;
+        vi->persist_stemrule = NULL;
+        vi->persist_stem_exception = NULL;
 
         vi->tokens_cache = NULL;
         vi->noMatchesCache = NULL;
         vi->tokenizationPossibility = NULL;
+        vi->cached_stems = NULL;
     }
     return vi;
 }
@@ -639,6 +647,55 @@ varnam_create_token(
     return rc;
 }
 
+/*adds a stem rule into the varnam symbol table*/
+int varnam_create_stemrule(varnam* handle, const char* old_ending, const char* new_ending)
+{
+    int rc=0;
+
+    if(handle == NULL)
+        return VARNAM_ERROR;
+
+    if(old_ending == NULL || new_ending == NULL)
+    {
+        set_last_error(handle, "No ending supplied");
+        return VARNAM_ERROR;
+    }
+
+    rc = vst_persist_stemrule(handle, old_ending, new_ending);
+
+    if(rc != VARNAM_SUCCESS)
+    {
+        printf("Error at persist stemrule\n");
+        return VARNAM_ERROR;
+    }
+
+    return VARNAM_SUCCESS;
+}
+
+int varnam_create_stem_exception(varnam *handle, const char *rule, const char *exception)
+{
+    int rc;
+
+    if(rule == NULL || strlen(rule) == 0)
+    {
+        set_last_error(handle, "No rule");
+        return VARNAM_ERROR;
+    }
+
+    if(exception == NULL || strlen(exception) == 0)
+    {
+        set_last_error(handle, "Invalid exception supplied");
+        return VARNAM_ERROR;
+    }
+
+    rc = vst_persist_stem_exception(handle, rule, exception);
+
+    if(rc != VARNAM_SUCCESS)
+        return VARNAM_ERROR;
+
+    return VARNAM_SUCCESS;
+}
+
 int
 varnam_get_all_tokens(
     varnam *handle,
@@ -821,5 +878,6 @@ destroy_varnam_internal(struct varnam_internal* vi)
     clear_cache (&vi->tokens_cache);
     clear_cache (&vi->noMatchesCache);
     clear_cache (&vi->tokenizationPossibility);
+    clear_cache (&vi->cached_stems);
     xfree(vi);
 }

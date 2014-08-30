@@ -41,6 +41,12 @@ vst_persist_token(
     int priority,
     int accept_condition);
 
+int
+vst_persist_stemrule(varnam *handle, const char* old_ending, const char* new_ending);
+
+int 
+vst_persist_stem_exception(varnam *handle, const char *rule, const char *exception);
+
 /**
  * Flushes changes to disk
  **/
@@ -85,6 +91,18 @@ destroy_all_statements(struct varnam_internal* vi);
 
 int
 vst_make_prefix_tree (varnam *handle);
+
+int
+vst_has_stemrules (varnam *handle);
+
+int 
+vst_get_last_syllable (varnam *handle, strbuf *string, strbuf *syllable);
+
+int
+vst_check_exception(varnam *handle, strbuf *word_buffer, strbuf *end_buffer);
+
+int
+vst_get_stem(varnam* handle, strbuf* old_ending, strbuf *new_ending);
 
 int
 vst_stamp_version (varnam *handle);
