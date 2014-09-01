@@ -19,7 +19,6 @@
 #endif
 
 #include "vtypes.h"
-
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
 #define v_ \
@@ -167,6 +166,7 @@ VARNAM_EXPORT int strbuf_endswith(struct strbuf *string, const char *str);
 VARNAM_EXPORT bool strbuf_remove_from_first(struct strbuf *string, const char *toremove);
 VARNAM_EXPORT bool strbuf_remove_from_last(struct strbuf *string, const char *toremove);
 VARNAM_EXPORT bool strbuf_replace(strbuf *string, const char *rep, const char *with);
+VARNAM_EXPORT char* strbuf_get_last_unicode_char(strbuf *word);
 VARNAM_EXPORT struct varray_t* strbuf_split(strbuf *string, varnam *handle, char delim);
 VARNAM_EXPORT struct strbuf* get_pooled_string(varnam *handle);
 VARNAM_EXPORT void return_string_to_pool (varnam *handle, strbuf* string);

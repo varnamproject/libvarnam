@@ -44,4 +44,5 @@ tests/testrun.xml
 Debug/
 Win32/
 *.dir
-
+examples/stemmer.c
+examples/stemmer

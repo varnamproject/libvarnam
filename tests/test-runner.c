@@ -31,6 +31,7 @@ int main(int argc, char **argv)
     suite_add_tcase (suite, get_learning_tests());
     suite_add_tcase (suite, get_export_tests());
     suite_add_tcase (suite, get_token_creation_tests());
+    suite_add_tcase (suite, get_stemmer_tests());
 
     util = suite_create ("util");
     suite_add_tcase (util, get_strbuf_tests());

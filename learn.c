@@ -10,6 +10,7 @@
 #include "api.h"
 #include "vtypes.h"
 #include "varray.h"
+#include "vword.h"
 #include "util.h"
 #include "result-codes.h"
 #include "symbol-table.h"
@@ -337,12 +338,85 @@ reduce_noise_in_tokens(varray *tokens)
     }
 }
 
+int
+stem(varnam *handle, const char *word, varray *stem_results)
+{
+    int rc;
+    strbuf *word_copy, *suffix, *new_ending, *temp;
+    char *end_char;
+
+    rc = vst_has_stemrules(handle);
+    if(rc == VARNAM_STEMRULE_MISS)
+        return VARNAM_SUCCESS;
+
+    else if(rc == VARNAM_ERROR)
+        return VARNAM_ERROR;
+    
+    word_copy = get_pooled_string(handle);
+    suffix = get_pooled_string(handle);
+    temp = get_pooled_string(handle);
+    new_ending = get_pooled_string(handle);
+    strbuf_add(word_copy, word);
+
+    while(word_copy->length > 0)
+    {
+        /*the next character of word_buffer should go 
+         to the beginning of the end_bufer. For this 
+         we copy end_buffer to temp, clear end_buffer,
+         add new ending to end_buffer and append the 
+         contents of temp back to end_buffer*/
+        strbuf_clear(temp);
+        strbuf_add(temp, strbuf_to_s(suffix));
+        strbuf_clear(suffix);
+        end_char = strbuf_get_last_unicode_char(word_copy);
+        strbuf_add(suffix, end_char);
+        strbuf_add(suffix, strbuf_to_s(temp));
+        strbuf_remove_from_last(word_copy, end_char);
+
+        rc = vst_get_stem(handle, suffix, new_ending);
+        if(rc == VARNAM_STEMRULE_HIT)
+        {
+            rc = vst_check_exception(handle, word_copy, suffix);
+            if(rc == VARNAM_STEMRULE_HIT)
+            {
+                free(end_char);
+                continue;
+            }
+
+            else if(rc != VARNAM_STEMRULE_MISS && rc != VARNAM_SUCCESS)
+                return VARNAM_ERROR;
+
+            strbuf_add(word_copy, strbuf_to_s(new_ending));
+            /*Creating a vword using Word()
+             word_buffer will change in subsequent iterations of the loop
+             So pushing a pointer to word_buffer->buffer to varray is of
+             no use. So we create a vword for each word that is to be learned
+             and push it to the varray*/
+            varray_push(stem_results, Word(handle, (const char*)strbuf_to_s(word_copy), 0));
+            strbuf_clear(suffix);
+        }
+        else if(rc != VARNAM_STEMRULE_MISS)
+        {
+            free(end_char);
+            set_last_error(handle, "stemrule query failed");
+            return VARNAM_ERROR;
+        }
+
+        free(end_char);
+    }
+
+    return VARNAM_SUCCESS;
+}
+
 static int
 varnam_learn_internal(varnam *handle, const char *word, int confidence)
 {
     int rc;
     varray *tokens;
     strbuf *sanitized_word;
+
+    if(strlen(word) == 0)
+        return VARNAM_ARGS_ERROR;
 
     if (handle == NULL || word == NULL)
         return VARNAM_ARGS_ERROR;
@@ -389,10 +463,11 @@ varnam_learn_internal(varnam *handle, const char *word, int confidence)
 int
 varnam_learn(varnam *handle, const char *word)
 {
-    int rc;
-#ifdef _RECORD_EXEC_TIME
-    V_BEGIN_TIMING
-#endif
+    int rc,i;
+    varray *stem_results;
+    #ifdef _RECORD_EXEC_TIME
+        V_BEGIN_TIMING
+    #endif
 
     reset_pool (handle);
 
@@ -408,6 +483,19 @@ varnam_learn(varnam *handle, const char *word)
         vwt_discard_changes (handle);
         return rc;
     }
+
+
+    stem_results = varray_init();
+    rc = stem(handle, word, stem_results);
+    if(rc != VARNAM_SUCCESS)
+        return rc;
+    
+    for(i=0;i<=stem_results->index;i++)
+    {
+        varnam_learn_internal(handle, ((vword*)varray_get(stem_results, i))->text, 0);
+    }
+
+    varray_free(stem_results, &destroy_word);
 
     rc = vwt_end_changes (handle);
     if (rc != VARNAM_SUCCESS)
@@ -439,12 +527,15 @@ varnam_learn_from_file(varnam *handle,
                        void *object)
 {
     int rc;
+    int rc2;            
     FILE *infile;
     char line_buffer[10000];
     strbuf *word;
     varray *word_parts;
+    varray *stem_results;
     int confidence;
     int parts;
+    int i;
 
     infile = fopen(filepath, "r");
     if (!infile) {
@@ -493,9 +584,24 @@ varnam_learn_from_file(varnam *handle,
 
             word = varray_get (word_parts, 0);
             rc = varnam_learn_internal (handle, strbuf_to_s (word), confidence);
+            
             if (rc) {
                 if (status != NULL) status->failed++;
             }
+
+            /*hack. if rc is used here then varnam won't create text file upon failure. To fix*/
+            
+            stem_results = varray_init();
+            rc2 = stem(handle, strbuf_to_s(word), stem_results);
+            if(rc2 != VARNAM_SUCCESS)
+                return rc;
+            
+            for(i=0;i<=stem_results->index;i++)
+            {
+                varnam_learn_internal(handle, ((vword*)varray_get(stem_results, i))->text, 0);
+            }
+
+            varray_free(stem_results, &destroy_word);
         }
         else {
             rc = VARNAM_ERROR;
@@ -689,3 +795,4 @@ varnam_is_known_word(varnam* handle, const char* word)
     else
         return 0;
 }
+

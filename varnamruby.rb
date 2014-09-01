@@ -52,6 +52,8 @@ module VarnamLibrary
   attach_function :varray_length, [:pointer], :int
   attach_function :varnam_export_words, [:pointer, :int, :string, :int, :pointer], :int
   attach_function :varnam_import_learnings_from_file, [:pointer, :string, :pointer], :int
+  attach_function :varnam_create_stemrule, [:pointer, :string, :string], :int
+  attach_function :varnam_create_stem_exception, [:pointer, :string, :string], :int
 end
 
 VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type, :priority, :accept_condition, :flags)
