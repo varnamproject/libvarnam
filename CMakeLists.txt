@@ -109,7 +109,7 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
 # a custom target to compile scheme files
-add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/ml-inscript && ./varnamc --compile schemes/hi)
+add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/ml-inscript && ./varnamc --compile schemes/hi && ./varnamc --compile schemes/ta)
 add_custom_target (test command cd tests && ./runtests)
 
 # Makes the distro
