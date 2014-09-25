@@ -1,5 +1,11 @@
+AUTHOR
+--------
 Navaneeth (navaneethkn@gmail.com)
-Jijesh Mohan (jijeshmohan@gmail.com) - Testing and various ideas
+
+Contributors
+---------
+Jijesh Mohan (jijeshmohan@gmail.com) - Crawler, browser addons etc
 Prateek Kumar Baheti (prateekb@thoughtworks.com) - Hindi support & testing  
-Kevin Martin Jose (youcancallmekevin@gmail.com)
-Jaydeep (djshinchan@gmail.com)
+Kevin Martin Jose (youcancallmekevin@gmail.com) - Stemmer and lot more
+Jaydeep (djshinchan@gmail.com) - Hindi support
+Rohit Bansal (rohiban@gmail.com) - Kannada support

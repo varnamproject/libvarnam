@@ -155,6 +155,8 @@ gcc `pkg-config --cflags --libs varnam` -o example example.c
 * Hindi
 * Malayalam
 * Gujarati (Experimental)
+* Tamil (Experimental)
+* Kannada (Experimental)
 
 # Adding a new language
 
@@ -310,7 +312,7 @@ Thank you for your interest. You can look at [issues](https://github.com/navanee
     <td>Questions</td><td>Tweet your questions to @navaneethkn</td>
   </tr>
   <tr>
-    <td>Email</td><td>varnamproject [at] googlegroups.com</td>
+    <td>Email</td><td>varnamproject-discuss [at] nongnu.org</td>
   </tr>
 </table>
 
