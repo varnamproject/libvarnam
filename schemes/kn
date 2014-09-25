@@ -1,0 +1,137 @@
+# encoding: utf-8
+
+##
+# Copyright (C) Shwetha Thammaiah, Sharath Battaje
+#
+# This is part of libvarnam. See LICENSE.txt for the license
+#
+# This is a Ruby file, and hence follows Ruby syntax
+##
+
+language_code "kn"
+identifier "kn-unicode"
+display_name "Kannada"
+author "Shwetha Thammaiah, Sharath Kr. Battaje"
+
+ignore_duplicates false
+
+$am = "\u{0C82}"
+$an = "\u{0C81}"
+
+$virama = "\u{0CCD}"
+$nukta = "\u{0CBC}"
+$avagraha = "\u{0CBD}"
+
+#virama "~" => "\u{0CCD}"
+
+#visarga "H" => "\u{0C83}"
+
+vowels "a" => "ಅ",
+       ["aa", "A", ["a"]]  => ["ಆ", "ಾ"],
+       "i" => ["ಇ", "ಿ"],
+       ["ee", "I", "ii", ["i"]]   => ["ಈ", "ೀ"],
+       "u" => ["ಉ", "ು"],
+       ["uu", "oo", "U", ["u"]]   => ["ಊ", "ೂ"],
+       #["ru", "ri"] => ["ಋ", "\u{0CC3}"],
+       #["Ru", "Ri"] => ["ೠ", "\u{0CC4}"],
+       "e" => ["ಎ", "ೆ"], 
+       ["ae", ["ye"]] => ["ಏ", "ೇ"],
+       ["ai", "ei"] => ["ಐ", "ೈ"],
+       "o" => ["ಒ"," ೊ"],
+       "O" => ["ಓ", "ೋ"],
+       ["ou", "au", "ow"]  => ["ಔ", "ೌ"],
+	["aN", "aM",] => ["ಅಂ" ,"o"],
+	["aH"] => ["ಅಃ", "ः"]              
+
+list :can_make_cluster do
+consonants ["k", "K"] => "ಕ",
+           ["kh", "Kh"] => "ಖ",
+           ["g", "G"] => "ಗ",
+           ["gh", "Gh"] => "ಘ",
+           ["gna"] => "ಙ",
+           ["ch", "Ch"] => "ಚ",
+           ["chh", ["Chh"]] => "ಛ",
+           ["j", ["J"]] => "ಜ",
+           ["jh", ["Jh"]] => "ಝ",
+           ["jn", ["Jn"]] => "ಞ",
+           ["T", ["t"]] => "ಟ",
+           ["Th", ["th"]] => "ಠ",
+           ["D", ["d"]] => "ಡ",
+           ["Dh", ["dh"]] => "ಢ",
+           ["N"] => "ಣ",
+           ["t", ["T"]] => "ತ",
+           ["th", ["Th"]] => "ಥ",
+           ["d", ["D"]] => "ದ",
+           ["dh", ["Dh"]] => "ಧ",
+           ["n"] => "ನ",                   
+           ["p", "P"] => "ಪ",
+           ["ph", "Ph"] => "ಫ",
+           ["b", "B"] => "ಬ",
+           ["bh", "Bh"] => "ಭ",
+           ["m", ["M"]] => "ಮ",
+           ["y", "Y"] => "ಯ",
+           ["r", "R"] => "ರ",
+           ["rr", "RR", ["Rr"]] => "ಱ",
+           ["l", ["L"]] => ["ಲ"],
+
+           ["L", "LL"] => ["ಳ", "\u{0CE2}"],
+
+           ["v", "w"] => "ವ",
+           ["sh", ["s"]]  => "ಶ",
+           ["Sh", ["sh"]] => "ಷ",
+           ["s", "S"] => "ಸ",
+           ["h", "H"] => "ಹ",
+           ["ksh", "Ksh"] => "ಕ್ಷ",
+           ["tr", "Tr"] => "ಱ",
+           ["`jn"] => "ಜ್ಞ"
+end
+
+ignore_duplicates true
+
+can_make_cluster.each do |c1|
+   can_make_cluster.each do |c2|
+     if c1.match_type == 1
+        consonants ["#{c1.pattern}#{c2.pattern}"] => ["#{c1.value1}#{$virama}#{c2.value1}"]
+     else
+        consonants [["#{c1.pattern}#{c2.pattern}"]] => ["#{c1.value1}#{$virama}#{c2.value1}"]
+     end 
+   end
+end
+
+# Half forms for म
+#consonants(combine can_make_cluster, ["m*"] => ["म#{$virama}*1"])
+
+#generate_cv
+
+#consonants(combine get_consonants, ["*a"] => ["*1"])
+
+ignore_duplicates false
+
+#consonants [["m"]] => "ಮ"
+
+# Need to replace this when we have a way to pass value2 and value3 in combine
+get_vowels.each do |vowel|
+  if vowel.match_type == 1
+     consonant_vowel_combinations ["m#{vowel.pattern}"] => ["ಮ#{vowel.value2}"]
+  else
+     consonant_vowel_combinations [["m#{vowel.pattern}"]] => ["ಮ#{vowel.value2}"]
+  end
+end
+symbols ["m~", ["n~"]] => $am,
+        [["n~", "m~"]] => $an,
+        ["|"] => "।"
+
+symbols({:priority => :low}, ["aan", "aam"] => $an)
+
+
+
+numbers "0" => "೦",
+        "1" => "೧",
+        "2" => "೨",
+        "3" => "೩",
+        "4" => "೪",
+        "5" => "೫",
+        "6" => "೬",
+        "7" => "೭",
+        "8" => "೮",
+        "9" => "೯"
