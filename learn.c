@@ -32,12 +32,21 @@ static void
 language_specific_sanitization(strbuf *string)
 {
     /* Malayalam has got two ways to write chil letters. Converting the old style to new one */
-    strbuf_replace (string, "ന്‍", "ൻ");
+    /*strbuf_replace (string, "ന്‍", "ൻ");
     strbuf_replace (string, "ണ്‍", "ൺ");
     strbuf_replace (string, "ല്‍","ൽ");
     strbuf_replace (string, "ള്‍", "ൾ");
-    strbuf_replace (string, "ര്‍", "ർ");
+    strbuf_replace (string, "ര്‍", "ർ");*/
+    
 
+    
+    /*ml-inscript specific code. Add checks for
+    lang code here*/
+    strbuf_replace(string, "ൻ", "ന്‍]");
+    strbuf_replace(string, "ൺ", "ണ്‍]");
+    strbuf_replace(string, "ൽ", "ല്‍]");
+    strbuf_replace(string, "ൾ", "ള്‍]");
+    strbuf_replace(string, "ർ", "ര്‍]");
     /* Hindi's DANDA (Purna viram) */
     strbuf_replace (string, "।", "");
 }
@@ -111,6 +120,7 @@ can_learn_from_tokens (varnam *handle, varray *tokens, const char *word)
             if (t->type == VARNAM_TOKEN_OTHER) {
                 unknown_tokens = true;
                 unknown_token = t;
+                printf("Pattern causing problems : %s\n", t->pattern);
                 goto done;
             }
 

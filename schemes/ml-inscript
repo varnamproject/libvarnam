@@ -104,8 +104,8 @@ numbers "1" => "൧",
 
 symbols "_" => "ഃ"
 
-others "]" => $zwj,
-       "\\" => $zwnj
+joiner "]" => $zwj
+non_joiner "\\" => $zwnj
 
 
 
