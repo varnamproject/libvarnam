@@ -93,7 +93,7 @@ can_make_cluster.each do |c1|
      end 
 
      if c1.value1 == c2.value1
-      consonants [["#{c1.pattern}#{c2.pattern}"]] => ["#{$addak}#{c1.value1}"]
+      consonants [["#{c1.pattern}#{c2.pattern}", "#{c1.pattern}"]] => ["#{$addak}#{c1.value1}"]
      end
    end
 end
