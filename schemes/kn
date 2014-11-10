@@ -27,9 +27,9 @@ virama "~" => "\u{0CCD}"
 infer_dead_consonants true
 
 vowels "a" => "ಅ",
-       ["aa", "A", ["a"]]  => ["ಆ", "ಾ"],
+       ["aa", "A", ["a"]] => ["ಆ", "ಾ"],
        "i" => ["ಇ", "ಿ"],
-       ["ee", "I", "ii", ["i"]]   => ["ಈ", "ೀ"],
+       ["ee", "I", "ii", ["i"]] => ["ಈ", "ೀ"],
        "u" => ["ಉ", "ು"],
        ["uu", "oo", "U", ["u"]]   => ["ಊ", "ೂ"],
        ["rRu"] => ["ಋ", "\u{0CC3}"],
@@ -58,8 +58,8 @@ consonants  ["ka"] => "ಕ",
            [["nja"], "NJa"]  => "ಞ",
            ["ta", ["tta"]] => "ಟ",
            [["da", "ta"], "Ta"] => "ಠ",
-            [["da", "ta"], "TTa"] => "ಡ",
-           [["da"], "DDa"]   => "ಢ",
+            [["da", "ta"], "Da"] => "ಡ",
+           [["da"], "Dha"]   => "ಢ",
            ["Na"] => "ಣ",
            ["tha", ["ta"]]  => "ತ",
            [["tha", "dha"], "thha"] => "ಥ",
@@ -75,7 +75,8 @@ consonants  ["ka"] => "ಕ",
            "la" => ["ಲ"],
 
            ["La", "LLa"] => ["ಳ", "\u{0CE2}"],
-
+           ['mma'] => ["ಮ್ಮ"],
+           [['tha']] => 'ತ್ತ', 
           "va"=> "ವ",
            ["sha", ["sa"]]  => "ಶ",
            ["Sha", ["sha"]] => "ಷ",
@@ -85,8 +86,11 @@ consonants  ["ka"] => "ಕ",
            ["tra", "Tra"] => "ಱ",
            ["`jn"] => "ಜ್ಞ"
 
-
 infer_dead_consonants false
+
+consonants ["na"] => "ನ",
+           ["ma"] => "ಮ"
+infer_dead_consonants true
 
 consonants ["na"] => "ನ",
            ["ma"] => "ಮ"
