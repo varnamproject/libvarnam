@@ -10,6 +10,7 @@ language_code "hi"
 identifier "hi-unicode"
 display_name "Hindi"
 author "Prateek Kumar Baheti"
+stable true
 
 ignore_duplicates false
 
