@@ -195,35 +195,47 @@ varnam_get_suggestions_file (varnam *handle)
   return handle->suggestions_file;
 }
 
+static const char* symbolsFileSearchPath[] = {
+    "/usr/local/share/varnam/vst",
+    "/usr/share/varnam/vst",
+    "schemes"
+};
+
+const char*
+find_symbols_file_directory()
+{
+  int i;
+
+  if (varnam_symbols_dir != NULL && is_directory(varnam_symbols_dir)) {
+    return varnam_symbols_dir;
+  }
+
+  for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
+    if (is_directory (symbolsFileSearchPath[i]))
+      return symbolsFileSearchPath[i];
+  }
+
+  return NULL;
+}
+
 static strbuf*
 find_symbols_file_path (const char *langCode)
 {
   int i;
   strbuf *path;
-  const char* symbolsFileSearchPath[] = {
-    "/usr/local/share/varnam/vst",
-    "/usr/share/varnam/vst",
-    "schemes"
-  };
+	const char* dir = find_symbols_file_directory();
+	if (dir == NULL) {
+		return NULL;
+	}
 
   path = strbuf_init (50);
-  if (varnam_symbols_dir != NULL) {
-    strbuf_addf (path, "%s/%s.vst", strbuf_to_s (varnam_symbols_dir), langCode);
-    if (!is_path_exists (strbuf_to_s (path)))
-        return NULL;
-
-    return path;
-  }
-
-  for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
-    strbuf_addf (path, "%s/%s.vst", symbolsFileSearchPath[i], langCode);
-    if (is_path_exists (strbuf_to_s (path)))
-      return path;
-
-    strbuf_clear (path);
-  }
-
-  return NULL;
+  strbuf_addf (path, "%s/%s.vst", dir, langCode);
+  if (is_path_exists (strbuf_to_s (path))) {
+		return path;
+	} else {
+		strbuf_destroy (path);
+  	return NULL;
+	}
 }
 
 static bool
