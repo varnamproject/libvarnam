@@ -31,6 +31,7 @@ int main()
     const char *pattern;
     int rc;
     varray *words; /* Used to store transliterated words */
+		vscheme_details *details;
 
     /* Initialize varnam handle */
     rc = varnam_init_from_lang ("ml", &handle, &msg);
@@ -40,6 +41,22 @@ int main()
         free (msg);
         return 1;
     }
+
+		/* print the current scheme details */
+		printf("Current scheme details\n-----------------\n");
+		rc = varnam_get_scheme_details(handle, &details);
+		if (rc != VARNAM_SUCCESS) {
+			printf ("Failed to get scheme details\n");
+			return 1;
+		}
+
+		printf("Lang code: %s\n", details->langCode);
+		printf("Identifier: %s\n", details->identifier);
+		printf("Display name: %s\n", details->displayName);
+		printf("Author: %s\n", details->author);
+		printf("Compiled on: %s\n", details->compiledDate);
+		printf("Stable?: %s\n", details->isStable == 0 ? "false" : "true");
+		printf("%s", "\n");
 
     /* Transliterating text. Varnam manages memory initialization for words. You don't have to explicitly release it */
     pattern = "navaneeth";

@@ -281,58 +281,15 @@ varnam_learn_from_file(varnam *handle,
 VARNAM_EXPORT extern int
 varnam_set_scheme_details(
     varnam *handle,
-    const char *language_code,
-    const char *identifier,
-    const char *display_name,
-    const char *author,
-    const char *compiled_date
+		vscheme_details *scheme_details
     );
 
 /**
- * Returns the language code for the current scheme.
- * See varnam_set_scheme_details() to set the values
+ * Gets the metadata for the current scheme
  *
  **/
-VARNAM_EXPORT extern const char*
-varnam_get_scheme_language_code(varnam *handle);
-
-/**
- * Returns the identifier for the current scheme.
- * See varnam_set_scheme_details() to set the values
- *
- **/
-VARNAM_EXPORT extern const char*
-varnam_get_scheme_identifier(varnam *handle);
-
-/**
- * Returns the friendly display name for the current scheme.
- * See varnam_set_scheme_details() to set the values
- *
- **/
-VARNAM_EXPORT extern const char*
-varnam_get_scheme_display_name(varnam *handle);
-
-/**
- * Returns the author for the current scheme.
- * See varnam_set_scheme_details() to set the values
- *
- **/
-VARNAM_EXPORT extern const char*
-varnam_get_scheme_author(varnam *handle);
-
-/**
- * Returns the compiled date for the current scheme.
- * See varnam_set_scheme_details() to set the values
- *
- **/
-VARNAM_EXPORT extern const char*
-varnam_get_scheme_compiled_date(varnam *handle);
-
 VARNAM_EXPORT extern int
-varnam_set_metadata(
-    varnam *handle,
-    const char *
-    );
+varnam_get_scheme_details(varnam *handle, vscheme_details **details);
 
 /**
  * Returns error message for the most recent failed call to varnam API functions.

@@ -21,10 +21,16 @@ static vtoken_renderer*
 get_renderer(varnam *handle)
 {
     vtoken_renderer *r;
-    int i;
+    int i, rc;
+		vscheme_details *details;
 
-    const char *scheme_id = varnam_get_scheme_identifier (handle);
-    if (scheme_id == NULL) {
+		rc = varnam_get_scheme_details(handle, &details);
+		if (rc != VARNAM_SUCCESS) {
+      varnam_log (handle, "Scheme details is not set. Custom rendering will be unavailable");
+			return NULL;
+		}
+
+    if (details->identifier == NULL) {
         varnam_log (handle, "Scheme id is not set. Custom rendering will not be processed");
         return NULL;
     }
@@ -33,7 +39,7 @@ get_renderer(varnam *handle)
     {
         r = varray_get (v_->renderers, i);
         assert (r);
-        if (strcmp(r->scheme_id, scheme_id) == 0)
+        if (strcmp(r->scheme_id, details->identifier) == 0)
             return r;
     }
 

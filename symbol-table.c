@@ -630,39 +630,52 @@ vst_add_metadata (varnam *handle, const char* key, const char* value)
 }
 
 int
-vst_get_metadata (varnam *handle, const char* key, struct strbuf *output)
+vst_load_scheme_details(varnam *handle, vscheme_details *output)
 {
-    int rc;
-    sqlite3 *db; sqlite3_stmt *stmt;
+	int rc;
+	sqlite3_stmt *stmt;
+	strbuf *key, *value;
+	sqlite3 *db;
 
-    assert (handle);
-    strbuf_clear (output);
+	db = handle->internal->db;
 
-    db = handle->internal->db;
+  rc = sqlite3_prepare_v2(db, "select key, value from metadata;", -1, &stmt, NULL);
+  if (rc != SQLITE_OK) {
+    set_last_error (handle, "Failed to load scheme details: %s", sqlite3_errmsg(db));
+    sqlite3_finalize(stmt);
+    return VARNAM_ERROR;
+  }
 
-    rc = sqlite3_prepare_v2( db, "select value from metadata where key = ?1;", -1, &stmt, NULL );
-    if(rc != SQLITE_OK)
-    {
+	key = strbuf_init (32);
+	while (1) {
+  	rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+			strbuf_add (key, (const char*) sqlite3_column_text(stmt, 0));
+			value = strbuf_create_from((const char*) sqlite3_column_text(stmt, 1));
+			output->identifier = strbuf_is_eq(key, VARNAM_METADATA_SCHEME_IDENTIFIER) ? strbuf_detach(value) : output->identifier;
+			output->langCode = strbuf_is_eq(key, VARNAM_METADATA_SCHEME_LANGUAGE_CODE) ? strbuf_detach(value) : output->langCode;
+			output->displayName = strbuf_is_eq(key, VARNAM_METADATA_SCHEME_DISPLAY_NAME) ? strbuf_detach(value) : output->displayName;
+			output->author = strbuf_is_eq(key, VARNAM_METADATA_SCHEME_AUTHOR) ? strbuf_detach(value) : output->author;
+			output->compiledDate = strbuf_is_eq(key, VARNAM_METADATA_SCHEME_COMPILED_DATE) ? strbuf_detach(value) : output->compiledDate;
+			if (strbuf_is_eq(key, VARNAM_METADATA_SCHEME_STABLE)) {
+				output->isStable = strcmp(strbuf_to_s(value), "1") == 0 ? 1 : 0;
+				strbuf_destroy(value);
+			}
+		} else if (rc == SQLITE_DONE) {
+			break;
+		}
+		else {
         set_last_error (handle, "Failed to get metadata : %s", sqlite3_errmsg(db));
-        sqlite3_finalize( stmt );
+        sqlite3_finalize(stmt);
+				strbuf_destroy (key);
         return VARNAM_ERROR;
     }
+		strbuf_clear (key);
+	}
 
-    sqlite3_bind_text(stmt, 1, key, -1, NULL);
-
-    rc = sqlite3_step( stmt );
-    if (rc == SQLITE_ROW)
-        strbuf_add (output, (const char*) sqlite3_column_text( stmt, 0 ));
-    else if (rc != SQLITE_DONE)
-    {
-        set_last_error (handle, "Failed to get metadata : %s", sqlite3_errmsg(db));
-        sqlite3_finalize( stmt );
-        return VARNAM_ERROR;
-    }
-
-    sqlite3_finalize( stmt );
-
-    return VARNAM_SUCCESS;
+	strbuf_destroy (key);
+  sqlite3_finalize( stmt );
+	return VARNAM_SUCCESS;
 }
 
 static int

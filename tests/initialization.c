@@ -14,19 +14,31 @@ START_TEST (set_scheme_details)
     int rc;
     char *msg, *filename;
     varnam *handle;
+		vscheme_details scheme_details;
+		vscheme_details *loadedSchemeDetails;
 
     filename = get_unique_filename();
     rc = varnam_init (filename, &handle, &msg);
     assert_success (rc);
 
-    rc = varnam_set_scheme_details(handle, "ml", "ml-unicode", "Malayalam", "Navaneeth K N", "May 3 2012");
+		scheme_details.langCode = "ml";
+		scheme_details.identifier = "ml-unicode";
+		scheme_details.displayName = "Malayalam";
+		scheme_details.author = "Navaneeth K N";
+		scheme_details.compiledDate = "May 3 2012";
+		scheme_details.isStable = 1;
+    rc = varnam_set_scheme_details(handle, &scheme_details);
     assert_success (rc);
 
-    ck_assert_str_eq (varnam_get_scheme_language_code (handle), "ml");
-    ck_assert_str_eq (varnam_get_scheme_identifier (handle), "ml-unicode");
-    ck_assert_str_eq (varnam_get_scheme_display_name (handle), "Malayalam");
-    ck_assert_str_eq (varnam_get_scheme_author (handle), "Navaneeth K N");
-    ck_assert_str_eq (varnam_get_scheme_compiled_date (handle), "May 3 2012");
+		rc = varnam_get_scheme_details(handle, &loadedSchemeDetails);
+    assert_success (rc);
+
+		ck_assert_str_eq (loadedSchemeDetails->langCode, "ml");
+		ck_assert_str_eq (loadedSchemeDetails->identifier, "ml-unicode");
+		ck_assert_str_eq (loadedSchemeDetails->displayName, "Malayalam");
+		ck_assert_str_eq (loadedSchemeDetails->author, "Navaneeth K N");
+		ck_assert_str_eq (loadedSchemeDetails->compiledDate, "May 3 2012");
+		ck_assert_int_eq (loadedSchemeDetails->isStable, 1);
 
     varnam_destroy (handle);
     free (filename);

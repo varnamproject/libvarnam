@@ -75,9 +75,6 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens);
 int
 vst_add_metadata (varnam *handle, const char* key, const char* value);
 
-int
-vst_get_metadata (varnam *handle, const char* key, struct strbuf *output);
-
 /* Tokenizes the input and add the tokens into result. Result will point to a multidimensional array
  * where each element will be an array of vtoken* */
 int
@@ -106,5 +103,8 @@ vst_get_stem(varnam* handle, strbuf* old_ending, strbuf *new_ending);
 
 int
 vst_stamp_version (varnam *handle);
+
+int
+vst_load_scheme_details(varnam *handle, vscheme_details *output);
 
 #endif

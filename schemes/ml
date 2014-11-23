@@ -10,6 +10,7 @@ language_code "ml"
 identifier "ml-unicode"
 display_name "Malayalam"
 author "Navaneeth KN"
+stable true
 
 $virama = "്"
 virama "~" => "്"

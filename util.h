@@ -148,6 +148,7 @@ typedef struct strbuf {
 void varnam_debug(varnam *handle, const char *format, ...);
 void varnam_log(varnam *handle, const char *format, ...);
 
+VARNAM_EXPORT struct strbuf* strbuf_create_from(const char* value);
 VARNAM_EXPORT struct strbuf *strbuf_init(size_t initial_buf_size);
 VARNAM_EXPORT int strbuf_addc(struct strbuf *string, char c);
 VARNAM_EXPORT int strbuf_add(struct strbuf *string, const char *c);
@@ -162,6 +163,7 @@ VARNAM_EXPORT const char* strbuf_to_s(struct strbuf *string);
 VARNAM_EXPORT struct varray_t* strbuf_chars(strbuf *b);
 VARNAM_EXPORT void strbuf_clear(struct strbuf *string);
 VARNAM_EXPORT int strbuf_is_blank(struct strbuf *string);
+VARNAM_EXPORT int strbuf_is_eq(struct strbuf *string, const char *value);
 VARNAM_EXPORT int strbuf_endswith(struct strbuf *string, const char *str);
 VARNAM_EXPORT bool strbuf_remove_from_first(struct strbuf *string, const char *toremove);
 VARNAM_EXPORT bool strbuf_remove_from_last(struct strbuf *string, const char *toremove);

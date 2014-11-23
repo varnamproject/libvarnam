@@ -59,6 +59,7 @@ initialize_internal()
         vi->vst_buffering = 0;
         vi->lastLearnedWord = NULL;
         vi->lastLearnedWordId = 0;
+				vi->scheme_details = NULL;
 
         /* scheme details buffers */
         vi->scheme_language_code = strbuf_init(2);
@@ -376,124 +377,119 @@ varnam_register_renderer(
 int
 varnam_set_scheme_details(
     varnam *handle,
-    const char *language_code,
-    const char *identifier,
-    const char *display_name,
-    const char *author,
-    const char *compiled_date)
+		vscheme_details *scheme_details)
 {
     int rc;
+		strbuf *tmp;
 
     set_last_error (handle, NULL);
 
-    if (language_code != NULL && strlen(language_code) > 0)
+    if (scheme_details->langCode != NULL && strlen(scheme_details->langCode) > 0)
     {
-        if (strlen(language_code) != 2)
+        if (strlen(scheme_details->langCode) != 2)
         {
             set_last_error (handle, "Language code should be one of ISO 639-1 two letter codes.");
             return VARNAM_ERROR;
         }
 
-        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_LANGUAGE_CODE, language_code);
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_LANGUAGE_CODE, scheme_details->langCode);
         if (rc != VARNAM_SUCCESS)
             return rc;
 
-        varnam_log (handle, "Set language code to : %s", language_code);
+        varnam_log (handle, "Set language code to : %s", scheme_details->langCode);
     }
 
-    if (identifier != NULL && strlen(identifier) > 0)
+    if (scheme_details->identifier != NULL && strlen(scheme_details->identifier) > 0)
     {
-        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_IDENTIFIER, identifier);
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_IDENTIFIER, scheme_details->identifier);
         if (rc != VARNAM_SUCCESS)
             return rc;
 
-        varnam_log (handle, "Set language identifier to : %s", identifier);
+        varnam_log (handle, "Set language identifier to : %s", scheme_details->identifier);
     }
 
-    if (display_name != NULL && strlen(display_name) > 0)
+    if (scheme_details->displayName != NULL && strlen(scheme_details->displayName) > 0)
     {
-        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_DISPLAY_NAME, display_name);
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_DISPLAY_NAME, scheme_details->displayName);
         if (rc != VARNAM_SUCCESS)
             return rc;
 
-        varnam_log (handle, "Set language display name to : %s", display_name);
+        varnam_log (handle, "Set language display name to : %s", scheme_details->displayName);
     }
 
-    if (author != NULL && strlen(author) > 0)
+    if (scheme_details->author != NULL && strlen(scheme_details->author) > 0)
     {
-        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_AUTHOR, author);
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_AUTHOR, scheme_details->author);
         if (rc != VARNAM_SUCCESS)
             return rc;
 
-        varnam_log (handle, "Set author to : %s", author);
+        varnam_log (handle, "Set author to : %s", scheme_details->author);
     }
 
-    if (compiled_date != NULL && strlen(compiled_date) > 0)
+    if (scheme_details->compiledDate != NULL && strlen(scheme_details->compiledDate) > 0)
     {
-        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_COMPILED_DATE, compiled_date);
+        rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_COMPILED_DATE, scheme_details->compiledDate);
         if (rc != VARNAM_SUCCESS)
             return rc;
 
-        varnam_log (handle, "Set compiled date to : %s", compiled_date);
+        varnam_log (handle, "Set compiled date to : %s", scheme_details->compiledDate);
     }
+
+		tmp = get_pooled_string (handle);
+		strbuf_addf(tmp, "%d", scheme_details->isStable);
+		rc = vst_add_metadata (handle, VARNAM_METADATA_SCHEME_STABLE, strbuf_to_s (tmp));
+		if (rc != VARNAM_SUCCESS)
+			return rc;
 
     return VARNAM_SUCCESS;
 }
 
-static const char*
-get_scheme_details(varnam *handle, const char* key, struct strbuf *buffer)
+static vscheme_details*
+scheme_details_new()
 {
-    struct strbuf *value = buffer;
-
-    if (handle == NULL)
-        return NULL;
-
-    if (strbuf_is_blank (value))
-    {
-        vst_get_metadata (handle, key, value);
-    }
-
-    return strbuf_to_s (value);
+	vscheme_details *details = xmalloc(sizeof(vscheme_details));
+	details->langCode = NULL;
+	details->identifier = NULL;
+	details->displayName = NULL;
+	details->author = NULL;
+	details->compiledDate = NULL;
+	details->isStable = -1;
+	return details;
 }
 
-const char*
-varnam_get_scheme_language_code(varnam *handle)
+static void
+destroy_scheme_details(vscheme_details *details)
 {
-    return get_scheme_details (handle,
-                               VARNAM_METADATA_SCHEME_LANGUAGE_CODE,
-                               handle->internal->scheme_language_code);
+	if (details == NULL)
+		return;
+
+	xfree(details->langCode);
+	xfree(details->identifier);
+	xfree(details->displayName);
+	xfree(details->author);
+	xfree(details->compiledDate);
+	xfree(details);
 }
 
-const char*
-varnam_get_scheme_identifier(varnam *handle)
+int
+varnam_get_scheme_details(varnam *handle, vscheme_details **details)
 {
-    return get_scheme_details (handle,
-                               VARNAM_METADATA_SCHEME_IDENTIFIER,
-                               handle->internal->scheme_identifier);
-}
+	int rc;
+	if (v_->scheme_details != NULL) {
+		*details = v_->scheme_details;
+		return VARNAM_SUCCESS;
+	}
 
-const char*
-varnam_get_scheme_display_name(varnam *handle)
-{
-    return get_scheme_details (handle,
-                               VARNAM_METADATA_SCHEME_DISPLAY_NAME,
-                               handle->internal->scheme_display_name);
-}
+	v_->scheme_details = scheme_details_new();
+	rc = vst_load_scheme_details(handle, v_->scheme_details);
+	if (rc != VARNAM_SUCCESS) {
+		destroy_scheme_details(v_->scheme_details);
+		v_->scheme_details = NULL;
+		return rc;
+	}
 
-const char*
-varnam_get_scheme_author(varnam *handle)
-{
-    return get_scheme_details (handle,
-                               VARNAM_METADATA_SCHEME_AUTHOR,
-                               handle->internal->scheme_author);
-}
-
-const char*
-varnam_get_scheme_compiled_date(varnam *handle)
-{
-    return get_scheme_details (handle,
-                               VARNAM_METADATA_SCHEME_COMPILED_DATE,
-                               handle->internal->scheme_compiled_date);
+	*details = v_->scheme_details;
+	return VARNAM_SUCCESS;
 }
 
 const char*
@@ -854,6 +850,7 @@ varnam_destroy(varnam *handle)
 static void
 destroy_varnam_internal(struct varnam_internal* vi)
 {
+	destroy_scheme_details(vi->scheme_details);
     destroy_all_statements (vi);
     destroy_token (vi->virama);
     vpool_free (vi->tokens_pool, &destroy_token);

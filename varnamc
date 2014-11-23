@@ -552,14 +552,20 @@ def ignore_duplicates(ignore)
   end
 end
 
-def set_scheme_details(hash)
-  language_code = hash[:code]
-  identifier = hash[:identifier]
-  display_name = hash[:display_name]
-  author = hash[:author]
-  compiled_date = hash[:date]
+def set_scheme_details()
+	d = VarnamLibrary::SchemeDetails.new
+	d[:langCode] = FFI::MemoryPointer.from_string($scheme_details[:langCode])
+	d[:identifier] = FFI::MemoryPointer.from_string($scheme_details[:identifier])
+	d[:displayName] = FFI::MemoryPointer.from_string($scheme_details[:displayName])
+	d[:author] = FFI::MemoryPointer.from_string($scheme_details[:author])
+	d[:compiledDate] = FFI::MemoryPointer.from_string(Time.now.to_s)
+	if $scheme_details[:isStable].nil?
+		d[:isStable] = 0
+	else
+		d[:isStable] = $scheme_details[:isStable]
+	end
 
-  done = VarnamLibrary.varnam_set_scheme_details($varnam_handle.get_pointer(0), language_code, identifier, display_name, author, compiled_date)
+  done = VarnamLibrary.varnam_set_scheme_details($varnam_handle.get_pointer(0), d.pointer)
   if done != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     error error_message
@@ -567,20 +573,27 @@ def set_scheme_details(hash)
   end
 end
 
+$scheme_details = {}
+
 def language_code(code)
-  set_scheme_details :code => code
+	$scheme_details[:langCode] = code
 end
 
 def identifier(id)
-  set_scheme_details :identifier => id
+	$scheme_details[:identifier] = id
 end
 
 def display_name(name)
-  set_scheme_details :display_name => name
+	$scheme_details[:displayName] = name
 end
 
 def author(name)
-  set_scheme_details :author => name
+	$scheme_details[:author] = name
+end
+
+def stable(value)
+	$scheme_details[:isStable] = 0
+	$scheme_details[:isStable] = 1 if value
 end
 
 def generate_cv
@@ -936,7 +949,7 @@ def start_compilation
   load $options[:file_to_compile]
   set_default_symbols
   flush_unsaved_changes
-  set_scheme_details :date => Time.now.to_s
+  set_scheme_details
 
   if _context.errors > 0
       returncode = 1

@@ -28,6 +28,15 @@ module VarnamLibrary
     :value3, [:char, VARNAM_SYMBOL_MAX]
   end
 
+	class SchemeDetails < FFI::Struct
+		layout :langCode, :pointer,
+			:identifier, :pointer,
+			:displayName, :pointer,
+			:author, :pointer,
+			:compiledDate, :pointer,
+			:isStable, :int
+	end
+
   class Word < FFI::Struct
     layout :text, :string,
     :confidence, :int
@@ -43,7 +52,7 @@ module VarnamLibrary
   attach_function :varnam_train, [:pointer, :string, :string], :int
   attach_function :varnam_learn_from_file, [:pointer, :string, :pointer, :pointer, :pointer], :int
   attach_function :varnam_create_token, [:pointer, :string, :string, :string, :string, :string, :int, :int, :int, :int, :int], :int
-  attach_function :varnam_set_scheme_details, [:pointer, :string, :string, :string, :string, :string], :int
+  attach_function :varnam_set_scheme_details, [:pointer, :pointer], :int
   attach_function :varnam_get_last_error, [:pointer], :string
   attach_function :varnam_flush_buffer, [:pointer], :int
   attach_function :varnam_config, [:pointer, :int, :varargs], :int
@@ -58,6 +67,7 @@ end
 
 VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type, :priority, :accept_condition, :flags)
 VarnamWord = Struct.new(:text, :confidence)
+VarnamSchemeDetails = Struct.new(:langCode, :identifier, :displayName, :author, :compiledDate, :isStable)
 
 module Varnam
   VARNAM_TOKEN_VOWEL           = 1
