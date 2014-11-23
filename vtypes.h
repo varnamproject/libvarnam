@@ -104,9 +104,6 @@ struct varnam_internal
 	sqlite3 *known_words;
 	char *message;
 
-	/* scheme details */
-	struct scheme_details_t* scheme_details;
-
 	struct varray_t *renderers;
 	struct token *virama;
 	struct strbuf *last_error;

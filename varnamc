@@ -230,6 +230,10 @@ optparse = OptionParser.new do |opts|
     exit
   end
 
+  opts.on( '--schemes-available', 'Display all available schemes' ) do
+    set_action('schemes-available')
+  end
+
   opts.on('--version', 'Display version' ) do
     puts "libvarnam version #{VarnamLibrary.varnam_version()}"
     exit
@@ -239,8 +243,9 @@ end
 
 begin
   optparse.parse!
-rescue
+rescue => e
   puts "varnamc : incorrect arguments"
+	puts e.to_s
   puts optparse
   exit(1)
 end
@@ -331,6 +336,11 @@ def make_suggestions_dir_if_required
 end
 
 def do_action
+  if $options[:action] == 'schemes-available'
+		display_available_schemes
+		return
+  end
+
   initialize_varnam_handle
   if $options[:action] == 'transliterate'
     transliterate
@@ -1338,6 +1348,25 @@ def stemrules(hash,options={})
  # _ensure_sanity(hash)
   _create_stemrule(hash, options) 
   puts VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+end
+
+def display_available_schemes
+	schemes = VarnamLibrary::varnam_get_all_scheme_details()
+	unless schemes.nil?
+		puts "SCHEMES AVAILABLE"
+		puts "================="
+		VarnamLibrary::varray_length(schemes).times do |i|
+    	d = VarnamLibrary.varray_get(schemes, i)
+    	item = VarnamLibrary::SchemeDetails.new(d)
+			puts "   Lang code: #{item[:langCode].read_string}"
+			puts "   Identifier: #{item[:identifier].read_string}"
+			puts "   Display name: #{item[:displayName].read_string}"
+			puts "   Author: #{item[:author].read_string}"
+			puts "   Compiled on: #{item[:compiledDate].read_string}"
+			puts "   Stable?: #{item[:isStable] > 0 ? true : false}"
+			puts "\n\n"
+		end
+	end
 end
 
 def exceptions_stem(hash, options={})

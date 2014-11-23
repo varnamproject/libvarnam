@@ -17,6 +17,7 @@
 #include "token.h"
 #include "vword.h"
 #include "renderer/renderers.h"
+#include "deps/tinydir.h"
 
 strbuf *varnam_suggestions_dir = NULL;
 strbuf *varnam_symbols_dir = NULL;
@@ -59,7 +60,6 @@ initialize_internal()
         vi->vst_buffering = 0;
         vi->lastLearnedWord = NULL;
         vi->lastLearnedWordId = 0;
-				vi->scheme_details = NULL;
 
         /* scheme details buffers */
         vi->scheme_language_code = strbuf_init(2);
@@ -469,8 +469,8 @@ scheme_details_new()
 	return details;
 }
 
-static void
-destroy_scheme_details(vscheme_details *details)
+void
+varnam_destroy_scheme_details(vscheme_details *details)
 {
 	if (details == NULL)
 		return;
@@ -483,24 +483,59 @@ destroy_scheme_details(vscheme_details *details)
 	xfree(details);
 }
 
+varray*
+varnam_get_all_scheme_details()
+{
+	tinydir_dir dir;
+	tinydir_file file;
+	varnam *handle;
+	vscheme_details *details;
+	varray *schemeDetails = NULL;
+	int rc;
+	char *msg;
+
+	const char* symbolsFileDir = find_symbols_file_directory();
+	if (symbolsFileDir == NULL)
+		return NULL;
+
+	if (tinydir_open(&dir, symbolsFileDir) == -1) {
+		return NULL;
+	}
+
+	while(dir.has_next) {
+		if (tinydir_readfile(&dir, &file) != -1) {
+			if (!file.is_dir && (strcmp("vst", file.extension) == 0)) {
+				rc = varnam_init(file.path, &handle, &msg);
+				if (rc == VARNAM_SUCCESS) {
+					rc = varnam_get_scheme_details(handle, &details);
+					if (rc == VARNAM_SUCCESS) {
+						schemeDetails = schemeDetails == NULL ? varray_init() : schemeDetails;
+						varray_push(schemeDetails, details);
+						varnam_destroy(handle);
+						handle = NULL;
+					}
+				}
+			}
+		}
+		tinydir_next(&dir);
+	}
+
+	tinydir_close(&dir);
+	return schemeDetails;
+}
+
 int
 varnam_get_scheme_details(varnam *handle, vscheme_details **details)
 {
 	int rc;
-	if (v_->scheme_details != NULL) {
-		*details = v_->scheme_details;
-		return VARNAM_SUCCESS;
-	}
-
-	v_->scheme_details = scheme_details_new();
-	rc = vst_load_scheme_details(handle, v_->scheme_details);
+	vscheme_details *d = scheme_details_new();
+	rc = vst_load_scheme_details(handle, d);
 	if (rc != VARNAM_SUCCESS) {
-		destroy_scheme_details(v_->scheme_details);
-		v_->scheme_details = NULL;
+		varnam_destroy_scheme_details(d);
 		return rc;
 	}
 
-	*details = v_->scheme_details;
+	*details = d;
 	return VARNAM_SUCCESS;
 }
 
@@ -862,7 +897,6 @@ varnam_destroy(varnam *handle)
 static void
 destroy_varnam_internal(struct varnam_internal* vi)
 {
-	destroy_scheme_details(vi->scheme_details);
     destroy_all_statements (vi);
     destroy_token (vi->virama);
     vpool_free (vi->tokens_pool, &destroy_token);
