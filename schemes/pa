@@ -28,11 +28,11 @@ vowels "a" => "ਅ",
        ["ee", "I", "ii", ["i"]]   => ["ਈ", "\u{0A40}"],
        "u" => ["ਉ", "\u{0A41}"],
        ["uu", "oo", "U", ["u"]]   => ["ਊ", "\u{0A42}"],
-       "e" => ["ਏ", "\u{0A47}"],
+       ["e", "ae"] => ["ਏ", "\u{0A47}"],
        ["ai", "ei"] => ["ਐ", "\u{0A48}"],
        ["o", ["O"]] => ["ਓ", "\u{0A4B}"],
        ["ou", "ow"]  => ["ਔ", "\u{0A4C}"],
-       ["an",["en"]] => "\u{0A70}"           
+       ["an",["en"]] => "\u{0A70}"
 
 list :can_make_cluster do
 consonants "k" => "ਕ",
@@ -41,15 +41,13 @@ consonants "k" => "ਕ",
            "g"  => "ਗ",
            ["G"] => ["ਗ਼", "ਗ#{$nukta}"],
            ["gh", ["Gh"]] => "ਘ",
-           "ng" =>  "ਙ",                   
-
+           "ng" =>  "ਙ",
            "ch" => "ਚ",
            ["CH", ["ch"]] => "ਛ",
            "j"  => "ਜ",
            "z" => ["ਜ਼", "ਜ#{$nukta}"],
            "jh" => "ਝ",
            "ny" => "ਞ",
-
            ["T", ["t"]] => "ਟ",
            "Th" => "ਠ",
            ["D", ["d"]] => "ਡ",
@@ -60,15 +58,13 @@ consonants "k" => "ਕ",
            ["th", ["dh"]] => "ਥ",
            "d" => "ਦ",
            "dh" => "ਧ",
-           "n" => "ਨ",                   
-
+           [["n"]] => "ਨ",
            "p" => "ਪ",
            "ph" => "ਫ",
            "f" => ["ਫ਼", "ਫ#{$nukta}"],
            "b" => "ਬ",
            "bh" => "ਭ",
-           "m" => "ਮ",
-
+           [["m"]] => "ਮ",
            "y" => "ਯ",
            "ya" => "ਆ",
            "r" => ["ਰ", "ਰ#{$virama}"],
@@ -78,7 +74,6 @@ consonants "k" => "ਕ",
            ["sh", ["Sh", "SH"]]  => "ਸ਼",
            ["s"] => "ਸ",
            ["h"] => "ਹ",
-
            ["R","RR", ["ri", "ru"]] => "ੜ"
 end
 
@@ -90,7 +85,7 @@ can_make_cluster.each do |c1|
         consonants ["#{c1.pattern}#{c2.pattern}"] => ["#{c1.value1}#{$virama}#{c2.value1}"]
      else
         consonants [["#{c1.pattern}#{c2.pattern}"]] => ["#{c1.value1}#{$virama}#{c2.value1}"]
-     end 
+     end
 
      if c1.value1 == c2.value1
       consonants [["#{c1.pattern}#{c2.pattern}", "#{c1.pattern}"]] => ["#{$addak}#{c1.value1}"]
@@ -100,13 +95,11 @@ end
 
 # Half forms for ਮ
 consonants(combine can_make_cluster, ["m*"] => ["ਮ#{$virama}*1"])
+consonants(combine can_make_cluster, ["n*"] => ["ਨ#{$virama}*1"])
 
 generate_cv
 
 consonants(combine get_consonants, ["*a"] => ["*1"])
-
-
-consonants [["m"]] => "ਮ"
 
 # Need to replace this when we have a way to pass value2 and value3 in combine
 get_vowels.each do |vowel|
@@ -124,11 +117,12 @@ tag "chill" do
 end
 
 symbols ["m", ["n"]] => $am,
-        [["n", "m"]] => $an,
+        ["n", ["m"]] => $an,
         ["|"] => "।",
         "om" => "ੴ",
         "#" => $addak,
-        "." => $nukta 
+        "." => $nukta,
+	  "M" => ["\u{0A70}"]
 
 symbols({:priority => :low}, ["aan", "aam"] => $an,  "om" => "ੴ")
 
