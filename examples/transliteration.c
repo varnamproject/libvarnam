@@ -58,6 +58,8 @@ int main()
 		printf("Stable?: %s\n", details->isStable == 0 ? "false" : "true");
 		printf("%s", "\n");
 
+    varnam_destroy_scheme_details(details);
+
     /* Transliterating text. Varnam manages memory initialization for words. You don't have to explicitly release it */
     pattern = "navaneeth";
     rc = varnam_transliterate (handle, pattern, &words);
