@@ -12,6 +12,7 @@ message ("Generating project ${PROJECT_NAME}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cmake_modules/")
 
 set(VARNAM_LIBRARY_NAME "varnam")
+set(ARGTABLE_LIBRARY_NAME "argtable2")
 set(VARNAM_LIBRARY_NAME_STATIC "varnamstatic")
 set(DEPS_LIBRARY_NAME "deps")
 
