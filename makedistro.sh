@@ -19,8 +19,8 @@ git clean -f -x -d
 rm -rf .git
 cd ..
 tar -pczf "libvarnam-$target_version.tar.gz" "libvarnam-$target_version"
-gpg -b --use-agent "libvarnam-$target_version.tar.gz"
-gpg --verify "libvarnam-$target_version.tar.gz.sig"
+#gpg -b --use-agent "libvarnam-$target_version.tar.gz"
+#gpg --verify "libvarnam-$target_version.tar.gz.sig"
 chmod 644 *
 echo "Created tarball: `pwd`/libvarnam-$target_version.tar.gz"
 
