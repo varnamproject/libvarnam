@@ -46,3 +46,4 @@ Win32/
 *.dir
 examples/stemmer.c
 examples/stemmer
+distribution-tarball/
