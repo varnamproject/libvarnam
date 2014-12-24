@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
-rm -rf distribution_tarball
-tmp_dir_create_command="mkdir -p distribution_tarball"
+tmp_dir_create_command="mktemp -d"
+unamestr=`uname`
+if [[ "$unamestr" == 'Darwin' ]]; then
+	tmp_dir_create_command="mktemp -d -t libvarnam"
+fi
+
 target_dir=`$tmp_dir_create_command`
 target_version=$1
 target_dir="$target_dir/libvarnam-$target_version"
