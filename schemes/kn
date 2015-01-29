@@ -92,10 +92,6 @@ consonants ["na"] => "ನ",
            ["ma"] => "ಮ"
 infer_dead_consonants true
 
-consonants ["na"] => "ನ",
-           ["ma"] => "ಮ"
-infer_dead_consonants true
-
 generate_cv
 
 
