@@ -203,7 +203,7 @@ end
 consonants({:accept_if => :ends_with}, combine(get_dead_consonants, [["*u"]] => "*1"))
 
 symbols "/" => "ഽ",
-        ["H", ":"] => "ഃ"
+        ["H", [":"]] => "ഃ"
 
 numbers "0" => "൦",
         "1" => "൧",
