@@ -34,19 +34,20 @@ vowels "a" => "ಅ",
        ["uu", "oo", "U", ["u"]]   => ["ಊ", "ೂ"],
        ["rRu"] => ["ಋ", "\u{0CC3}"],
        ["Rru"] => ["ೠ", "\u{0CC4}"],
-       "e" => ["ಎ", "ೆ"], 
+       ["e",["y"]] => ["ಎ", "ೆ"],
        ["E", ["e"]] => ["ಏ", "ೇ"],
        ["ai", "ei"] => ["ಐ", "ೈ"],
-       "o" => ["ಒ"," ೊ"],
+       "o" => ["ಒ", "ೊ"],
        ["O", ["o"]] => ["ಓ", "ೋ"],
        ["ou", "au", "ow"]  => ["ಔ", "ೌ"],
-	["aN", "aM",] => ["ಅಂ" ,"ಂ"],
-	["aH"] => ["ಅಃ", "ಃ"]              
+	["aN", "aM"] => ["ಅಂ" ,"ಂ"],
+	["oN", "oM"] => ["ಒಂ" ,"ಂ"],
+	["aH"] => ["ಅಃ", "ಃ"]
 
 vowels({:priority => :low, :accept_if => :ends_with}, [["y"]] => ["ഇ", "ി"])
 
 
-consonants  ["ka"] => "ಕ",
+consonants  ["ka", "ca"] => "ಕ",
            ["kha", ["gha"]] => "ಖ",
             "ga" => "ಗ",
            ["gha", ["kha"]] => "ಘ",
@@ -62,6 +63,7 @@ consonants  ["ka"] => "ಕ",
            [["da"], "Dha"]   => "ಢ",
            ["Na"] => "ಣ",
            ["tha", ["ta"]]  => "ತ",
+           ["THa"]  => "ತ್ತ",
            [["tha", "dha"], "thha"] => "ಥ",
            "da"=> "ದ",
             "dha" => "ಧ",
@@ -70,34 +72,35 @@ consonants  ["ka"] => "ಕ",
            "ba" => "ಬ",
             "bha" => "ಭ",
           "ya" => "ಯ",
-           "ra" => "ರ",
            ["rr", "RR", ["Rr"]] => "ಱ",
            "la" => ["ಲ"],
-
-           ["La", "LLa"] => ["ಳ", "\u{0CE2}"],
+           ["La"] => ["ಳ", "\u{0CE2}"],
            ['mma'] => ["ಮ್ಮ"],
-           [['tha']] => 'ತ್ತ', 
-          "va"=> "ವ",
+           [['tha']] => 'ತ್ತ',
+          ["va","wa"] => "ವ",
            ["sha", ["sa"]]  => "ಶ",
-           ["Sha", ["sha"]] => "ಷ",
+           ["Sha"] => "ಷ",
            "sa" => "ಸ",
            "ha" => "ಹ",
            ["ksha", "Ksha"] => "ಕ್ಷ",
-           ["tra", "Tra"] => "ಱ",
-           ["`jn"] => "ಜ್ಞ"
+          # ["tra", "Tra"] => "ಱ",
+           ["`jn"] => "ಜ್ಞ",
+           ["x"] => "ಕ್ಸ್"
 
 infer_dead_consonants false
 
 consonants ["na"] => "ನ",
-           ["ma"] => "ಮ"
+           ["ma"] => "ಮ",
+           "ra" => "ರ"
 infer_dead_consonants true
 
 generate_cv
 
 
 tag "chill" do
-   consonants "m" => ["ಂ","ಮ"],
-         "n" => ["ಂ","ನ"]
+   consonants "m" => ["ಂ","ಮ"]
+   consonants "n" => ["ಂ","ನ\u0CCD"]
+   consonants "r" => ["ರ\u0CCD"]
 end
 
 symbols({:priority => :low}, ["aan", "aam"] => $an)
