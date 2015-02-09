@@ -153,9 +153,10 @@ gcc `pkg-config --cflags --libs varnam` -o example example.c
 
 * Hindi
 * Malayalam
-* Gujarati (Experimental)
 * Tamil (Experimental)
 * Kannada (Experimental)
+* Sanskrit (Experimental)
+* Pubjabi (Experimental)
 
 # Adding a new language
 

@@ -1,3 +1,17 @@
+3.2.0 / Feb 09, 2015
+=======================
+
+* Kannada support
+* Punjabi support
+* Experimental support for Tamil
+* Experimental support for Sanskrit
+* Malayalam inscript
+* Renaming varnam_init_from_lang to varnam_init_from_id
+* [Malayalam] Removing mapping : to visarga. Fixes #89
+* varnamc can display scheme details
+* Marked Hindi as stable
+* A new stemmer (Kevin Martin Jose)
+
 3.1.4 / July 02, 2014
 =======================
 * Improved storage for learnings file. Using NO_ROWID (Kevin Martin Jose)
@@ -70,4 +84,3 @@
 Copyright (C) Navaneeth.K.N
 
 This is part of libvarnam. See LICENSE.txt for the license
-
