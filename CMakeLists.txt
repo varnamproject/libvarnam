@@ -9,6 +9,10 @@ cmake_minimum_required (VERSION 2.8.8)
 project(varnam)
 message ("Generating project ${PROJECT_NAME}")
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cmake_modules/")
 
 set(VARNAM_LIBRARY_NAME "varnam")
