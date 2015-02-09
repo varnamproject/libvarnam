@@ -34,7 +34,7 @@ int main()
 		vscheme_details *details;
 
     /* Initialize varnam handle */
-    rc = varnam_init_from_lang ("ml", &handle, &msg);
+    rc = varnam_init_from_id ("ml", &handle, &msg);
     if (rc != VARNAM_SUCCESS)
     {
         printf("Initialization failed. Reason - %s\n", msg);

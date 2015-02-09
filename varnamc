@@ -33,7 +33,7 @@ def find_libvarnam
   return $options[:library] if not $options[:library].nil?
   # Trying to find out libvarnam in the predefined locations if
   # absolute path to the library is not specified
-  libvarnam_search_paths = ['.', '/usr/local/lib', '/usr/local/lib/i386-linux-gnu', '/usr/local/lib/x86_64-linux-gnu', '/usr/lib/i386-linux-gnu', '/usr/lib/x86_64-linux-gnu', '/usr/lib']
+  libvarnam_search_paths = ['.', File.dirname(File.expand_path(__FILE__)), '/usr/local/lib', '/usr/local/lib/i386-linux-gnu', '/usr/local/lib/x86_64-linux-gnu', '/usr/lib/i386-linux-gnu', '/usr/lib/x86_64-linux-gnu', '/usr/lib']
   libvarnam_names = ['libvarnam.so', "libvarnam.so.#{$libvarnam_major_version}", 'libvarnam.dylib', 'varnam.dll']
   libvarnam_search_paths.each do |path|
     libvarnam_names.each do |fname|
@@ -54,7 +54,7 @@ else
   puts "Using #{$options[:library]}"
 end
 
-varnamruby_searchpaths = [".", "/usr/local/lib", "/usr/lib"]
+varnamruby_searchpaths = [".", File.dirname(File.expand_path(__FILE__)), "/usr/local/lib", "/usr/lib"]
 varnamruby_loaded = false
 varnamruby_searchpaths.each do |p|
   begin
@@ -287,7 +287,7 @@ def initialize_varnam_handle
         exit(1)
     end
   elsif not $options[:lang_code].nil?
-    initialized = VarnamLibrary.varnam_init_from_lang($options[:lang_code], $varnam_handle, init_error_msg)
+    initialized = VarnamLibrary.varnam_init_from_id($options[:lang_code], $varnam_handle, init_error_msg)
     if initialized == 0 and not $options[:learnings_file].nil?
       # User has specified explicit learnings file. Use that instead of the default one
       configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0), Varnam::VARNAM_CONFIG_ENABLE_SUGGESTIONS, :string, $options[:learnings_file])

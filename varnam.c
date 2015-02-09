@@ -308,21 +308,21 @@ find_learnings_file_path (const char *langCode)
 }
 
 int
-varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage)
+varnam_init_from_id(const char *schemeIdentifier, varnam **handle, char **errorMessage)
 {
   strbuf *symbolsFilePath, *learningsFilePath, *error;
   int rc;
 
-  if (langCode == NULL)
+  if (schemeIdentifier == NULL)
     return VARNAM_ARGS_ERROR;
 
   *handle = NULL;
   *errorMessage = NULL;
 
-  symbolsFilePath = find_symbols_file_path (langCode);
+  symbolsFilePath = find_symbols_file_path (schemeIdentifier);
   if (symbolsFilePath == NULL) {
     error = strbuf_init (20);
-    strbuf_addf (error, "Failed to find symbols file for: %s", langCode);
+    strbuf_addf (error, "Failed to find symbols file for: %s", schemeIdentifier);
     *errorMessage = strbuf_detach (error);
     return VARNAM_ERROR;
   }
@@ -332,7 +332,7 @@ varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage
       strbuf_add (learningsFilePath, strbuf_to_s (varnam_suggestions_dir));
   }
   else {
-      learningsFilePath = find_learnings_file_path (langCode);
+      learningsFilePath = find_learnings_file_path (schemeIdentifier);
   }
 
   rc = varnam_init (strbuf_to_s (symbolsFilePath), handle, errorMessage);

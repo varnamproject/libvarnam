@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	varray *words;
 
 	/* Initialization */
-	rc = varnam_init_from_lang ("ml", &handle, &msg);
+	rc = varnam_init_from_id ("ml", &handle, &msg);
 	if (rc != VARNAM_SUCCESS)
 	{
 		printf("Initialization failed. Reason - %s", msg);

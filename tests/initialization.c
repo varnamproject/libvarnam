@@ -99,7 +99,7 @@ START_TEST (initialize_using_lang_code)
   varnam *handle;
   strbuf *tmp;
 
-  rc = varnam_init_from_lang ("ml", &handle, &errMsg);
+  rc = varnam_init_from_id ("ml", &handle, &errMsg);
   if (errMsg != NULL) {
     printf ("init_from_lang failed: %s\n", errMsg);
   }
@@ -120,7 +120,7 @@ START_TEST (initialize_using_invalid_lang_code)
   int rc;
   char *errMsg = NULL;
   varnam *handle;
-  rc = varnam_init_from_lang ("mll", &handle, &errMsg);
+  rc = varnam_init_from_id ("mll", &handle, &errMsg);
   assert_error (rc);
   ck_assert (errMsg != NULL);
   varnam_destroy (handle);

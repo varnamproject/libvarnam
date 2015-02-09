@@ -169,9 +169,9 @@ START_TEST (learn_from_multiple_open_handles)
     varnam *handle1, *handle2;
     char *msg;
 
-    rc = varnam_init_from_lang ("ml", &handle1, &msg);
+    rc = varnam_init_from_id ("ml", &handle1, &msg);
     assert_success (rc);
-    rc = varnam_init_from_lang ("ml", &handle2, &msg);
+    rc = varnam_init_from_id ("ml", &handle2, &msg);
     assert_success (rc);
 
     rc = varnam_learn (handle1, word_to_learn);

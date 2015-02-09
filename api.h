@@ -16,7 +16,7 @@ extern strbuf *varnam_suggestions_dir;
 extern strbuf *varnam_symbols_dir;
 
 /**
- * Sets the symbols directory where varnam will look for symbol files while initializing using varnam_init_from_lang
+ * Sets the symbols directory where varnam will look for symbol files while initializing using varnam_init_from_id
  * This is useful if you keep the symbol files in a non-standard location
  *
  **/
@@ -25,7 +25,7 @@ varnam_set_symbols_dir (const char *dir);
 
 /**
  * Sets the suggestions directory where all the learning data will be stored. This value will be used
- * when initializing using varnam_init_from_lang
+ * when initializing using varnam_init_from_id
  *
  **/
 VARNAM_EXPORT void
@@ -68,7 +68,7 @@ VARNAM_EXPORT extern const char*
 varnam_get_suggestions_file (varnam *handle);
 
 /**
- * Initializes the varnam library from the language code
+ * Initializes the varnam library from the scheme identifier
  *
  * This searches for the symbols file in the following locations
  *
@@ -78,9 +78,9 @@ varnam_get_suggestions_file (varnam *handle);
  *
  * XDG_DATA_HOME/varnam/suggestions, HOME/.local/share/varnam/suggestions
  *
- * langCode       - Language code in ISO 639-1 format
- * handle         - Varnam handle to be initialized.
- * errorMessage   - Set when any error happens
+ * schemeIdentifier       - Unique identifier for the scheme file
+ * handle                 - Varnam handle to be initialized.
+ * errorMessage           - Set when any error happens
  *
  * RETURN
  *
@@ -90,7 +90,7 @@ varnam_get_suggestions_file (varnam *handle);
  * VARNAM_STORAGE_ERROR - Errors related to underlying file
  * */
 VARNAM_EXPORT extern int
-varnam_init_from_lang(const char *langCode, varnam **handle, char **errorMessage);
+varnam_init_from_id(const char *schemeIdentifier, varnam **handle, char **errorMessage);
 
 VARNAM_EXPORT extern const char*
 varnam_version();
