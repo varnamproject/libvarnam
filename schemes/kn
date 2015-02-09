@@ -9,7 +9,7 @@
 ##
 
 language_code "kn"
-identifier "kn-unicode"
+identifier "kn"
 display_name "Kannada"
 author "Shwetha Thammaiah, Sharath Kr. Battaje"
 

@@ -7,7 +7,7 @@
 ##
 
 language_code "pa"
-identifier "pa-unicode"
+identifier "pa"
 display_name "Punjabi"
 author "Amanpreet Kaur"
 

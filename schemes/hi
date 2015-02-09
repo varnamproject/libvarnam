@@ -7,7 +7,7 @@
 ##
 
 language_code "hi"
-identifier "hi-unicode"
+identifier "hi"
 display_name "Hindi"
 author "Prateek Kumar Baheti"
 stable true

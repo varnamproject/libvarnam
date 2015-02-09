@@ -7,7 +7,7 @@
 ##
 
 language_code "ta"
-identifier "ta-unicode"
+identifier "ta"
 display_name "Tamil"
 author "Navaneeth KN/Kumaran Venkataraman"
 

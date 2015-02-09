@@ -7,7 +7,7 @@
 ##
 
 language_code "ml"
-identifier "ml-unicode"
+identifier "ml"
 display_name "Malayalam"
 author "Navaneeth KN"
 stable true
