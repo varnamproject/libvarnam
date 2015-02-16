@@ -22,7 +22,7 @@ vowels "a" => "அ",
        ["ii", "I", "ee", ["i"]]   => ["ஈ", "ீ"],
        "u" => ["உ", "ு"],
        ["uu", "oo", "U", ["u"]]   => ["ஊ","ூ"],
-       "e" => ["எ", "ெ"],
+       ["e",["ye"]] => ["எ", "ெ"],
        ["E", ["e"]] => ["ஏ", "ே"],
        ["ai", ["ei"]] => ["ஐ", "ை"],
        "o" => ["ஒ", "ொ"],
@@ -37,20 +37,19 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
            ["sa", "cha"] => "ச",
            ["ja"]  => "ஜ",
            ["NJa", ["nja", "ncha"]] => "ஞ",
-           ["ta", ["tha"]] => "ட",
+           ["ta","da", ["tha"]] => "ட",
            ["Na"] => "ண",
-           ["tha", "da", ["ta"]] => "த",
-           ["nna",["Na"]] => "ந",
-           ["na"] => "ன",
+           ["tha", "dha", ["ta","da"]] => "த",
+           ["nna",["Na"]] => "ன",
            ["pa", "ba", ["pha", "bha"]] => "ப",
            ["ma"] => "ம",
-           ["ya"] => "ய",
+           ["ya", ["i"]] => "ய",
            ["ra"] => "ர",
 		      ["va", "wa"] => "வ",
            ["Ra", "RRa", ["ra", "tra", "dra"]] => "ற",
 		      "la" => "ல",
 		      ["La", ["lla", "la"]] => "ள",
-		      ["zha"] => "ழ",
+		      ["zha",["la"]] => "ழ",
 		      ["Sa"] => "ஶ",
 		      ["sha"] => "ஷ",
 		      ["sa"] => "ஸ",
@@ -58,13 +57,23 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
 		   
 #infer_dead_consonants true
 
-consonants({:accept_if => :starts_with}, "na" => "ந")
-consonants({:accept_if => :starts_with}, "ra" => "ர")
-consonants({:accept_if => :starts_with}, "la" => "ல")
+#consonants({:accept_if => :starts_with}, "na" => "ந")
+#consonants({:accept_if => :starts_with}, "ra" => "ர")
+#consonants({:accept_if => :starts_with}, "la" => "ல")
 
 consonants ["kk*"] => ["க#{$virama}க#{$virama}*1"]
 
+infer_dead_consonants false
+
+consonants   ["na"] => "ந"
+
+infer_dead_consonants true
+
 generate_cv
+
+tag "chill" do
+   consonants "n" => ["ன்"] 
+end
 
 numbers "0" => "௦",
         "1" => "௧",
