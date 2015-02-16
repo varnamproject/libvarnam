@@ -42,11 +42,11 @@ vowels "a" => "అ",
 
 infer_dead_consonants true
 
-consonants "ka" => "క",
+consonants ["ka"] => "క",
            ["kha", ["ka"]] => "ఖ",
            "ga"  => "గ",
            ["gha", ["ga"]] => "ఘ",
-           ["NGa",["nga"]] =>  "ఙ",                   
+           ["NGa",["nga"]] =>  "ఙ",
 
            "cha" => "చ",
            ["Cha", ["cha"]] => "ఛ",
@@ -63,13 +63,11 @@ consonants "ka" => "క",
            ["Tha" , ["dha"]]=> "థ",
            ["dha"] => "ద",
            ["Dha"] => "ధ",
-           "na" => "న",                   
 
            "pa" => "ప",
            ["pha", ["pa"]] => "ఫ",
            "ba" => "బ",
            ["bha", ["ba"]] => "భ",
-           "ma" => "మ",
 
            "ya" => "య",
            "ra" => "ర",
@@ -87,17 +85,21 @@ consonants({:accept_if => :starts_with}, ["ca"] => "క")
 
 infer_dead_consonants false
 
-consonants  "Na" => "ణ"
+consonants "na" => "న",
+           [["na"], "Na"] => "ణ",
+           "ma" => "మ"
 
-infer_dead_consonants true           
-           
+infer_dead_consonants true
+
 generate_cv
 
 symbols({:priority => :low}, ["aan", "aam"] => $an)
 
 tag "chill" do
-   consonants "M" => ["ం"]
-   consonants "N" => ["ం","ణ\u{0C4D}"]
+   consonants ["m", ["n"]] => ["ం"]
+   consonants ["M"] => ["మ\u{0C4D}"]
+   consonants "N" => ["ణ\u{0C4D}"]
+   consonants "n" => ["న\u{0C4D}"]
 end
 
 numbers "0" => "౦",
