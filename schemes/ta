@@ -20,48 +20,51 @@ vowels "a" => "அ",
        ["aa", "A", ["a"]]  => ["ஆ", "ா"],
        ["i", ["y", "e"]] => ["இ", "ி"],
        ["ii", "I", "ee", ["i"]]   => ["ஈ", "ீ"],
-       "u" => ["உ", " ு"],
+       "u" => ["உ", "ு"],
        ["uu", "oo", "U", ["u"]]   => ["ஊ","ூ"],
        "e" => ["எ", "ெ"],
        ["E", ["e"]] => ["ஏ", "ே"],
-       ["ai", "ei"] => ["ஐ", "ை"],
+       ["ai", ["ei"]] => ["ஐ", "ை"],
        "o" => ["ஒ", "ொ"],
        ["O", ["o"]] => ["ஓ", "ோ"],
        ["au", "ow", "ou"]  => ["ஔ", "ௌ"],
 	   ["q"] => "ஃ"
       
-
-consonants ["ka", "ca", "qa"] => "க",
-           ["NGa", ["nga"]] =>  "ங",
-           ["sa", ["cha"]] => "ச",
-           "ja"  => "ஜ",
-           ["NJa", ["nja"]] => "ஞ",
-           ["ta", "da"] => "ட",
-           "NNa" => "ண",
-           ["tha", ["ta"]] => "த",
-           ["Na",["nna"]] => "ந",
-           "na" => "ன",
-           "pa" => "ப",
-           "ma" => "ம",
-           "ya" => "ய",
-           "ra" => "ர",
-		   "va" => "வ",
-           ["Ra", "RRa", ["ra", "tra", "dra"]] => "ற",
-		   "la" => "ல",
-		   ["La", ["lla", "la"]] => "ள",
-		   "zha" => "ழ",
-		   "Sa" => "ஶ",
-		   "sha" => "ஷ",
-		   "sa" => "ஸ",
-		   "ha" => "ஹ"
-		   
-
 infer_dead_consonants true
+
+consonants ["ka", "qa", "ga", ["ha"]] => "க",
+           ["NGa", ["nga"]] =>  "ங",
+           ["sa", "cha"] => "ச",
+           ["ja"]  => "ஜ",
+           ["NJa", ["nja", "ncha"]] => "ஞ",
+           ["ta", ["tha"]] => "ட",
+           ["Na"] => "ண",
+           ["tha", "da", ["ta"]] => "த",
+           ["nna",["Na"]] => "ந",
+           ["na"] => "ன",
+           ["pa", "ba", ["pha", "bha"]] => "ப",
+           ["ma"] => "ம",
+           ["ya"] => "ய",
+           ["ra"] => "ர",
+		      ["va", "wa"] => "வ",
+           ["Ra", "RRa", ["ra", "tra", "dra"]] => "ற",
+		      "la" => "ல",
+		      ["La", ["lla", "la"]] => "ள",
+		      ["zha"] => "ழ",
+		      ["Sa"] => "ஶ",
+		      ["sha"] => "ஷ",
+		      ["sa"] => "ஸ",
+		      ["ha"] => "ஹ"
 		   
+#infer_dead_consonants true
+
 consonants({:accept_if => :starts_with}, "na" => "ந")
 consonants({:accept_if => :starts_with}, "ra" => "ர")
 consonants({:accept_if => :starts_with}, "la" => "ல")
 
+consonants ["kk*"] => ["க#{$virama}க#{$virama}*1"]
+
+generate_cv
 
 numbers "0" => "௦",
         "1" => "௧",
