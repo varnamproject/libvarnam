@@ -41,7 +41,7 @@ vowels "a" => "అ",
        ["au", "ou", "ow"]  => ["ఔ", "\u{0C4C}"]
 
 infer_dead_consonants true
-   v 
+
 consonants "ka" => "క",
            ["kha", ["ka"]] => "ఖ",
            "ga"  => "గ",
