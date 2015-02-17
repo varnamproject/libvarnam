@@ -19,6 +19,7 @@
 #define VARNAM_LANG_CODE_KN      7
 #define VARNAM_LANG_CODE_ML      8
 #define VARNAM_LANG_CODE_PA      9
+#define VARNAM_LANG_CODE_MR      10
 #define VARNAM_LANG_CODE_UNKNOWN -1
 
 #endif
