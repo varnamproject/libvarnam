@@ -29,11 +29,9 @@ vowels "a" => "அ",
        ["O", ["o"]] => ["ஓ", "ோ"],
        ["au", "ow", "ou"]  => ["ஔ", "ௌ"],
 	   ["q"] => "ஃ"
-      
-infer_dead_consonants true
 
 consonants ["ka", "qa", "ga", ["ha"]] => "க",
-           ["NGa", ["nga"]] =>  "ங",
+           ["nga"] =>  "ங#{$virama}க",
            ["sa", "cha"] => "ச",
            ["ja"]  => "ஜ",
            ["NJa", ["nja", "ncha"]] => "ஞ",
@@ -54,12 +52,7 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
 		      ["sha"] => "ஷ",
 		      ["sa"] => "ஸ",
 		      ["ha"] => "ஹ"
-		   
-#infer_dead_consonants true
 
-#consonants({:accept_if => :starts_with}, "na" => "ந")
-#consonants({:accept_if => :starts_with}, "ra" => "ர")
-#consonants({:accept_if => :starts_with}, "la" => "ல")
 
 consonants ["kk*"] => ["க#{$virama}க#{$virama}*1"]
 
@@ -67,12 +60,22 @@ infer_dead_consonants false
 
 consonants   ["na"] => "ந"
 
-infer_dead_consonants true
-
 generate_cv
 
+# generating combination for ei
+# sei = செய்(sey)
+get_dead_consonants.each do |dead_c|
+  if dead_c.match_type == 1
+    consonant_vowel_combinations ["#{dead_c.pattern}ei"] => ["#{dead_c.value1.chomp($virama)}ெய#{$virama}"]
+  else
+    consonant_vowel_combinations [["#{dead_c.pattern}ei"]] => ["#{dead_c.value1.chomp($virama)}ெய#{$virama}"]
+  end
+end
+
+infer_dead_consonants true
+
 tag "chill" do
-   consonants "n" => ["ன்"] 
+   consonants "n" => ["ன்"]
 end
 
 numbers "0" => "௦",
