@@ -11,8 +11,10 @@ identifier "sa"
 display_name "Sanskrit"
 author "Rohit Bansal"
 
+stable true
+
 #
-# since Sanskrit uses Devnagri script, this file is very similar to Hindi mapping file
+# since Sanskrit uses Devnagri script, this file should be very similar to Hindi file
 # Sanskrit has no concept of "nukta", "anuswar" (except trailing m sound) or chandrabindu
 #
 
@@ -294,7 +296,7 @@ end
 
 #symbols ["m", ["n"]] => $am,
 #        [["n", "m"]] => $an,
-symbols ["."] => "।",
+symbols [".","|"] => "।",
         ["om"] => "\u{0950}"
 
 symbols({:priority => :low}, ["aan", "aam"] => $an)
