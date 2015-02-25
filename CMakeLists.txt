@@ -113,7 +113,7 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
 # a custom target to compile scheme files
-add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/or && ./varnamc --compile schemes/sa && ./varnamc --compile schemes/ml-inscript && ./varnamc --compile schemes/hi && ./varnamc --compile schemes/ta && ./varnamc --compile schemes/kn && ./varnamc --compile schemes/pa && ./varnamc --compile schemes/sa && ./varnamc --compile schemes/te && ./varnamc --compile schemes/mr)
+add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/gu && ./varnamc --compile schemes/ne && ./varnamc --compile schemes/sa && ./varnamc --compile schemes/ml-inscript && ./varnamc --compile schemes/hi && ./varnamc --compile schemes/ta && ./varnamc --compile schemes/kn && ./varnamc --compile schemes/pa && ./varnamc --compile schemes/sa && ./varnamc --compile schemes/te && ./varnamc --compile schemes/mr)
 add_custom_target (test command cd tests && ./runtests)
 
 # Makes the distro
@@ -148,7 +148,8 @@ INSTALL ( FILES schemes/sa.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/
 INSTALL ( FILES schemes/te.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL ( FILES schemes/mr.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 INSTALL ( FILES schemes/or.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/sa.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
+INSTALL ( FILES schemes/ne.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
+INSTALL ( FILES schemes/gu.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 
 INSTALL ( FILES varnamruby.rb DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL_PROGRAMS(/bin FILES varnamc)
