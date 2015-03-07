@@ -325,6 +325,15 @@ varnam_get_all_tokens(
     varray **tokens
     );
 
+/*Copies all word breakers in the symbol table to list
+word breakers are used in the libvarnam-ibus project to denote the ending of a word.
+However, each scheme file can use different set of characters as word breakers, as 
+specified in the scheme file. For example, see ml-inscript
+*/
+int
+varnam_word_breakers(varnam *handle, char *list, int max_count);
+
+
 /**
  * Enable logging.
  *

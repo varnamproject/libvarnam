@@ -107,4 +107,7 @@ vst_stamp_version (varnam *handle);
 int
 vst_load_scheme_details(varnam *handle, vscheme_details *output);
 
+int
+vst_get_word_breakers(varnam *handle, strbuf *list);
+
 #endif

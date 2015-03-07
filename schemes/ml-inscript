@@ -16,7 +16,13 @@ infer_dead_consonants false
 $zwnj = "\u{200c}"
 $zwj = "\u{200d}"
 
-
+word_breakers "." => ".",
+          "," => ",",
+          "?" => "?",
+          "!" => "!",
+          "(" => "(",
+          ")" => ")"
+          
 vowels "D" => "അ",
        "E" => "ആ",
        "F" => "ഇ",
