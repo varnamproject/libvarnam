@@ -48,6 +48,21 @@ endif (VARNAM_VERBOSE)
 add_definitions(-DHAVE_SNPRINTF -DPREFER_PORTABLE_SNPRINTF -DNEED_ASPRINTF)
 add_definitions(-DVARNAM_VERSION="${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}")
 
+list (APPEND SUPPORTED_SCHEMES
+  ml
+  ml-inscript
+  mr
+  ne
+  or
+  pa
+  sa
+  ta
+  te
+  hi
+  kn
+  gu
+)
+
 # Append the source files here
 list (APPEND VARNAM_SOURCES
   util.c
@@ -112,8 +127,18 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              VERSION ${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
-# a custom target to compile scheme files
-add_custom_target (vst command ./varnamc --compile schemes/ml && ./varnamc --compile schemes/gu && ./varnamc --compile schemes/ne && ./varnamc --compile schemes/sa && ./varnamc --compile schemes/ml-inscript && ./varnamc --compile schemes/hi && ./varnamc --compile schemes/ta && ./varnamc --compile schemes/kn && ./varnamc --compile schemes/pa && ./varnamc --compile schemes/sa && ./varnamc --compile schemes/te && ./varnamc --compile schemes/mr)
+# a custom target to compile all scheme files
+# this is just a highlevel target and there are individual targets which depends on this
+add_custom_target (vst)
+
+# Each scheme will have a target to compile
+# vst will have a dependency to all these targets so that running vst will compile all the scheme files
+foreach(scheme ${SUPPORTED_SCHEMES})
+  add_custom_target (${scheme}.vst COMMAND varnamc --compile schemes/${scheme})
+  add_dependencies (vst "${scheme}.vst")
+  install (FILES schemes/${scheme}.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
+endforeach()
+
 add_custom_target (test command cd tests && ./runtests)
 
 # Makes the distro
@@ -136,21 +161,6 @@ INSTALL ( FILES deps/sqlite3.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${
 INSTALL ( FILES deps/uthash.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lib${VARNAM_LIBRARY_NAME}/deps)
 INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnam.pc DESTINATION ${VARNAM_LIB_INSTALL_DIR}/pkgconfig)
 INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnamstatic.pc DESTINATION ${VARNAM_LIB_INSTALL_DIR}/pkgconfig)
-
-# Add all the vst files here
-INSTALL ( FILES schemes/hi.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/ml.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/ml-inscript.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/ta.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/kn.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/pa.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/sa.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/te.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/mr.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/or.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/ne.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-INSTALL ( FILES schemes/gu.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-
 INSTALL ( FILES varnamruby.rb DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL_PROGRAMS(/bin FILES varnamc)
 INSTALL ( FILES varnamc.1 DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1)
