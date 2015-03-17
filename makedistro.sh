@@ -13,11 +13,17 @@ target_dir="$target_dir/libvarnam-$target_version"
 mkdir $target_dir
 cp -r . $target_dir
 cd $target_dir
+
+# compiling all the scheme files, so that source installation don't need to compile it again
+make vst
+
+# Moving the schemes to a temp because git clean will delete the compiled vst files
+# Once git clean is done, it will be copied back
+schemes_backup=`mktemp -d`
+cp -r schemes $schemes_backup
 git clean -f -x -d
-./varnamc --compile schemes/ml
-./varnamc --compile schemes/ml-inscript
-./varnamc --compile schemes/hi
-./varnamc --compile schemes/pa
+cp -r $schemes_backup/schemes .
+
 rm -rf .git
 cd ..
 tar -pczf "libvarnam-$target_version.tar.gz" "libvarnam-$target_version"
