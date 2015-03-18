@@ -51,6 +51,7 @@ module VarnamLibrary
   attach_function :varnam_learn, [:pointer, :string], :int
   attach_function :varnam_train, [:pointer, :string, :string], :int
   attach_function :varnam_learn_from_file, [:pointer, :string, :pointer, :pointer, :pointer], :int
+  attach_function :varnam_compact_learnings_file, [:pointer], :int
   attach_function :varnam_create_token, [:pointer, :string, :string, :string, :string, :string, :int, :int, :int, :int, :int], :int
   attach_function :varnam_set_scheme_details, [:pointer, :pointer], :int
   attach_function :varnam_get_all_scheme_details, [], :pointer
