@@ -61,7 +61,7 @@ execute_sql(varnam *handle, sqlite3 *db, const char *sql)
 
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK ){
-        set_last_error (handle, "Failed to write : %s", zErrMsg);
+        set_last_error (handle, "Failed to execute : %s", zErrMsg);
         sqlite3_free(zErrMsg);
         return VARNAM_ERROR;
     }
@@ -114,15 +114,13 @@ vwt_turn_off_optimization_for_huge_transaction(varnam *handle)
 int
 vwt_compact_file (varnam *handle)
 {
-    /*const char *sql =*/
-        /*"VACUUM;";*/
+  const char *sql =
+    "VACUUM;";
 
-    /*assert (handle);*/
-    /*assert (v_->known_words);*/
+  assert (handle);
+  assert (v_->known_words);
 
-    /*return execute_sql (handle, v_->known_words, sql);*/
-    /* Not doing any compacting */
-    return VARNAM_SUCCESS;
+  return execute_sql (handle, v_->known_words, sql);
 }
 
 int

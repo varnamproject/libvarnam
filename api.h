@@ -265,6 +265,20 @@ varnam_learn_from_file(varnam *handle,
                        void *object);
 
 /**
+ * Learnings file will be compacted/ Mostly this will reduce the file size
+ *
+ * handle - Valid varnam instance
+ *
+ * RETURN
+ *
+ * VARNAM_SUCCESS - Upon successful execution
+ * VARNAM_ERROR   - Any errors occured during compact
+ *
+ * */
+VARNAM_EXPORT extern int
+varnam_compact_learnings_file(varnam *handle);
+
+/**
  * Set scheme details. This will overwrite any scheme details set before
  *
  * handle            - Valid varnam instance

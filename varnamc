@@ -1098,13 +1098,14 @@ def learn_from_file
   $failure_log.close if not $failure_log.nil?
 end
 
-def learn_words_in_the_file(fname)
+def learn_words_in_the_file(fname, compact = true)
   done = VarnamLibrary.varnam_learn_from_file($varnam_handle.get_pointer(0), fname, nil, LearnCallback, nil);
   if done != 0
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
     puts error_message
     exit(1)
   end
+  compact_learnings_file if compact
 end
 
 def learn_from_directory
@@ -1121,12 +1122,24 @@ def learn_from_directory
   files.each_with_index do |fname, index|
     if not File.directory?(fname)
       puts "(#{index + 1}/#{files.size}) Processing #{fname}"
-      learn_words_in_the_file fname
+      learn_words_in_the_file fname, false
     end
   end
+
+  compact_learnings_file
+
   puts "Processed #{$learn_counter} word(s). #{$learn_passed_counter} word(s) passed. #{$learn_failed_counter} word(s) failed."
   puts "Failed words are logged to - #{$failure_log.path}" if $learn_failed_counter > 0
-  $failure_log.close
+  $failure_log.close unless $failure_log.nil?
+end
+
+def compact_learnings_file
+  puts "Compacting the generated file..."
+  done = VarnamLibrary.varnam_compact_learnings_file($varnam_handle.get_pointer(0));
+  if done != 0
+    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    raise error_message
+  end
 end
 
 def train_words_in_the_file(fname)
