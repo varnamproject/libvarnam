@@ -16,6 +16,11 @@ infer_dead_consonants false
 $zwnj = "\u{200c}"
 $zwj = "\u{200d}"
 
+#word_breakers are symbols that denote the end
+#of the sentence the user is typing. When a word
+#breaker is encountered, Ibus commits the typed word
+#and begins a new word
+
 word_breakers "." => ".",
           "," => ",",
           "?" => "?",
