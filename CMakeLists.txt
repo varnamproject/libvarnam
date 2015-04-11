@@ -23,6 +23,7 @@ set(VARNAM_VERSION_MAJOR 3)
 set(VARNAM_VERSION_MINOR 2)
 set(VARNAM_VERSION_PATCH 1)
 
+option(EMBED_SQLITE "Embed Sqlite or use the shared library available in the system?" ON)
 option(BUILD_TESTS "Build tests?" OFF)
 option(BUILD_EXAMPLES "Build examples?" OFF)
 option(BUILD_TOOLS "Build tools?" OFF)
@@ -30,6 +31,12 @@ option(BUILD_TOOLS "Build tools?" OFF)
 set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wno-long-long -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings -fPIC")
 set(CMAKE_C_FLAGS_DEBUG "-g")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -D_FORTIFY_SOURCE=2")
+set(SQLITE3_LIBRARIES "")
+
+if (NOT EMBED_SQLITE)
+	find_package (SQLite3 REQUIRED)
+	include_directories (${SQLITE3_INCLUDE_DIRS})
+endif ()
 
 IF(MSVC)
         set(CMAKE_C_FLAGS "/Wall /wd\"4255;4100\"")
@@ -174,10 +181,11 @@ configure_file(
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
+
 IF(MSVC)
-        target_link_libraries(${VARNAM_LIBRARY_NAME})
+  target_link_libraries(${VARNAM_LIBRARY_NAME} ${SQLITE3_LIBRARIES})
 else()
         # sqlite requires pthread and dl
-        target_link_libraries(${VARNAM_LIBRARY_NAME} pthread dl)
+        target_link_libraries(${VARNAM_LIBRARY_NAME} pthread dl ${SQLITE3_LIBRARIES})
 ENDIF()
 
