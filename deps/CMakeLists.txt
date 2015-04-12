@@ -12,7 +12,7 @@ if (EMBED_SQLITE)
 	list (APPEND DEPS_SOURCES
     sqlite3.c
     )
-endif (EMBED_SQLITE)
+endif ()
 
 IF(MSVC)
     set(CMAKE_C_FLAGS "/Wall")

@@ -11,6 +11,7 @@ message ("Generating project ${PROJECT_NAME}")
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
+	add_definitions(-D_FORTIFY_SOURCE=2)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cmake_modules/")
@@ -31,7 +32,7 @@ option(BUILD_TOOLS "Build tools?" OFF)
 
 set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wno-long-long -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings -fPIC")
 set(CMAKE_C_FLAGS_DEBUG "-g")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -D_FORTIFY_SOURCE=2")
+set(CMAKE_C_FLAGS_RELEASE "-O2")
 set(SQLITE3_LIBRARIES "")
 
 if (NOT EMBED_SQLITE)
