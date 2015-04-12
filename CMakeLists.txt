@@ -24,6 +24,7 @@ set(VARNAM_VERSION_MINOR 2)
 set(VARNAM_VERSION_PATCH 1)
 
 option(EMBED_SQLITE "Embed Sqlite or use the shared library available in the system?" ON)
+option(DISABLE_WITHOUT_ROW_ID_OPTIMIZATION "Disable this specific optimization as the SQLite version don't have it" OFF)
 option(BUILD_TESTS "Build tests?" OFF)
 option(BUILD_EXAMPLES "Build examples?" OFF)
 option(BUILD_TOOLS "Build tools?" OFF)
@@ -37,6 +38,13 @@ if (NOT EMBED_SQLITE)
 	find_package (SQLite3 REQUIRED)
 	include_directories (${SQLITE3_INCLUDE_DIRS})
 endif ()
+
+if (DISABLE_WITHOUT_ROW_ID_OPTIMIZATION)
+	# Added to support older SQLIte versions which don't have WIthout row id support
+	# eg: Debian wheezy still uses 3.7.13. This support was added in 3.8.2. 
+	# This is required only when EMBED_SQLITE=false
+	add_definitions(-DVARNAM_DISABLE_WITHOUT_ROW_ID_OPTIMIZATION)
+endif()
 
 IF(MSVC)
         set(CMAKE_C_FLAGS "/Wall /wd\"4255;4100\"")
