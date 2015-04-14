@@ -8,6 +8,12 @@
 # than the actual code
 set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -fPIC")
 
+if (EMBED_SQLITE)
+	list (APPEND DEPS_SOURCES
+    sqlite3.c
+    )
+endif ()
+
 IF(MSVC)
     set(CMAKE_C_FLAGS "/Wall")
     # We don't want to use MSVC's more secure versions of functions. So suppressing the warnings
@@ -18,9 +24,7 @@ add_definitions(-DSQLITE_CASE_SENSITIVE_LIKE -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABL
 
 list (APPEND DEPS_SOURCES
     snprintf.c
-    sqlite3.c
     )
 
 add_library (${DEPS_LIBRARY_NAME} OBJECT ${DEPS_SOURCES})
-
 
