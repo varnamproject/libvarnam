@@ -93,7 +93,18 @@ consonants "k" => "ക",
            "J" => "റ",
            "#" => "്ര",
            "&" => "ക്ഷ",
-           "=" => "ൃ"
+           "=" => "ൃ",
+           "ൻ" => "ൻ",
+           "ൺ" => "ൺ",
+           "ൽ" => "ൽ",
+           "ൾ" => "ൾ",
+           "ർ" => "ർ"
+#The above chill maps are necessary due to a bug
+#inscript treats atomic chill as a token 
+#However, the token is not in the vst symbols table
+#This somehow makes varnam assign the type '10' (VARNAM_TOKEN_OTHER) to the chill
+#If a word contains tokens of type 10, it is not learned.
+#So the absurd non-sensical chills stay there for the time being
 
 numbers "1" => "൧",
         "2" => "൨",
@@ -108,8 +119,10 @@ numbers "1" => "൧",
 
 symbols "_" => "ഃ"
 
-others "]" => $zwj,
-       "\\" => $zwnj
+#non-joiner "\\" => $zwnj
+joiner "]" => $zwj
+
+
 
 
 
