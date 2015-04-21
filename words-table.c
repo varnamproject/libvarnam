@@ -1007,31 +1007,6 @@ get_all_words_count(varnam *handle, int *words_count)
 }
 
 static int
-get_all_patterns_count(varnam *handle, int *count)
-{
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    rc = sqlite3_prepare_v2 (v_->known_words, "select count(*) from patterns_content;", -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to get all patterns count : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_reset (stmt);
-        sqlite3_finalize (stmt);
-        return VARNAM_ERROR;
-    }
-
-    rc = sqlite3_step (stmt);
-    if (rc == SQLITE_ROW) {
-        *count = sqlite3_column_int (stmt, 0);
-    }
-
-    sqlite3_reset (stmt);
-    sqlite3_finalize (stmt);
-
-    return VARNAM_SUCCESS;
-}
-
-static int
 full_export_words(varnam* handle, int words_per_file, int total_words, const char* out_dir,
         void (*callback)(int, int, const char *), int* out_words_processed)
 {
@@ -1119,7 +1094,14 @@ full_export_words(varnam* handle, int words_per_file, int total_words, const cha
             }
         }
         else if (rc == SQLITE_DONE) {
-            break;
+					if (rootValue != NULL) {
+						/* leftover before reaching words per file limit */
+						json_serialize_to_file(rootValue, strbuf_to_s (path));
+            words_written = 0;
+						json_value_free(rootValue);
+						rootValue = NULL;
+					}
+          break;
         }
         else {
             set_last_error (handle, "Failed to get all words : %s", sqlite3_errmsg(v_->known_words));
@@ -1137,93 +1119,16 @@ full_export_words(varnam* handle, int words_per_file, int total_words, const cha
     return VARNAM_SUCCESS;
 }
 
-static int
-full_export_patterns(varnam* handle, int words_per_file, int total_words, const char* out_dir,
-        void (*callback)(int, int, const char *), int* out_words_processed)
-{
-    int rc, word_id, learned, words_written = 0, file_index = 0;
-    strbuf* path;
-    const char* pattern;
-    FILE* fp = NULL;
-    sqlite3_stmt* stmt = NULL;
-    const char* sql = "select word_id, pattern, learned from patterns_content;";
-
-    rc = sqlite3_prepare_v2 (v_->known_words, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to export all patterns : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_finalize (stmt);
-        return VARNAM_ERROR;
-    }
-
-    for (;;)
-    {
-        rc = sqlite3_step (stmt);
-        if (rc == SQLITE_ROW)
-        {
-            if (fp == NULL) {
-                path = get_pooled_string (handle);
-                strbuf_addf (path, "%s/%d.patterns.txt",  out_dir, file_index++);
-                fp = fopen (strbuf_to_s (path), "w");
-                if (fp == NULL) {
-                    set_last_error (handle, "Failed to open : %s", strbuf_to_s (path));
-                    sqlite3_finalize (stmt);
-                    return VARNAM_ERROR;
-                }
-
-                /* First line will be the file type identifier */
-                fprintf (fp, "%s\n", VARNAM_PATTERNS_EXPORT_METADATA);
-            }
-
-            word_id = (int) sqlite3_column_int (stmt, 0);
-            pattern = (const char*) sqlite3_column_text (stmt, 1);
-            learned = (int) sqlite3_column_int (stmt, 2);
-            fprintf (fp, "%d %s %d\n", word_id, pattern, learned);
-            *out_words_processed = *out_words_processed + 1;
-
-            if (callback != NULL) {
-                callback (total_words, *out_words_processed, pattern);
-            }
-
-            if (++words_written == words_per_file) {
-                words_written = 0;
-                fclose (fp);
-                fp = NULL;
-            }
-        }
-        else if (rc == SQLITE_DONE) {
-            break;
-        }
-        else {
-            set_last_error (handle, "Failed to get all patterns : %s", sqlite3_errmsg(v_->known_words));
-            sqlite3_finalize (stmt);
-            return VARNAM_ERROR;
-        }
-    }
-
-    sqlite3_finalize (stmt);
-    return VARNAM_SUCCESS;
-}
-
 int
 vwt_full_export(varnam* handle, int words_per_file, const char* out_dir,
     void (*callback)(int, int, const char *))
 {
-    int rc, processed = 0, total = 0, tmp = 0;
+    int rc, processed = 0, total = 0;
 
-    rc = get_all_words_count (handle, &tmp);
+    rc = get_all_words_count (handle, &total);
     if (rc) return rc;
 
-    total = tmp;
-
-    /*rc = get_all_patterns_count (handle, &tmp);*/
-    /*if (rc) return rc;*/
-
-    /*total = total + tmp;*/
-
     return full_export_words (handle, words_per_file, total, out_dir, callback, &processed);
-
-    /*rc = full_export_patterns (handle, words_per_file, total, out_dir, callback, &processed);*/
-    /*return rc;*/
 }
 
 int

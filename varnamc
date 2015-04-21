@@ -1135,11 +1135,11 @@ end
 
 def compact_learnings_file
   puts "Compacting the generated file..."
-  done = VarnamLibrary.varnam_compact_learnings_file($varnam_handle.get_pointer(0));
-  if done != 0
-    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-    raise error_message
-  end
+	done = VarnamLibrary.varnam_compact_learnings_file($varnam_handle.get_pointer(0));
+	if done != 0
+		error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+		raise error_message
+	end
 end
 
 def train_words_in_the_file(fname)

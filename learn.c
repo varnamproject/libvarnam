@@ -635,8 +635,7 @@ varnam_compact_learnings_file(varnam *handle)
 {
   int rc;
   varnam_log (handle, "Compacting file");
-  rc = vwt_compact_file (handle);
-  if (rc) return rc;
+  return vwt_compact_file (handle);
 }
 
 int
