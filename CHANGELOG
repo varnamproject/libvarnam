@@ -1,10 +1,12 @@
-3.2.2 / Apr 12, 2015
+3.2.2 / Apr 21, 2015
 =======================
 
 * Build will add _FORTIFY_SOURCE option
 * EMBED_SQLITE build flag. Allows to use SQLite shared library
 * Readme is no longer a symlink
 * DISABLE_WITHOUT_ROW_ID_OPTIMIZATION compiler flag
+* Export & Import uses JSON structure
+* make vst will use relative path to varnamc
 
 3.2.1 / Mar 18, 2015
 =======================
