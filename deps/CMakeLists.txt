@@ -24,6 +24,7 @@ add_definitions(-DSQLITE_CASE_SENSITIVE_LIKE -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABL
 
 list (APPEND DEPS_SOURCES
     snprintf.c
+		parson.c
     )
 
 add_library (${DEPS_LIBRARY_NAME} OBJECT ${DEPS_SOURCES})

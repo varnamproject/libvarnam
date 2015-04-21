@@ -18,6 +18,7 @@
 #include "varray.h"
 #include "vword.h"
 #include "words-table.h"
+#include "deps/parson.h"
 
 #define MINIMUM_CHARACTER_LENGTH_FOR_SUGGESTION 3
 
@@ -1034,43 +1035,76 @@ static int
 full_export_words(varnam* handle, int words_per_file, int total_words, const char* out_dir,
         void (*callback)(int, int, const char *), int* out_words_processed)
 {
-    int rc, id, confidence, words_written = 0, file_index = 0;
+    int rc, confidence, words_written = 0, file_index = 0, learned;
+		sqlite3_int64 wordId;
     strbuf* path;
-    const char* word;
-    FILE* fp = NULL;
-    sqlite3_stmt* stmt = NULL;
-    const char* sql = "select id, word, confidence from words;";
+    const char* word, *pattern;
+    sqlite3_stmt* wordStmt = NULL, *patternStmt = NULL;
+		JSON_Value *rootValue = NULL, *wordObject = NULL, *patternObject = NULL, *patternsArray = NULL;
 
-    rc = sqlite3_prepare_v2 (v_->known_words, sql, -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2 (v_->known_words, "select id, word, confidence from words order by confidence desc;", -1, &wordStmt, NULL);
     if (rc != SQLITE_OK) {
         set_last_error (handle, "Failed to export all words : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_finalize (stmt);
+        sqlite3_finalize (wordStmt);
         return VARNAM_ERROR;
     }
 
+    rc = sqlite3_prepare_v2 (v_->known_words, "select pattern, learned from patterns_content where word_id = ?;", -1, &patternStmt, NULL);
+    if (rc != SQLITE_OK) {
+        set_last_error (handle, "Failed to export all words : %s", sqlite3_errmsg(v_->known_words));
+        sqlite3_finalize (patternStmt);
+        return VARNAM_ERROR;
+    }
+		
+		/* this index makes the queries faster. But we don't want to persist this and this will be deleted after the export */
+		rc = execute_sql (handle, v_->known_words, "create index tmp_patterns_content_word_id on patterns_content (word_id);");
+		if (rc != VARNAM_SUCCESS)
+			return rc;
+
     for (;;)
     {
-        rc = sqlite3_step (stmt);
+        rc = sqlite3_step (wordStmt);
         if (rc == SQLITE_ROW)
         {
-            if (fp == NULL) {
+            if (rootValue == NULL) {
                 path = get_pooled_string (handle);
                 strbuf_addf (path, "%s/%d.words.txt",  out_dir, file_index++);
-                fp = fopen (strbuf_to_s (path), "w");
-                if (fp == NULL) {
-                    set_last_error (handle, "Failed to open : %s", strbuf_to_s (path));
-                    sqlite3_finalize (stmt);
-                    return VARNAM_ERROR;
-                }
-
-                /* First line will be the file type identifier */
-                fprintf (fp, "%s\n", VARNAM_WORDS_EXPORT_METADATA);
+								rootValue = json_value_init_array();
             }
 
-            id = (int) sqlite3_column_int (stmt, 0);
-            word = (const char*) sqlite3_column_text (stmt, 1);
-            confidence = (int) sqlite3_column_int (stmt, 2);
-            fprintf (fp, "%d %s %d\n", id, word, confidence);
+            wordId = sqlite3_column_int64 (wordStmt, 0);
+            word = (const char*) sqlite3_column_text (wordStmt, 1);
+            confidence = (int) sqlite3_column_int (wordStmt, 2);
+
+						wordObject = json_value_init_object();
+						json_object_set_string(json_object (wordObject), "word", word);
+						json_object_set_number(json_object (wordObject), "confidence", confidence);
+
+						/* getting the patterns for the word */
+						patternsArray = json_value_init_array();
+						sqlite3_reset (patternStmt);
+						sqlite3_clear_bindings (patternStmt);
+    				sqlite3_bind_int64 (patternStmt, 1, wordId);
+						for (;;) {
+        			rc = sqlite3_step (patternStmt);
+							if (rc == SQLITE_ROW) {
+								pattern = (const char*) sqlite3_column_text (patternStmt, 0);
+            		learned = (int) sqlite3_column_int (patternStmt, 1);
+								patternObject = json_value_init_object ();
+								json_object_set_string (json_object (patternObject), "pattern", pattern);
+								json_object_set_number (json_object (patternObject), "learned", learned);
+								json_array_append_value (json_array(patternsArray), patternObject);
+							} else if (rc == SQLITE_DONE) {
+								json_object_set_value (json_object(wordObject), "patterns", patternsArray);
+								break;
+							} else {
+								set_last_error (handle, "Failed to get all words : %s", sqlite3_errmsg(v_->known_words));
+            		sqlite3_finalize (patternStmt);
+            		return VARNAM_ERROR;
+							}
+						}
+
+						json_array_append_value(json_array(rootValue), wordObject);
             *out_words_processed = *out_words_processed + 1;
 
             if (callback != NULL) {
@@ -1078,9 +1112,10 @@ full_export_words(varnam* handle, int words_per_file, int total_words, const cha
             }
 
             if (++words_written == words_per_file) {
-                words_written = 0;
-                fclose (fp);
-                fp = NULL;
+							json_serialize_to_file(rootValue, strbuf_to_s (path));
+              words_written = 0;
+							json_value_free(rootValue);
+							rootValue = NULL;
             }
         }
         else if (rc == SQLITE_DONE) {
@@ -1088,12 +1123,17 @@ full_export_words(varnam* handle, int words_per_file, int total_words, const cha
         }
         else {
             set_last_error (handle, "Failed to get all words : %s", sqlite3_errmsg(v_->known_words));
-            sqlite3_finalize (stmt);
+            sqlite3_finalize (wordStmt);
             return VARNAM_ERROR;
         }
     }
 
-    sqlite3_finalize (stmt);
+		rc = execute_sql (handle, v_->known_words, "drop index tmp_patterns_content_word_id;");
+		if (rc != VARNAM_SUCCESS)
+			return rc;
+
+    sqlite3_finalize (wordStmt);
+    sqlite3_finalize (patternStmt);
     return VARNAM_SUCCESS;
 }
 
@@ -1175,16 +1215,15 @@ vwt_full_export(varnam* handle, int words_per_file, const char* out_dir,
 
     total = tmp;
 
-    rc = get_all_patterns_count (handle, &tmp);
-    if (rc) return rc;
+    /*rc = get_all_patterns_count (handle, &tmp);*/
+    /*if (rc) return rc;*/
 
-    total = total + tmp;
+    /*total = total + tmp;*/
 
-    rc = full_export_words (handle, words_per_file, total, out_dir, callback, &processed);
-    if (rc) return rc;
+    return full_export_words (handle, words_per_file, total, out_dir, callback, &processed);
 
-    rc = full_export_patterns (handle, words_per_file, total, out_dir, callback, &processed);
-    return rc;
+    /*rc = full_export_patterns (handle, words_per_file, total, out_dir, callback, &processed);*/
+    /*return rc;*/
 }
 
 int
@@ -1269,126 +1308,56 @@ vwt_export_words(varnam* handle, int words_per_file, const char* out_dir,
     return VARNAM_SUCCESS;
 }
 
-#define _IMPORT_BUF_SIZE 1000
 int
-vwt_import_words (varnam* handle, FILE* file, void (*onfailure)(const char* line))
+vwt_import_words (varnam* handle, const char* filepath)
 {
-    int rc;
-    char buffer[_IMPORT_BUF_SIZE];
-    strbuf* line; strbuf* id; strbuf* word; strbuf* confidence;
-    varray* parts;
-    sqlite3_stmt* stmt = NULL;
-    const char* sql = "insert into words (id, word, confidence, learned_on) values (?1, ?2, ?3, strftime('%s', datetime(), 'localtime'));";
+    int rc, i, j;
+		bool isPrefix;
+		sqlite3_int64 wordId;
+		JSON_Value *root = NULL;
+		JSON_Array *words = NULL, *patterns = NULL;
+		JSON_Object *word = NULL, *pattern = NULL;
 
-    rc = sqlite3_prepare_v2 (v_->known_words, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to import words : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_finalize (stmt);
-        return VARNAM_ERROR;
-    }
+		root = json_parse_file_with_comments (filepath);
+		if (root == NULL) {
+      set_last_error (handle, "Couldn't open file '%s' for reading", filepath);
+      return VARNAM_ERROR;
+		}
 
-    line = get_pooled_string (handle);
-    while (fgets(buffer, _IMPORT_BUF_SIZE, file))
-    {
-        strbuf_clear (line);
-        strbuf_add (line, trimwhitespace (buffer));
-        parts = strbuf_split (line, handle, ' ');
+		if (json_value_get_type(root) != JSONArray) {
+      set_last_error (handle, "'%s': Unknown file format", filepath);
+      return VARNAM_ERROR;
+		}
 
-        if (varray_length (parts) != 3) {
-            if (onfailure != NULL)
-                onfailure (buffer);
-            continue;
-        }
+		rc = VARNAM_SUCCESS;
 
-        id = varray_get (parts, 0);
-        word = varray_get (parts, 1);
-        confidence = varray_get (parts, 2);
+		words = json_value_get_array (root);
+		for (i = 0; i < json_array_get_count(words); i++) {
+			word = json_array_get_object (words, i);
+			rc = try_insert_new_word (handle, json_object_get_string (word, "word"), json_object_get_number (word, "confidence"), &wordId);
+			if (rc != VARNAM_SUCCESS) {
+				goto cleanup;
+			}
 
-        sqlite3_bind_text (stmt, 1, strbuf_to_s (id), -1, NULL);
-        sqlite3_bind_text (stmt, 2, strbuf_to_s (word), -1, NULL);
-        sqlite3_bind_text (stmt, 3, strbuf_to_s (confidence), -1, NULL);
+			patterns = json_object_get_array (word, "patterns");
+			if (patterns != NULL) {
+				for (j = 0; j < json_array_get_count(patterns); j++) {
+					pattern = json_array_get_object (patterns, j);
+					isPrefix = json_object_get_number (pattern, "learned") == 0 ? true : false;
+					rc = vwt_persist_pattern (handle, json_object_get_string (pattern, "pattern"), wordId, isPrefix);
+					if (rc != VARNAM_SUCCESS) {
+						goto cleanup;
+					}
+				}
+			}
+		}
 
-        rc = sqlite3_step (stmt);
-        if (rc != SQLITE_DONE) {
-            set_last_error (handle, "Failed to import word: %s. %s\n", word, sqlite3_errmsg(v_->known_words));
-            sqlite3_reset (stmt);
-            sqlite3_finalize (stmt);
-            return VARNAM_ERROR;
-        }
+cleanup:
+		if (root != NULL)
+			json_value_free (root);
 
-        sqlite3_clear_bindings (stmt);
-        sqlite3_reset (stmt);
-
-        return_string_to_pool (handle, id);
-        return_string_to_pool (handle, word);
-        return_string_to_pool (handle, confidence);
-    }
-
-    sqlite3_reset (stmt);
-    sqlite3_finalize (stmt);
-    return VARNAM_SUCCESS;
+    return rc;
 }
-
-int
-vwt_import_patterns (varnam* handle, FILE* file, void (*onfailure)(const char* line))
-{
-    int rc;
-    char buffer[_IMPORT_BUF_SIZE];
-    strbuf* line; strbuf* id; strbuf* pattern; strbuf* learned;
-    varray* parts;
-    sqlite3_stmt* stmt = NULL;
-    const char* sql = "insert into patterns_content (word_id, pattern, learned) values (?1, ?2, ?3);";
-
-    rc = sqlite3_prepare_v2 (v_->known_words, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to import patterns : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_finalize (stmt);
-        return VARNAM_ERROR;
-    }
-
-    line = get_pooled_string (handle);
-    while (fgets(buffer, _IMPORT_BUF_SIZE, file))
-    {
-        strbuf_clear (line);
-        strbuf_add (line, trimwhitespace (buffer));
-        parts = strbuf_split (line, handle, ' ');
-
-        if (varray_length (parts) != 3) {
-            if (onfailure != NULL)
-                onfailure (buffer);
-            continue;
-        }
-
-        id = varray_get (parts, 0);
-        pattern = varray_get (parts, 1);
-        learned = varray_get (parts, 2);
-
-        sqlite3_bind_text (stmt, 1, strbuf_to_s (id), -1, NULL);
-        sqlite3_bind_text (stmt, 2, strbuf_to_s (pattern), -1, NULL);
-        sqlite3_bind_text (stmt, 3, strbuf_to_s (learned), -1, NULL);
-
-        rc = sqlite3_step (stmt);
-        if (rc != SQLITE_DONE) {
-            set_last_error (handle, "Failed to import pattern: %s. %s\n", pattern, sqlite3_errmsg(v_->known_words));
-            sqlite3_reset (stmt);
-            sqlite3_finalize (stmt);
-            return VARNAM_ERROR;
-        }
-
-        sqlite3_clear_bindings (stmt);
-        sqlite3_reset (stmt);
-
-        return_string_to_pool (handle, id);
-        return_string_to_pool (handle, pattern);
-        return_string_to_pool (handle, learned);
-    }
-
-    sqlite3_reset (stmt);
-    sqlite3_finalize (stmt);
-    return VARNAM_SUCCESS;
-}
-
-
 
 /* int */
 /* vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result) */

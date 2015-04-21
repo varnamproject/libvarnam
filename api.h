@@ -415,7 +415,6 @@ VARNAM_EXPORT extern int varnam_export_words(
  *
  * handle    - A valid varnam instance
  * filepath  - Full path to the file
- * onfailure - A callback to be invoked when there are failures in import
  *
  * RETURN
  *
@@ -424,9 +423,7 @@ VARNAM_EXPORT extern int varnam_export_words(
  * VARNAM_ERROR      - Any other errors
  **/
 int
-varnam_import_learnings_from_file(varnam *handle, const char *filepath,
-        void (*onfailure)(const char* line));
-
+varnam_import_learnings_from_file(varnam *handle, const char *filepath);
 
 /**
  * Detects the language for the supplied word. Current implementation works only for devanagari based scripts.

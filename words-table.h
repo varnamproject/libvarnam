@@ -72,9 +72,6 @@ vwt_full_export(varnam* handle, int words_per_file, const char* out_dir,
     void (*callback)(int, int, const char *));
 
 int
-vwt_import_words (varnam* handle, FILE* file, void (*onfailure)(const char* line));
-
-int
-vwt_import_patterns (varnam* handle, FILE* file, void (*onfailure)(const char* line));
+vwt_import_words (varnam* handle, const char* filepath);
 
 #endif

@@ -89,27 +89,15 @@ END_TEST
 
 START_TEST (varnam_export_full)
 {
-    int rc, pcnt, wcnt, i;
+    int rc, wcnt, i;
     float filecnt;
     strbuf* f; strbuf* error;
 
     f = strbuf_init (20);
-    pcnt = execute_query_int (varnam_instance->internal->known_words, "select count(*) from patterns_content;");
     wcnt = execute_query_int (varnam_instance->internal->known_words, "select count(*) from words;");
 
     rc = varnam_export_words (varnam_instance, 2, "output/", VARNAM_EXPORT_FULL, NULL);
     assert_success (rc);
-
-    filecnt = pcnt / 2;
-    for (i = 0; i < (int) ceil (filecnt); i++) {
-        strbuf_clear (f);
-        strbuf_addf (f, "output/%d.patterns.txt", i);
-        if (!file_exist (strbuf_to_s (f))) {
-            error = strbuf_init (10);
-            strbuf_addf (error, "Failed to find file: %s\n", strbuf_to_s (f));
-            ck_abort_msg (strbuf_to_s (error));
-        }
-    }
 
     filecnt = wcnt / 2;
     for (i = 0; i < (int) ceil (filecnt); i++) {
@@ -150,9 +138,7 @@ START_TEST (varnam_import_learnings)
     ck_assert_int_eq (0, pcnt);
     ck_assert_int_eq (0, wcnt);
 
-    rc = varnam_import_learnings_from_file (varnam_instance, "output/0.words.txt", NULL);
-    assert_success (rc);
-    rc = varnam_import_learnings_from_file (varnam_instance, "output/0.patterns.txt", NULL);
+    rc = varnam_import_learnings_from_file (varnam_instance, "output/0.words.txt");
     assert_success (rc);
 
     pcnt = execute_query_int (varnam_instance->internal->known_words, "select count(*) from patterns_content;");
@@ -165,7 +151,7 @@ END_TEST
 START_TEST (varnam_import_learnings_invalid_file)
 {
     int rc;
-    rc = varnam_import_learnings_from_file (varnam_instance, "output/invalidfile.txt", NULL);
+    rc = varnam_import_learnings_from_file (varnam_instance, "output/invalidfile.txt");
     ck_assert_int_eq (rc, VARNAM_ERROR);
 }
 END_TEST
@@ -181,9 +167,9 @@ START_TEST (varnam_import_learnings_wrong_filetype)
     fprintf (fp, "%s\n", "Wrong filetype");
     fclose (fp);
 
-    rc = varnam_import_learnings_from_file (varnam_instance, "output/wrong_file_type.txt", NULL);
+    rc = varnam_import_learnings_from_file (varnam_instance, "output/wrong_file_type.txt");
     ck_assert_int_eq (rc, VARNAM_ERROR);
-    ck_assert_str_eq ("Couldn't read file 'output/wrong_file_type.txt'. Unknown file type", varnam_get_last_error (varnam_instance));
+    ck_assert_str_eq ("Couldn't open file 'output/wrong_file_type.txt' for reading", varnam_get_last_error (varnam_instance));
 }
 END_TEST
 
@@ -196,29 +182,12 @@ import_failed_cb(const char* word)
     ck_assert_str_eq ("1 df", word);
 }
 
-START_TEST (varnam_import_learnings_failure_callback)
-{
-    FILE* fp;
-    int rc;
-
-    fp = fopen ("output/improper_csv.txt", "w");
-    ck_assert (fp != NULL);
-
-    fprintf (fp, "%s\n%s\n", VARNAM_WORDS_EXPORT_METADATA, "1 df");
-    fclose (fp);
-
-    rc = varnam_import_learnings_from_file (varnam_instance, "output/improper_csv.txt", import_failed_cb);
-    ck_assert_int_eq (rc, VARNAM_SUCCESS);
-    ck_assert_int_eq (1, cbinvoked);
-}
-END_TEST
-
 START_TEST (varnam_import_learnings_invalid_args)
 {
     int rc;
-    rc = varnam_import_learnings_from_file (NULL, "", NULL);
+    rc = varnam_import_learnings_from_file (NULL, "");
     ck_assert_int_eq (rc, VARNAM_ARGS_ERROR);
-    rc = varnam_import_learnings_from_file (varnam_instance, NULL, NULL);
+    rc = varnam_import_learnings_from_file (varnam_instance, NULL);
     ck_assert_int_eq (rc, VARNAM_ARGS_ERROR);
 }
 END_TEST
@@ -234,7 +203,6 @@ TCase* get_export_tests()
     tcase_add_test (tcase, varnam_import_learnings);
     tcase_add_test (tcase, varnam_import_learnings_invalid_file);
     tcase_add_test (tcase, varnam_import_learnings_wrong_filetype);
-    tcase_add_test (tcase, varnam_import_learnings_failure_callback);
     tcase_add_test (tcase, varnam_import_learnings_invalid_args);
     return tcase;
 }

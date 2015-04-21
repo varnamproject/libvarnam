@@ -703,26 +703,17 @@ get_file_type (FILE* infile)
 }
 
 int
-varnam_import_learnings_from_file(varnam *handle, const char *filepath,
-        void (*onfailure)(const char* line))
+varnam_import_learnings_from_file(varnam *handle, const char *filepath)
 {
-    int rc, filetype = -1;
-    FILE *infile;
+    int rc;
 
     if (handle == NULL || filepath == NULL)
         return VARNAM_ARGS_ERROR;
 
     reset_pool (handle);
 
-    infile = fopen(filepath, "r");
-    if (!infile) {
-        set_last_error (handle, "Couldn't open file '%s' for reading", filepath);
-        return VARNAM_ERROR;
-    }
-
     rc = vwt_optimize_for_huge_transaction(handle);
     if (rc) {
-        fclose (infile);
         return rc;
     }
 
@@ -730,35 +721,14 @@ varnam_import_learnings_from_file(varnam *handle, const char *filepath,
     rc = vwt_start_changes (handle);
     if (rc) {
         vwt_turn_off_optimization_for_huge_transaction(handle);
-        fclose (infile);
         return rc;
     }
 
-    filetype = get_file_type (infile);
-    switch (filetype) {
-        case _WORDS_IMPORT:
-            rc = vwt_import_words (handle, infile, onfailure);
-            if (rc != VARNAM_SUCCESS) {
-                fclose (infile);
-                vwt_turn_off_optimization_for_huge_transaction (handle);
-                return rc;
-            }
-            break;
-        case _PATTERNS_IMPORT:
-            rc = vwt_import_patterns (handle, infile, onfailure);
-            if (rc != VARNAM_SUCCESS) {
-                fclose (infile);
-                vwt_turn_off_optimization_for_huge_transaction (handle);
-                return rc;
-            }
-            break;
-        case -1:
-            set_last_error (handle, "Couldn't read file '%s'. Unknown file type", filepath);
-            fclose (infile);
-            return VARNAM_ERROR;
+    rc = vwt_import_words (handle, filepath);
+    if (rc != VARNAM_SUCCESS) {
+      vwt_turn_off_optimization_for_huge_transaction (handle);
+      return rc;
     }
-
-    fclose (infile);
 
     varnam_log (handle, "Writing changes to disk");
     rc = vwt_end_changes (handle);
