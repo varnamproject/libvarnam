@@ -40,12 +40,10 @@ get_renderer(varnam *handle)
         r = varray_get (v_->renderers, i);
         assert (r);
         if (strcmp(r->scheme_id, details->identifier) == 0) {
-          varnam_destroy_scheme_details (details);
           return r;
         }
     }
 
-    varnam_destroy_scheme_details (details);
     return NULL;
 }
 

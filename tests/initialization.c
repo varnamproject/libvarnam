@@ -40,7 +40,6 @@ START_TEST (set_scheme_details)
 		ck_assert_str_eq (loadedSchemeDetails->compiledDate, "May 3 2012");
 		ck_assert_int_eq (loadedSchemeDetails->isStable, 1);
 
-		varnam_destroy_scheme_details (loadedSchemeDetails);
     varnam_destroy (handle);
     free (filename);
 }

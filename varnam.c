@@ -118,6 +118,8 @@ initialize_internal()
         vi->noMatchesCache = NULL;
         vi->tokenizationPossibility = NULL;
         vi->cached_stems = NULL;
+
+				vi->scheme_details = NULL;
     }
     return vi;
 }
@@ -469,8 +471,8 @@ scheme_details_new()
 	return details;
 }
 
-void
-varnam_destroy_scheme_details(vscheme_details *details)
+static void
+destroy_scheme_details(vscheme_details *details)
 {
 	if (details == NULL)
 		return;
@@ -528,14 +530,22 @@ int
 varnam_get_scheme_details(varnam *handle, vscheme_details **details)
 {
 	int rc;
-	vscheme_details *d = scheme_details_new();
+	vscheme_details *d = NULL;
+
+	if (handle->internal->scheme_details != NULL) {
+		*details = handle->internal->scheme_details;
+		return VARNAM_SUCCESS;
+	}
+
+	d = scheme_details_new();
 	rc = vst_load_scheme_details(handle, d);
 	if (rc != VARNAM_SUCCESS) {
-		varnam_destroy_scheme_details(d);
+		destroy_scheme_details(d);
 		return rc;
 	}
 
 	*details = d;
+	handle->internal->scheme_details = d;
 	return VARNAM_SUCCESS;
 }
 
@@ -922,5 +932,6 @@ destroy_varnam_internal(struct varnam_internal* vi)
     clear_cache (&vi->noMatchesCache);
     clear_cache (&vi->tokenizationPossibility);
     clear_cache (&vi->cached_stems);
+		destroy_scheme_details (vi->scheme_details);
     xfree(vi);
 }

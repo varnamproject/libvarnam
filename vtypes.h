@@ -89,6 +89,15 @@ struct strbuf;
 struct token;
 struct vpool_t;
 
+typedef struct scheme_details_t {
+	const char *langCode;
+	const char *identifier;
+	const char *displayName;
+	const char *author;
+	const char *compiledDate;
+	int isStable;
+} vscheme_details;
+
 typedef void (*vcache_value_free_cb)(void*);
 typedef struct {
 	char *key;
@@ -174,6 +183,8 @@ struct varnam_internal
 	vcache_entry *noMatchesCache; /* Contains all the patterns which don't have a match */
 	vcache_entry *tokenizationPossibility; /* Contains patterns and a value indicating whether further tokenization is possible */
 	vcache_entry *cached_stems; 
+
+	vscheme_details *scheme_details;
 };
 
 typedef struct varnam {
@@ -226,14 +237,5 @@ typedef struct varnam_word_t {
 	const char *text;
 	int confidence;
 } vword;
-
-typedef struct scheme_details_t {
-	const char *langCode;
-	const char *identifier;
-	const char *displayName;
-	const char *author;
-	const char *compiledDate;
-	int isStable;
-} vscheme_details;
 
 #endif

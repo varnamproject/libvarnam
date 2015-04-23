@@ -303,14 +303,10 @@ varnam_set_scheme_details(
 
 /**
  * Gets the metadata for the current scheme
- * vscheme_details has to be freed by calling `varnam_destroy_scheme_details`
  *
  **/
 VARNAM_EXPORT extern int
 varnam_get_scheme_details(varnam *handle, vscheme_details **details);
-
-VARNAM_EXPORT extern void
-varnam_destroy_scheme_details(vscheme_details *details);
 
 /**
  * Returns error message for the most recent failed call to varnam API functions.
