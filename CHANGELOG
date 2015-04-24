@@ -1,3 +1,10 @@
+3.2.3 / Apr 24, 2015
+=======================
+
+* Performance optimization for learn. Learn runs 50%+ faster now
+* varnamc gives meaningful error messages when learn fails
+* Sqlite upgraded to 3.8.9
+
 3.2.2 / Apr 21, 2015
 =======================
 

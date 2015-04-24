@@ -22,7 +22,7 @@ set(DEPS_LIBRARY_NAME "deps")
 
 set(VARNAM_VERSION_MAJOR 3)
 set(VARNAM_VERSION_MINOR 2)
-set(VARNAM_VERSION_PATCH 2)
+set(VARNAM_VERSION_PATCH 3)
 
 option(EMBED_SQLITE "Embed Sqlite or use the shared library available in the system?" ON)
 option(DISABLE_WITHOUT_ROW_ID_OPTIMIZATION "Disable this specific optimization as the SQLite version don't have it" OFF)
