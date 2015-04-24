@@ -1069,8 +1069,8 @@ LearnCallback = FFI::Function.new(:void, [:pointer, :string, :int, :pointer]) do
     #puts "(#{$learn_counter}) Learned #{word}"
     $learn_passed_counter += 1
   else
-    puts "Failed to learn #{word}"
     error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+    puts "Failed to learn #{word}. #{error_message}"
     $failure_log = File.open(get_file_path("varnamc-learn-failures.txt"), "w") if $failure_log.nil?
     $failure_log.puts word + ' : ' + error_message
     $learn_failed_counter += 1
