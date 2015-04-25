@@ -52,8 +52,9 @@ varnam_set_suggestions_dir (const char *dir);
 VARNAM_EXPORT extern int
 varnam_init(const char *scheme_file, varnam **handle, char **msg);
 
+
 VARNAM_EXPORT extern varray*
-varnam_get_all_scheme_details();
+varnam_get_all_handles();
 
 /**
  * Gets the scheme file currently used

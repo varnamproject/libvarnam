@@ -486,13 +486,12 @@ destroy_scheme_details(vscheme_details *details)
 }
 
 varray*
-varnam_get_all_scheme_details()
+varnam_get_all_handles()
 {
 	tinydir_dir dir;
 	tinydir_file file;
-	varnam *handle;
-	vscheme_details *details;
-	varray *schemeDetails = NULL;
+	varnam *handle = NULL;
+	varray *handles = NULL;
 	int rc;
 	char *msg;
 
@@ -509,13 +508,8 @@ varnam_get_all_scheme_details()
 			if (!file.is_dir && (strcmp("vst", file.extension) == 0)) {
 				rc = varnam_init(file.path, &handle, &msg);
 				if (rc == VARNAM_SUCCESS) {
-					rc = varnam_get_scheme_details(handle, &details);
-					if (rc == VARNAM_SUCCESS) {
-						schemeDetails = schemeDetails == NULL ? varray_init() : schemeDetails;
-						varray_push(schemeDetails, details);
-						varnam_destroy(handle);
-						handle = NULL;
-					}
+					handles = handles == NULL ? varray_init() : handles;
+					varray_push(handles, handle);
 				}
 			}
 		}
@@ -523,7 +517,7 @@ varnam_get_all_scheme_details()
 	}
 
 	tinydir_close(&dir);
-	return schemeDetails;
+	return handles;
 }
 
 int
@@ -540,7 +534,6 @@ varnam_get_scheme_details(varnam *handle, vscheme_details **details)
 	d = scheme_details_new();
 	rc = vst_load_scheme_details(handle, d);
 	if (rc != VARNAM_SUCCESS) {
-		destroy_scheme_details(d);
 		return rc;
 	}
 

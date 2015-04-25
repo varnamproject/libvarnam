@@ -1364,20 +1364,26 @@ def stemrules(hash,options={})
 end
 
 def display_available_schemes
-	schemes = VarnamLibrary::varnam_get_all_scheme_details()
-	unless schemes.nil?
+	handles = VarnamLibrary::varnam_get_all_handles()
+	unless handles.nil?
 		puts "SCHEMES AVAILABLE"
 		puts "================="
-		VarnamLibrary::varray_length(schemes).times do |i|
-    	d = VarnamLibrary.varray_get(schemes, i)
-    	item = VarnamLibrary::SchemeDetails.new(d)
-			puts "   Lang code: #{item[:langCode].read_string}"
-			puts "   Identifier: #{item[:identifier].read_string}"
-			puts "   Display name: #{item[:displayName].read_string}"
-			puts "   Author: #{item[:author].read_string}"
-			puts "   Compiled on: #{item[:compiledDate].read_string}"
-			puts "   Stable?: #{item[:isStable] > 0 ? true : false}"
-			puts "\n\n"
+		VarnamLibrary::varray_length(handles).times do |i|
+    	handle = VarnamLibrary.varray_get(handles, i)
+  		ptr = FFI::MemoryPointer.new :pointer
+			done = VarnamLibrary.varnam_get_scheme_details(handle, ptr)
+			if done != 0
+				puts "Failed to get scheme details"
+			else
+    		item = VarnamLibrary::SchemeDetails.new(ptr.get_pointer(0))
+				puts "   Lang code: #{item[:langCode].read_string}"
+				puts "   Identifier: #{item[:identifier].read_string}"
+				puts "   Display name: #{item[:displayName].read_string}"
+				puts "   Author: #{item[:author].read_string}"
+				puts "   Compiled on: #{item[:compiledDate].read_string}"
+				puts "   Stable?: #{item[:isStable] > 0 ? true : false}"
+				puts "\n\n"
+			end
 		end
 	end
 end
