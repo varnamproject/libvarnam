@@ -4,6 +4,7 @@
 * Performance optimization for learn. Learn runs 50%+ faster now
 * varnamc gives meaningful error messages when learn fails
 * Sqlite upgraded to 3.8.9
+* varnam_get_all_schemes is renamed to varnam_get_all_handles
 
 3.2.2 / Apr 21, 2015
 =======================
