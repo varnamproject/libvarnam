@@ -98,6 +98,11 @@ typedef struct scheme_details_t {
 	int isStable;
 } vscheme_details;
 
+/* Live information about the current word corpus for a scheme */
+typedef struct corpus_details_t {
+	int wordsCount;
+} vcorpus_details;
+
 typedef void (*vcache_value_free_cb)(void*);
 typedef struct {
 	char *key;
@@ -172,6 +177,7 @@ struct varnam_internal
 	sqlite3_stmt *delete_word;
 	sqlite3_stmt *export_words;
 	sqlite3_stmt *learned_words_count;
+	sqlite3_stmt *all_words_count;
 	sqlite3_stmt *get_stemrule;
 	sqlite3_stmt *get_last_syllable;
 	sqlite3_stmt *check_exception;
@@ -185,6 +191,7 @@ struct varnam_internal
 	vcache_entry *cached_stems; 
 
 	vscheme_details *scheme_details;
+	vcorpus_details *corpus_details;
 };
 
 typedef struct varnam {

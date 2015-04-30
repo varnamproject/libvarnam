@@ -31,6 +31,9 @@ int
 vwt_discard_changes(varnam *handle);
 
 int
+vwt_get_words_count(varnam *handle, bool onlyLearned, int *wordCount);
+
+int
 vwt_optimize_for_huge_transaction(varnam *handle);
 
 int

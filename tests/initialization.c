@@ -9,6 +9,36 @@
 #include "testcases.h"
 #include "../varnam.h"
 
+START_TEST (get_corpus_details)
+{
+	int rc;
+	char *msg, *filename;
+	varnam *handle;
+	vcorpus_details *details;
+
+	rc = varnam_init_from_id ("ml", &handle, &msg);
+  assert_success (rc);
+
+  filename = get_unique_filename();
+  rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, filename);
+  assert_success (rc);
+
+	rc = varnam_get_corpus_details (handle, &details);
+  assert_success (rc);
+	ck_assert_int_eq (details->wordsCount, 0);
+
+	/* learn some word and corpus details should reflect the change */
+	rc = varnam_learn (handle, "മലയാളം");
+	assert_success (rc);
+
+	rc = varnam_get_corpus_details (handle, &details);
+  assert_success (rc);
+	ck_assert_int_gt (details->wordsCount, 0);
+
+	varnam_destroy (handle);
+}
+END_TEST
+
 START_TEST (set_scheme_details)
 {
     int rc;
@@ -200,6 +230,7 @@ END_TEST
 TCase* get_initialization_tests()
 {
     TCase* tcase = tcase_create("initialization");
+    tcase_add_test (tcase, get_corpus_details);
     tcase_add_test (tcase, set_scheme_details);
     tcase_add_test (tcase, enable_suggestions);
     tcase_add_test (tcase, normal_init);

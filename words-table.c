@@ -953,56 +953,47 @@ vwt_delete_word(varnam *handle, const char *word)
     return VARNAM_SUCCESS;
 }
 
-static int
-get_learned_words_count(varnam *handle, int *words_count)
+int
+vwt_get_words_count(varnam *handle, bool onlyLearned, int *words_count)
 {
     int rc = 0;
-    const char *sql = "select count(distinct(word_id)) from patterns_content where learned = 1;";
+		const char *sql;
+		sqlite3_stmt *stmt = NULL;
 
-    if (v_->learned_words_count == NULL)
-    {
+		if (onlyLearned) {
+    	sql = "select count(distinct(word_id)) as cnt from patterns_content where learned = 1;";
+    	if (v_->learned_words_count == NULL) {
         rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->learned_words_count, NULL );
         if (rc != SQLITE_OK) {
-            set_last_error (handle, "Failed to get learned words count : %s", sqlite3_errmsg(v_->known_words));
-            sqlite3_finalize (v_->learned_words_count);
-            v_->learned_words_count = NULL;
-            return VARNAM_ERROR;
+          set_last_error (handle, "Failed to get learned words count : %s", sqlite3_errmsg(v_->known_words));
+          sqlite3_finalize (v_->learned_words_count);
+          v_->learned_words_count = NULL;
+          return VARNAM_ERROR;
         }
-    }
+    	}
+			stmt = v_->learned_words_count;
+		}
+		else {
+    	sql = "select count(id) as cnt from words;";
+    	if (v_->all_words_count == NULL) {
+        rc = sqlite3_prepare_v2( v_->known_words, sql, -1, &v_->all_words_count, NULL);
+        if (rc != SQLITE_OK) {
+          set_last_error (handle, "Failed to get all words count : %s", sqlite3_errmsg(v_->known_words));
+          sqlite3_finalize (v_->all_words_count);
+          v_->all_words_count = NULL;
+          return VARNAM_ERROR;
+        }
+    	}
+			stmt = v_->all_words_count;
+		}
 
     *words_count = 0;
-    rc = sqlite3_step (v_->learned_words_count);
-    if (rc == SQLITE_ROW) {
-        *words_count = sqlite3_column_int (v_->learned_words_count, 0);
-    }
-
-    sqlite3_reset (v_->learned_words_count);
-
-    return VARNAM_SUCCESS;
-}
-
-static int
-get_all_words_count(varnam *handle, int *words_count)
-{
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    rc = sqlite3_prepare_v2 (v_->known_words, "select count(id) from words;", -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        set_last_error (handle, "Failed to get all words count : %s", sqlite3_errmsg(v_->known_words));
-        sqlite3_reset (stmt);
-        sqlite3_finalize (stmt);
-        return VARNAM_ERROR;
-    }
-
     rc = sqlite3_step (stmt);
     if (rc == SQLITE_ROW) {
         *words_count = sqlite3_column_int (stmt, 0);
     }
 
     sqlite3_reset (stmt);
-    sqlite3_finalize (stmt);
-
     return VARNAM_SUCCESS;
 }
 
@@ -1030,7 +1021,7 @@ full_export_words(varnam* handle, int words_per_file, int total_words, const cha
         sqlite3_finalize (patternStmt);
         return VARNAM_ERROR;
     }
-		
+
 		/* this index makes the queries faster. But we don't want to persist this and this will be deleted after the export */
 		rc = execute_sql (handle, v_->known_words, "create index tmp_patterns_content_word_id on patterns_content (word_id);");
 		if (rc != VARNAM_SUCCESS)
@@ -1125,7 +1116,7 @@ vwt_full_export(varnam* handle, int words_per_file, const char* out_dir,
 {
     int rc, processed = 0, total = 0;
 
-    rc = get_all_words_count (handle, &total);
+    rc = vwt_get_words_count (handle, false, &total);
     if (rc) return rc;
 
     return full_export_words (handle, words_per_file, total, out_dir, callback, &processed);
@@ -1154,7 +1145,7 @@ vwt_export_words(varnam* handle, int words_per_file, const char* out_dir,
     assert (v_->export_words);
     assert (words_per_file > 0);
 
-    rc = get_learned_words_count (handle, &total_words);
+    rc = vwt_get_words_count (handle, true, &total_words);
     if (rc != VARNAM_SUCCESS) {
         return rc;
     }

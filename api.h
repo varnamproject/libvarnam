@@ -310,6 +310,13 @@ VARNAM_EXPORT extern int
 varnam_get_scheme_details(varnam *handle, vscheme_details **details);
 
 /**
+ * Gets the metadata about the current word corpus
+ *
+ **/
+VARNAM_EXPORT extern int
+varnam_get_corpus_details(varnam *handle, vcorpus_details **details);
+
+/**
  * Returns error message for the most recent failed call to varnam API functions.
  *
  **/

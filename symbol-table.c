@@ -1278,6 +1278,7 @@ destroy_all_statements(struct varnam_internal* v)
     sqlite3_finalize (v->delete_word);
     sqlite3_finalize (v->export_words);
     sqlite3_finalize (v->learned_words_count);
+    sqlite3_finalize (v->all_words_count);
     sqlite3_finalize (v->check_exception);
     sqlite3_finalize (v->get_last_syllable);
     sqlite3_finalize (v->get_stemrule);

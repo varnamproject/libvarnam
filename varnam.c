@@ -22,6 +22,9 @@
 strbuf *varnam_suggestions_dir = NULL;
 strbuf *varnam_symbols_dir = NULL;
 
+static vcorpus_details*
+corpus_details_new();
+
 void
 varnam_set_symbols_dir (const char *dir)
 {
@@ -108,6 +111,7 @@ initialize_internal()
         vi->delete_word = NULL;
         vi->export_words = NULL;
         vi->learned_words_count = NULL;
+        vi->all_words_count = NULL;
         vi->get_stemrule = NULL;
         vi->get_last_syllable = NULL;
         vi->check_exception = NULL;
@@ -120,6 +124,7 @@ initialize_internal()
         vi->cached_stems = NULL;
 
 				vi->scheme_details = NULL;
+				vi->corpus_details = corpus_details_new();
     }
     return vi;
 }
@@ -223,7 +228,6 @@ find_symbols_file_directory()
 static strbuf*
 find_symbols_file_path (const char *langCode)
 {
-  int i;
   strbuf *path;
 	const char* dir = find_symbols_file_directory();
 	if (dir == NULL) {
@@ -471,6 +475,23 @@ scheme_details_new()
 	return details;
 }
 
+static vcorpus_details*
+corpus_details_new()
+{
+	vcorpus_details *details = xmalloc(sizeof(vcorpus_details));
+	details->wordsCount = 0;
+	return details;
+}
+
+static void
+destroy_corpus_details(vcorpus_details *details)
+{
+	if (details == NULL)
+		return;
+
+	xfree(details);
+}
+
 static void
 destroy_scheme_details(vscheme_details *details)
 {
@@ -539,6 +560,21 @@ varnam_get_scheme_details(varnam *handle, vscheme_details **details)
 
 	*details = d;
 	handle->internal->scheme_details = d;
+	return VARNAM_SUCCESS;
+}
+
+int
+varnam_get_corpus_details(varnam *handle, vcorpus_details **details)
+{
+	int rc, wordsCount = 0;
+
+	rc = vwt_get_words_count (handle, false, &wordsCount);
+	if (rc != VARNAM_SUCCESS)
+		return rc;
+
+	v_->corpus_details->wordsCount = wordsCount;
+	*details = v_->corpus_details;
+
 	return VARNAM_SUCCESS;
 }
 
@@ -926,5 +962,8 @@ destroy_varnam_internal(struct varnam_internal* vi)
     clear_cache (&vi->tokenizationPossibility);
     clear_cache (&vi->cached_stems);
 		destroy_scheme_details (vi->scheme_details);
+		vi->scheme_details = NULL;
+		destroy_corpus_details (vi->corpus_details);
+		vi->corpus_details = NULL;
     xfree(vi);
 }
