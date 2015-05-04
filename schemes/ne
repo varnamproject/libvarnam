@@ -11,8 +11,6 @@ identifier "ne"
 display_name "Nepali"
 author "Rohit Bansal"
 
-stable true
-
 ignore_duplicates false
 
 $virama = "\u{094D}"
