@@ -10,6 +10,7 @@ language_code "te"
 identifier "te"
 display_name "Telugu"
 author "Raja Reddy Karri, Varun Reddy"
+stable true
 
 ignore_duplicates false
 
