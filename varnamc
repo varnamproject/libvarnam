@@ -16,8 +16,8 @@ Usage - varnamc options <args>
 =end
 
 def gem_available?(name)
-   Gem::Specification.find_by_name(name)
-rescue Gem::LoadError
+	require name
+rescue LoadError
    false
 end
 
