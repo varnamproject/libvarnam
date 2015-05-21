@@ -227,11 +227,11 @@ strbuf_chars(strbuf *b)
 /* Returns the last unicode character of the word
 	 Returned result should be destroyed
 	 */
-	char*
+char*
 strbuf_get_last_unicode_char(strbuf *word)
 {
 	varray *characters = NULL;
-	const char *lastUnicodeChar = NULL;
+	char *lastUnicodeChar = NULL;
 	characters = strbuf_chars(word);
 
 	if (varray_is_empty (characters)) {
@@ -239,7 +239,7 @@ strbuf_get_last_unicode_char(strbuf *word)
 		return NULL;
 	}
 
-	lastUnicodeChar = strdup ((char*) varray_get(characters, varray_length(characters) - 1));
+	lastUnicodeChar = portable_strdup ((const char*) varray_get(characters, varray_length(characters) - 1));
 	varray_free(characters, &free);
 	/*ending should be freed in the calling function*/
 	return lastUnicodeChar;
@@ -384,10 +384,10 @@ strbuf_replace(strbuf *string, const char *rep, const char *with)
 	char *result; /* the return string */
 	char *ins;		/* the next insert point */
 	char *tmp;		/* varies */
-	int len_rep;	/* length of rep */
-	int len_with; /* length of with */
-	int len_front; /* distance between rep and end of last rep */
-	int count;		/* number of replacements */
+	size_t len_rep;	/* length of rep */
+	size_t len_with; /* length of with */
+	size_t len_front; /* distance between rep and end of last rep */
+	size_t count;		/* number of replacements */
 	char *orig;
 
 	orig = string->buffer;

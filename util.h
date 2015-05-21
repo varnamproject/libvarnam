@@ -169,6 +169,7 @@ VARNAM_EXPORT bool strbuf_remove_from_first(struct strbuf *string, const char *t
 VARNAM_EXPORT bool strbuf_remove_from_last(struct strbuf *string, const char *toremove);
 VARNAM_EXPORT bool strbuf_replace(strbuf *string, const char *rep, const char *with);
 VARNAM_EXPORT char* strbuf_get_last_unicode_char(strbuf *word);
+VARNAM_EXPORT char* portable_strdup(const char*);
 VARNAM_EXPORT struct varray_t* strbuf_split(strbuf *string, varnam *handle, char delim);
 VARNAM_EXPORT struct strbuf* get_pooled_string(varnam *handle);
 VARNAM_EXPORT void return_string_to_pool (varnam *handle, strbuf* string);
