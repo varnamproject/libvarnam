@@ -568,7 +568,7 @@ varnam_get_corpus_details(varnam *handle, vcorpus_details **details)
 {
 	int rc, wordsCount = 0;
 
-	rc = vwt_get_words_count (handle, false, &wordsCount);
+	rc = vwt_get_words_count (handle, true, &wordsCount);
 	if (rc != VARNAM_SUCCESS)
 		return rc;
 
