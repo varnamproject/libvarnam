@@ -8,7 +8,7 @@
 
 language_code "or"
 identifier "or"
-display_name "Oriya"
+display_name "Odia"
 author "Nilakanta Mallick"
 
 ignore_duplicates false
