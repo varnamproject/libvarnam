@@ -78,6 +78,7 @@ list (APPEND SUPPORTED_SCHEMES
   kn
   gu
 	bn
+	as
 )
 
 # Append the source files here
