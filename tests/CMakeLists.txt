@@ -10,7 +10,8 @@ cmake_minimum_required (VERSION 2.8)
 project (tests)
 message ("Generating project ${PROJECT_NAME}")
 
-find_package (Check)
+FIND_PACKAGE(PkgConfig)
+PKG_CHECK_MODULES(CHECK REQUIRED check)
 
 include_directories(${CHECK_INCLUDE_DIRS})
 
