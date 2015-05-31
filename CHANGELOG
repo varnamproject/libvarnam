@@ -1,3 +1,15 @@
+3.2.4 / (Not yet released)
+=======================
+* Added support for Assamese
+* Added support for Bengali
+* Language name update to Odia
+* Mapping fixes for Kannada
+* Using a portable strdup
+* Fixed FFI not loading on Debian systems
+* Telugu is marked as stable
+*  Added varnam_get_corpus_details() API
+*  Renaming varnam_get_scheme_details() to varnam_get_all_handles
+
 3.2.3 / Apr 24, 2015
 =======================
 
