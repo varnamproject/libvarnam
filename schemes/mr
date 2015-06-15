@@ -30,7 +30,7 @@ visarga "H" => "\u{0903}"
 
 vowels "a" => "अ",
        ["aa", "A"] => ["आ", "ा"],
-       ["AAA", ["aaa"]] => ["आऽऽ", "ाऽऽ"],
+       ["AAA", ["aaa", "a"]] => ["आऽऽ", "ाऽऽ"],
        ["ae", ["a"]] => "ॲ",
        ["i",["e"]] => ["इ", "ि"],
        ["ee", "I", "ii"] => ["ई", "ी"],
@@ -51,7 +51,7 @@ vowels "a" => "अ",
        ["ou", "au", ["ow"]] => ["औ", "ौ"],
        ["aw", ["ou", "au"]] => ["ऑ", "ॉ"],
        ["N", "M"] => ["अं" ,"ं"],
-       "aH" => ["अः", "ः"]              
+       "aH" => ["अः", "ः"]
 
 list :can_make_cluster do
 consonants "k" => "क",
@@ -61,11 +61,11 @@ consonants "k" => "क",
  	         "g" => "ग",
            ["G"] => ["\u{095A}", "ग#{$nukta}"],
            ["gh",["g"]] => "घ",
-	         "ng" =>  "ङ",                   
+	         "ng" =>  "ङ",
 
            "ch" => "च",
            ["Ch", ["ch"]] => "छ",
-           "j"  => "ज",  
+           "j"  => "ज",
            "z" => "ज#{$nukta}",
            ["jh", ["j"]] => "झ",
            "nj" => "ञ",
@@ -76,13 +76,13 @@ consonants "k" => "क",
            ["dd", ["D"]] => ["\u{095C}", "ड#{$nukta}"],
            "Dh" => "ढ",
            ["DH", ["Dh"]] => ["\u{095D}", "ढ#{$nukta}"],
-           "NN" => "ण",
+           ["NN", ["n"]] => "ण",
 
            "t" => "त",
            ["th", ["t"]] => "थ",
            "d" => "द",
            ["dh", ["d"]] => "ध",
-           "n" => "न", 
+           "n" => "न",
            ["NNN", ["n"]] => ["ऩ", "न#{$nukta}"],
 
            ["p"] => "प",
@@ -113,7 +113,7 @@ can_make_cluster.each do |c1|
         consonants ["#{c1.pattern}#{c2.pattern}"] => ["#{c1.value1}#{$virama}#{c2.value1}"]
      else
         consonants [["#{c1.pattern}#{c2.pattern}"]] => ["#{c1.value1}#{$virama}#{c2.value1}"]
-     end 
+     end
    end
 end
 
@@ -283,7 +283,7 @@ consonants(combine get_consonants, ["*a"] => ["*1"])
 
 symbols ["om"] => "ॐ"
 
-symbols({:priority => :low}, ["aan", "aam"] => $an)
+symbols({:priority => :low}, [["aan", "aam"]] => $an)
 
 numbers "0" => "०",
         "1" => "१",
