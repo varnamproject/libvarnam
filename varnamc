@@ -830,13 +830,13 @@ end
 
 def non_joiner(hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_NON_JOINER);
+  _create_token(hash, Varnam::VARNAM_TOKEN_NON_JOINER)
   $overridden_default_symbols.push Varnam::VARNAM_TOKEN_NON_JOINER
 end
 
 def joiner(hash)
   _ensure_sanity(hash)
-  _create_token(hash, Varnam::VARNAM_TOKEN_JOINER);
+  _create_token(hash, Varnam::VARNAM_TOKEN_JOINER)
   $overridden_default_symbols.push Varnam::VARNAM_TOKEN_JOINER
 end
 
@@ -1396,5 +1396,11 @@ def exceptions_stem(hash, options={})
     end
   end
 end
+
+def word_breakers(options={}, hash)
+  _ensure_sanity(hash)
+  _create_token(hash, Varnam::VARNAM_WORD_BREAKER, options)
+end
+
 do_action
 

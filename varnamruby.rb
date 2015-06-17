@@ -85,7 +85,8 @@ module Varnam
   VARNAM_TOKEN_OTHER           = 10
   VARNAM_TOKEN_NON_JOINER      = 11
   VARNAM_TOKEN_JOINER          = 12
-
+  VARNAM_WORD_BREAKER          = 13
+  
   VARNAM_MATCH_EXACT           = 1
   VARNAM_MATCH_POSSIBILITY     = 2
 
