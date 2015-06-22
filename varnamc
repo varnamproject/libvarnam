@@ -787,6 +787,10 @@ def consonants(options={}, hash)
   _create_token(hash, Varnam::VARNAM_TOKEN_CONSONANT, options)
 end
 
+def period(p)
+	_create_token({"." => p}, Varnam::VARNAM_TOKEN_PERIOD, {})
+end
+
 def tag(name, &block)
    _context.current_tag = name
    block.call

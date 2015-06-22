@@ -20,6 +20,7 @@ $an = "\u{0901}"
 $nukta = "\u{093c}"
 
 virama "~" => "\u{094d}"
+period "\u{0964}"
 
 visarga "H" => "\u{0903}"
 

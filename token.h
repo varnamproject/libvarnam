@@ -14,6 +14,23 @@
 #include "varray.h"
 
 struct token*
+token_new();
+
+void
+initialize_token (vtoken *tok,
+                  int id,
+                  int type,
+                  int match_type,
+                  const char* pattern,
+                  const char* value1,
+                  const char* value2,
+                  const char* value3,
+                  const char* tag,
+                  int priority,
+                  int accept_condition,
+                  int flags);
+
+struct token*
 Token(int id, int type, int match_type, const char* pattern, const char* value1, const char* value2, const char* value3, const char* tag, int priority, int accept_condition, int flags);
 
 struct token*

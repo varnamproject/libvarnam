@@ -38,6 +38,7 @@
 #define VARNAM_TOKEN_OTHER						 10
 #define VARNAM_TOKEN_NON_JOINER				 11
 #define VARNAM_TOKEN_JOINER						 12
+#define VARNAM_TOKEN_PERIOD						 13
 
 /* token flags */
 #define VARNAM_TOKEN_FLAGS_MORE_MATCHES_FOR_PATTERN (1 << 0)

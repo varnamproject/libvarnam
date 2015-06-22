@@ -465,62 +465,69 @@ vst_discard_changes(varnam *handle)
     return VARNAM_SUCCESS;
 }
 
+static int
+vst_get_token_by_type (varnam* handle, int tokenType, struct token *output, bool *tokenAvailable)
+{
+  int rc;
+  sqlite3 *db; sqlite3_stmt *stmt;
+
+  db = handle->internal->db;
+	*tokenAvailable = false;
+
+  rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
+  if(rc != SQLITE_OK) {
+    set_last_error (handle, "Failed to get token by type. Error preparing : %s", sqlite3_errmsg(db));
+    sqlite3_finalize( stmt );
+    return VARNAM_ERROR;
+  }
+
+  sqlite3_bind_int (stmt, 1, tokenType);
+  sqlite3_bind_int (stmt, 2, VARNAM_MATCH_EXACT);
+
+  rc = sqlite3_step( stmt );
+  if( rc == SQLITE_ROW ) {
+    initialize_token (output, (int) sqlite3_column_int(stmt, 0),
+        (int) sqlite3_column_int(stmt, 1),
+        (int) sqlite3_column_int(stmt, 2),
+        (const char*) sqlite3_column_text(stmt, 3),
+        (const char*) sqlite3_column_text(stmt, 4),
+        (const char*) sqlite3_column_text(stmt, 5),
+        (const char*) sqlite3_column_text(stmt, 6),
+        (const char*) sqlite3_column_text(stmt, 7),
+        (int) sqlite3_column_int(stmt, 8),
+        (int) sqlite3_column_int(stmt, 9),
+        (int) sqlite3_column_int(stmt, 10));
+		*tokenAvailable = true;
+  }
+  else if (rc != SQLITE_DONE) {
+    set_last_error (handle, "Failed to get token by type : %s", sqlite3_errmsg(db));
+    sqlite3_finalize( stmt );
+    return VARNAM_ERROR;
+  }
+
+  sqlite3_finalize( stmt );
+  return VARNAM_SUCCESS;
+}
+
 int
 vst_get_virama(varnam* handle, struct token **output)
 {
     int rc;
-    sqlite3 *db; sqlite3_stmt *stmt;
+		bool tokenAvailable = false;
 
-    if (v_->virama != NULL)
-    {
+    if (v_->virama != NULL) {
         *output = v_->virama;
         return VARNAM_SUCCESS;
     }
 
-    db = handle->internal->db;
-
-    rc = sqlite3_prepare_v2( db, "select id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition, flags from symbols where type = ?1 and match_type = ?2 limit 1;", -1, &stmt, NULL );
-    if(rc != SQLITE_OK)
-    {
-        set_last_error (handle, "Failed to get virama : %s", sqlite3_errmsg(db));
-        sqlite3_finalize( stmt );
-        return VARNAM_ERROR;
-    }
-
-    sqlite3_bind_int (stmt, 1, VARNAM_TOKEN_VIRAMA);
-    sqlite3_bind_int (stmt, 2, VARNAM_MATCH_EXACT);
-
-    rc = sqlite3_step( stmt );
-    if( rc == SQLITE_ROW )
-    {
-        /* Not using pooled token here because we need to cache this in v_->virama */
-        *output = Token((int) sqlite3_column_int(stmt, 0),
-                        (int) sqlite3_column_int(stmt, 1),
-                        (int) sqlite3_column_int(stmt, 2),
-                        (const char*) sqlite3_column_text(stmt, 3),
-                        (const char*) sqlite3_column_text(stmt, 4),
-                        (const char*) sqlite3_column_text(stmt, 5),
-                        (const char*) sqlite3_column_text(stmt, 6),
-                        (const char*) sqlite3_column_text(stmt, 7),
-                        (int) sqlite3_column_int(stmt, 8),
-                        (int) sqlite3_column_int(stmt, 9),
-                        (int) sqlite3_column_int(stmt, 10));
-
-        v_->virama = *output;
-    }
-    else if ( rc == SQLITE_DONE )
-    {
-        *output = NULL;
-    }
-    else
-    {
-        set_last_error (handle, "Failed to get virama : %s", sqlite3_errmsg(db));
-        sqlite3_finalize( stmt );
-        return VARNAM_ERROR;
-    }
-
-    sqlite3_finalize( stmt );
-
+		*output = token_new();
+		rc = vst_get_token_by_type (handle, VARNAM_TOKEN_VIRAMA, *output, &tokenAvailable);
+		if (rc != VARNAM_SUCCESS || !tokenAvailable) {
+			destroy_token (*output);
+			*output = NULL;
+			return rc;
+		}
+    v_->virama = *output;
     return VARNAM_SUCCESS;
 }
 

@@ -12,7 +12,7 @@
 #include "varray.h"
 #include "result-codes.h"
 
-static void
+void
 initialize_token (vtoken *tok,
                   int id,
                   int type,
@@ -58,6 +58,13 @@ Token(int id, int type, int match_type, const char* pattern, const char* value1,
     struct token* tok = (struct token*) xmalloc(sizeof(struct token));
     initialize_token (tok, id, type, match_type, pattern, value1, value2, value3, tag, priority, accept_condition, flags);
     return tok;
+}
+
+struct token*
+token_new()
+{
+  struct token* tok = (struct token*) xmalloc(sizeof(struct token));
+	return tok;
 }
 
 struct token*
