@@ -1,3 +1,12 @@
+3.2.5 / Jul 01, 2015
+=======================
+* Mapping rr in Kannada
+* Import words will validate the word belongs to the current scheme
+* Fixing warning when compiling ml scheme
+* Added a period token type to handle devanagari DANDA
+* Mapping Kannada length mark
+* Fixing Marathi mapping where "aani" was not working
+
 3.2.4 / Jun 01, 2015
 =======================
 * Added support for Assamese
