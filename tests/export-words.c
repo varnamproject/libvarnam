@@ -148,6 +148,35 @@ START_TEST (varnam_import_learnings)
 }
 END_TEST
 
+START_TEST (invalid_words_should_not_be_imported)
+{
+    int rc, cnt;
+    varnam *handle;
+    char *msg, *suggestion_file;
+
+    rc = varnam_init_from_id ("ml", &handle, &msg);
+    assert_success (rc);
+		suggestion_file = get_unique_filename();
+		rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, suggestion_file);
+		assert_success (rc);
+
+		rc = varnam_import_learnings_from_file (handle, "testdata/invalid-and-valid-words-patterns.json");
+		assert_success (rc);
+
+		/* invalid words should have skipped */
+    cnt = execute_query_int (handle->internal->known_words, "select count(*) from words where word = 'invalid';");
+    ck_assert_int_eq (0, cnt);
+    cnt = execute_query_int (handle->internal->known_words, "select count(*) from patterns_content where pattern = 'invalid';");
+    ck_assert_int_eq (0, cnt);
+
+		/* valid word should have imported */
+    cnt = execute_query_int (handle->internal->known_words, "select count(*) from words where word = 'മലയാളം';");
+    ck_assert_int_eq (1, cnt);
+    cnt = execute_query_int (handle->internal->known_words, "select count(*) from patterns_content where pattern = 'malayalam';");
+    ck_assert_int_eq (1, cnt);
+}
+END_TEST
+
 START_TEST (varnam_import_learnings_invalid_file)
 {
     int rc;
@@ -173,15 +202,6 @@ START_TEST (varnam_import_learnings_wrong_filetype)
 }
 END_TEST
 
-static int cbinvoked = 0;
-
-static void
-import_failed_cb(const char* word)
-{
-    cbinvoked = 1;
-    ck_assert_str_eq ("1 df", word);
-}
-
 START_TEST (varnam_import_learnings_invalid_args)
 {
     int rc;
@@ -204,5 +224,6 @@ TCase* get_export_tests()
     tcase_add_test (tcase, varnam_import_learnings_invalid_file);
     tcase_add_test (tcase, varnam_import_learnings_wrong_filetype);
     tcase_add_test (tcase, varnam_import_learnings_invalid_args);
+    tcase_add_test (tcase, invalid_words_should_not_be_imported);
     return tcase;
 }

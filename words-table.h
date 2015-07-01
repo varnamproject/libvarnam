@@ -61,6 +61,9 @@ int
 vwt_get_word_id (varnam *handle, const char *word, sqlite3_int64 *word_id);
 
 int
+vwt_try_insert_new_word (varnam* handle, const char* word, int confidence, sqlite3_int64* new_word_id);
+
+int
 vwt_persist_pattern(varnam *handle, const char *pattern, sqlite3_int64 word_id, bool is_prefix);
 
 int

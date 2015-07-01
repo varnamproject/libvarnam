@@ -255,8 +255,8 @@ learn_pattern (varnam *handle, varray *tokens, const char *word, strbuf *pattern
     return VARNAM_SUCCESS;
 }
 
-static int
-try_insert_new_word (varnam* handle, const char* word, int confidence, sqlite3_int64* new_word_id) {
+int
+vwt_try_insert_new_word (varnam* handle, const char* word, int confidence, sqlite3_int64* new_word_id) {
     int rc;
     const char *sql = "insert or ignore into words (word, confidence, learned_on) values(trim(?1), ?2, strftime('%s', datetime(), 'localtime'));";
 
@@ -341,7 +341,7 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
         if (rc) return rc;
 
         if (!confidence_updated) {
-            rc = try_insert_new_word (handle, word, confidence, &new_word_id);
+            rc = vwt_try_insert_new_word (handle, word, confidence, &new_word_id);
             if (rc) return rc;
             strbuf_add (v_->lastLearnedWord, word);
             v_->lastLearnedWordId = new_word_id;
@@ -350,7 +350,7 @@ learn_word (varnam *handle, const char *word, int confidence, bool *new_word)
     else {
         /* This assumes new words won't be already learned. So attempts insert first and fallback to update
          * confidence later */
-        rc = try_insert_new_word (handle, word, confidence, &new_word_id);
+        rc = vwt_try_insert_new_word (handle, word, confidence, &new_word_id);
         if (rc) return rc;
 
         if (new_word_id == -1) {
@@ -1202,57 +1202,6 @@ vwt_export_words(varnam* handle, int words_per_file, const char* out_dir,
     sqlite3_reset (v_->export_words);
 
     return VARNAM_SUCCESS;
-}
-
-int
-vwt_import_words (varnam* handle, const char* filepath)
-{
-    int rc, i, j;
-		bool isPrefix;
-		sqlite3_int64 wordId;
-		JSON_Value *root = NULL;
-		JSON_Array *words = NULL, *patterns = NULL;
-		JSON_Object *word = NULL, *pattern = NULL;
-
-		root = json_parse_file_with_comments (filepath);
-		if (root == NULL) {
-      set_last_error (handle, "Couldn't open file '%s' for reading", filepath);
-      return VARNAM_ERROR;
-		}
-
-		if (json_value_get_type(root) != JSONArray) {
-      set_last_error (handle, "'%s': Unknown file format", filepath);
-      return VARNAM_ERROR;
-		}
-
-		rc = VARNAM_SUCCESS;
-
-		words = json_value_get_array (root);
-		for (i = 0; i < json_array_get_count(words); i++) {
-			word = json_array_get_object (words, i);
-			rc = try_insert_new_word (handle, json_object_get_string (word, "word"), json_object_get_number (word, "confidence"), &wordId);
-			if (rc != VARNAM_SUCCESS) {
-				goto cleanup;
-			}
-
-			patterns = json_object_get_array (word, "patterns");
-			if (patterns != NULL) {
-				for (j = 0; j < json_array_get_count(patterns); j++) {
-					pattern = json_array_get_object (patterns, j);
-					isPrefix = json_object_get_number (pattern, "learned") == 0 ? true : false;
-					rc = vwt_persist_pattern (handle, json_object_get_string (pattern, "pattern"), wordId, isPrefix);
-					if (rc != VARNAM_SUCCESS) {
-						goto cleanup;
-					}
-				}
-			}
-		}
-
-cleanup:
-		if (root != NULL)
-			json_value_free (root);
-
-    return rc;
 }
 
 /* int */

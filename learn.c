@@ -15,6 +15,7 @@
 #include "result-codes.h"
 #include "symbol-table.h"
 #include "words-table.h"
+#include "deps/parson.h"
 
 static bool
 is_words_store_available(varnam* handle)
@@ -46,7 +47,7 @@ language_specific_sanitization(strbuf *string)
 static strbuf*
 sanitize_word (varnam *handle, const char *word)
 {
-    size_t i;
+    int i;
     bool is_special = false;
     strbuf *string, *to_remove;
 
@@ -65,9 +66,9 @@ sanitize_word (varnam *handle, const char *word)
     }
 
     strbuf_remove_from_first (string, strbuf_to_s (to_remove));
-
     strbuf_clear (to_remove);
-    for (i = string->length - 1; i >= 0; i--)
+
+    for (i = (int)(string->length - 1); i >= 0; i--)
     {
         is_special = is_special_character (string->buffer[i]);
         if (is_special)
@@ -633,7 +634,6 @@ varnam_learn_from_file(varnam *handle,
 int
 varnam_compact_learnings_file(varnam *handle)
 {
-  int rc;
   varnam_log (handle, "Compacting file");
   return vwt_compact_file (handle);
 }
@@ -682,24 +682,75 @@ varnam_export_words(varnam* handle, int words_per_file, const char* out_dir, int
         return vwt_export_words (handle, words_per_file, out_dir, callback);
 }
 
-#define _WORDS_IMPORT 1
-#define _PATTERNS_IMPORT 2
-
 static int
-get_file_type (FILE* infile)
+import_words (varnam* handle, const char* filepath)
 {
-    char metadata[100];
+    int rc;
+		size_t i, j;
+		bool isPrefix;
+		sqlite3_int64 wordId;
+		JSON_Value *root = NULL;
+		JSON_Array *words = NULL, *patterns = NULL;
+		JSON_Object *word = NULL, *pattern = NULL;
+		const char* wordString = NULL;
+		strbuf *sanitized_word;
+		varray* tokens;
 
-    if ((fgets (metadata, 100, infile)) == NULL)
-        return -1;
+		root = json_parse_file_with_comments (filepath);
+		if (root == NULL) {
+      set_last_error (handle, "Couldn't open file '%s' for reading", filepath);
+      return VARNAM_ERROR;
+		}
 
-    if (strcmp (trimwhitespace (metadata), VARNAM_WORDS_EXPORT_METADATA) == 0)
-        return _WORDS_IMPORT;
-    else if (strcmp (trimwhitespace (metadata), VARNAM_PATTERNS_EXPORT_METADATA) == 0)
-        return _PATTERNS_IMPORT;
+		if (json_value_get_type(root) != JSONArray) {
+      set_last_error (handle, "'%s': Unknown file format", filepath);
+      return VARNAM_ERROR;
+		}
 
-    return -1;
+		rc = VARNAM_SUCCESS;
+
+		words = json_value_get_array (root);
+		tokens = get_pooled_array (handle);
+		for (i = 0; i < json_array_get_count(words); i++) {
+			word = json_array_get_object (words, i);
+			wordString = json_object_get_string(word, "word");
+
+			/* Making sure word contains only allowed token for the current scheme */
+			sanitized_word = sanitize_word (handle, wordString);
+			rc = vst_tokenize (handle, strbuf_to_s (sanitized_word), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_ALL, tokens);
+			if (rc) {
+				goto cleanup;
+			}
+			if (!can_learn_from_tokens (handle, tokens, strbuf_to_s (sanitized_word))) {
+				continue;
+			}
+
+			rc = vwt_try_insert_new_word (handle, wordString, (int)json_object_get_number (word, "confidence"), &wordId);
+			if (rc != VARNAM_SUCCESS) {
+				goto cleanup;
+			}
+
+			patterns = json_object_get_array (word, "patterns");
+			if (patterns != NULL) {
+				for (j = 0; j < json_array_get_count(patterns); j++) {
+					pattern = json_array_get_object (patterns, j);
+					isPrefix = json_object_get_number (pattern, "learned") == 0 ? true : false;
+					rc = vwt_persist_pattern (handle, json_object_get_string (pattern, "pattern"), wordId, isPrefix);
+					if (rc != VARNAM_SUCCESS) {
+						goto cleanup;
+					}
+				}
+			}
+		}
+
+cleanup:
+		if (root != NULL)
+			json_value_free (root);
+
+    return rc;
 }
+
+
 
 int
 varnam_import_learnings_from_file(varnam *handle, const char *filepath)
@@ -723,7 +774,7 @@ varnam_import_learnings_from_file(varnam *handle, const char *filepath)
         return rc;
     }
 
-    rc = vwt_import_words (handle, filepath);
+    rc = import_words (handle, filepath);
     if (rc != VARNAM_SUCCESS) {
       vwt_turn_off_optimization_for_huge_transaction (handle);
       return rc;

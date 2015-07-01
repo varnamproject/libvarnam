@@ -26,7 +26,6 @@ START_TEST (learn_failures_file_should_be_created_upon_failures)
     strbuf* command, *contents;
 
     filename = create_text_file ("not-valid-indic-word");
-    printf("The file : %s\n", filename);
     command = strbuf_init (20);
     strbuf_addf (command, "../varnamc -s ml --learn-from %s -d output/", filename);
     exitcode = system (strbuf_to_s (command));
