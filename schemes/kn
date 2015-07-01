@@ -73,7 +73,7 @@ consonants  ["ka", "ca"] => "ಕ",
            "ba" => "ಬ",
             "bha" => "ಭ",
           "ya" => "ಯ",
-           ["rr", "RR", ["Rr"]] => "ಱ",
+           ["Ra"] => "ಱ",
            "la" => ["ಲ"],
            ["La"] => ["ಳ", "\u{0CE2}"],
            ['mma'] => ["ಮ್ಮ"],
@@ -87,7 +87,8 @@ consonants  ["ka", "ca"] => "ಕ",
           # ["tra", "Tra"] => "ಱ",
            ["`jn"] => "ಜ್ಞ",
            ["x"] => "ಕ್ಸ್",
-           ["za"] => "ಜ\u{0CBC}"
+           ["za"] => "ಜ\u{0CBC}",
+           ["rra"] => "\u{0CB0}#{$virama}\u{0CB0}"
 
 infer_dead_consonants false
 
