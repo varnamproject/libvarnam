@@ -12,6 +12,7 @@ message ("Generating project ${PROJECT_NAME}")
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 	add_definitions(-D_FORTIFY_SOURCE=2)
+	add_definitions(-D_LARGEFILE_SOURCE=1)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cmake_modules/")
