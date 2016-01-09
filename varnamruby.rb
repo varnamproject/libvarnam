@@ -42,6 +42,7 @@ module VarnamLibrary
     :confidence, :int
   end
 
+  attach_function :varnam_set_symbols_dir, [:string], :int
   attach_function :varnam_init, [:string, :pointer, :pointer], :int
   attach_function :varnam_init_from_id, [:string, :pointer, :pointer], :int
   attach_function :varnam_version, [], :string

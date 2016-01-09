@@ -35,6 +35,12 @@ varnam_set_symbols_dir (const char *dir)
     strbuf_add (varnam_symbols_dir, dir);
 }
 
+strbuf*
+varnam_get_symbols_dir ()
+{
+  return varnam_symbols_dir;
+}
+
 void
 varnam_set_suggestions_dir (const char *dir)
 {
@@ -213,8 +219,8 @@ find_symbols_file_directory()
 {
   int i;
 
-  if (varnam_symbols_dir != NULL && is_directory(varnam_symbols_dir)) {
-    return varnam_symbols_dir;
+  if (varnam_symbols_dir != NULL && is_directory(strbuf_to_s (varnam_symbols_dir))) {
+    return strbuf_to_s(varnam_symbols_dir);
   }
 
   for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
@@ -929,8 +935,6 @@ varnam_destroy(varnam *handle)
     xfree(handle->scheme_file);
     xfree(handle->suggestions_file);
     xfree(handle);
-    strbuf_destroy (varnam_suggestions_dir);
-    strbuf_destroy (varnam_symbols_dir);
 }
 
 static void

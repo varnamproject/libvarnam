@@ -47,3 +47,5 @@ Win32/
 examples/stemmer.c
 examples/stemmer
 distribution-tarball/
+testrun.log
+testrun.xml

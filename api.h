@@ -23,6 +23,9 @@ extern strbuf *varnam_symbols_dir;
 VARNAM_EXPORT void
 varnam_set_symbols_dir (const char *dir);
 
+VARNAM_EXPORT strbuf*
+varnam_get_symbols_dir ();
+
 /**
  * Sets the suggestions directory where all the learning data will be stored. This value will be used
  * when initializing using varnam_init_from_id

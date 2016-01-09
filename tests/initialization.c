@@ -132,9 +132,13 @@ START_TEST (initialize_using_lang_code)
   if (errMsg != NULL) {
     printf ("init_from_lang failed: %s\n", errMsg);
   }
-
   assert_success (rc);
-  ck_assert_str_eq ("/usr/local/share/varnam/vst/ml.vst", varnam_get_scheme_file (handle));
+
+  tmp = strbuf_init (20);
+  strbuf_addf (tmp, "%s/ml.vst", strbuf_to_s (varnam_get_symbols_dir()));
+  ck_assert_str_eq (strbuf_to_s(tmp), varnam_get_scheme_file (handle));
+  strbuf_destroy (tmp);
+
   tmp = strbuf_init (10);
   strbuf_addf (tmp, "%s/.local/share/varnam/suggestions/ml.vst.learnings", getenv ("HOME"));
   ck_assert_str_eq (strbuf_to_s (tmp), varnam_get_suggestions_file (handle));

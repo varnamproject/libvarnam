@@ -287,6 +287,10 @@ def initialize_varnam_handle
         exit(1)
     end
   elsif not $options[:lang_code].nil?
+    sources_root = ENV["VARNAM_SOURCES_ROOT"]
+    unless sources_root.nil?
+      VarnamLibrary.varnam_set_symbols_dir "#{ENV['VARNAM_SOURCES_ROOT']}/schemes"
+    end
     initialized = VarnamLibrary.varnam_init_from_id($options[:lang_code], $varnam_handle, init_error_msg)
     if initialized == 0 and not $options[:learnings_file].nil?
       # User has specified explicit learnings file. Use that instead of the default one

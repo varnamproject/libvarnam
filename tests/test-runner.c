@@ -18,12 +18,28 @@ int main(int argc, char **argv)
     Suite *suite, *util, *commandline;
     SRunner *runner;
     int failed, exit_code;
+    const char *env_sources_root;
+    strbuf *tmp;
 
     /* Cleaning the output directory */
     exit_code = system ("ruby test_output_cleanup.rb");
     if (exit_code != 0) {
         fprintf (stderr, "Failed to cleanup test output directory. Process returned %d", exit_code);
     }
+
+    env_sources_root = getenv ("VARNAM_SOURCES_ROOT");
+    if (env_sources_root != NULL) {
+      tmp = strbuf_init (20);
+      strbuf_addf (tmp, "%s/schemes", env_sources_root);
+      varnam_set_symbols_dir (strbuf_to_s(tmp));
+      strbuf_destroy (tmp);
+      tmp = NULL;
+    }
+    else {
+      /* setting the symbols directory to the local symbols directory */
+      varnam_set_symbols_dir ("../schemes");
+    }
+
 
     suite = suite_create ("core");
     suite_add_tcase (suite, get_initialization_tests());

@@ -86,6 +86,7 @@ reinitialize_varnam_instance(const char *filename)
     varnam *handle;
     strbuf *error;
 
+
     if (varnam_instance != NULL) {
         varnam_destroy (varnam_instance);
         varnam_instance = NULL;
