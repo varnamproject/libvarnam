@@ -51,7 +51,7 @@ if $options[:library].nil?
   puts "varnamc - Can't find varnam shared library. Try specifying the full path using -l option"
   puts optparse
 else
-  puts "Using #{$options[:library]}"
+  puts "Using #{$options[:library]}" if $options[:verbose]
 end
 
 varnamruby_searchpaths = [".", File.dirname(File.expand_path(__FILE__)), "/usr/local/lib", "/usr/lib"]
@@ -993,8 +993,6 @@ def transliterate
   totl = $options[:text_to_transliterate]
   ensure_single_word totl
 
-  puts "Transliterating '#{totl}'"
-
   if $options[:indic_digits]
       configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
                                                Varnam::VARNAM_CONFIG_USE_INDIC_DIGITS, :string, "1")
@@ -1029,8 +1027,6 @@ def reverse_transliterate
   end
   tortl = $options[:text_to_reverse_transliterate]
   ensure_single_word tortl
-
-  puts "Reverse transliterating '#{tortl}'"
 
   output_ptr = FFI::MemoryPointer.new(:pointer, 1)
   done = VarnamLibrary.varnam_reverse_transliterate($varnam_handle.get_pointer(0), tortl, output_ptr);
