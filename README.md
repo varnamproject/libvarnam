@@ -38,6 +38,23 @@ varnamc -s ml -r വർണം
  varnam
 ```
 
+Word corpus
+===========
+
+`libvarnam` is a learning system. It works better with a word corpus. You can obtain the word corpus and make varnam learn all the words. This will enable `libvarnam` to provide intelligent suggestions.
+
+Here is an example of loading Malayalam word corpus:
+
+```shell
+mkdir words
+cd words
+wget http://download.savannah.gnu.org/releases/varnamproject/words/ml/ml.tar.gz
+tar -xvf ml.tar.gz
+varnamc  -s ml --learn-from .
+```
+
+This will take some time depends on how much words you are loading.
+
 What next?
 ==========
 
