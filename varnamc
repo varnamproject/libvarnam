@@ -978,46 +978,41 @@ def start_compilation
   exit(returncode)
 end
 
-def ensure_single_word(text)
-  if text.split(' ').length > 1
-    puts "varnamc : Expected a single word."
-    exit(1)
-  end
-end
-
 def transliterate
   if $options[:text_to_transliterate].nil?
     puts "Nothing to transliterate"
     exit 1
   end
-  totl = $options[:text_to_transliterate]
-  ensure_single_word totl
+  sentence = $options[:text_to_transliterate]
+  sentence = sentence.split(' ')
+  
+  sentence.each do |totl|
+    if $options[:indic_digits]
+        configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
+                                                 Varnam::VARNAM_CONFIG_USE_INDIC_DIGITS, :string, "1")
+        if configured != 0
+            error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+            error error_message
+            exit(1)
+        end
+    end
 
-  if $options[:indic_digits]
-      configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
-                                               Varnam::VARNAM_CONFIG_USE_INDIC_DIGITS, :string, "1")
-      if configured != 0
-          error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-          error error_message
-          exit(1)
-      end
-  end
+    words_ptr = FFI::MemoryPointer.new :pointer
+    done = VarnamLibrary.varnam_transliterate($varnam_handle.get_pointer(0), totl, words_ptr);
+    if done != 0
+      error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+      puts error_message
+      exit(1)
+    end
 
-  words_ptr = FFI::MemoryPointer.new :pointer
-  done = VarnamLibrary.varnam_transliterate($varnam_handle.get_pointer(0), totl, words_ptr);
-  if done != 0
-    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-    puts error_message
-    exit(1)
-  end
-
-  size = VarnamLibrary.varray_length(words_ptr.get_pointer(0))
-  0.upto(size - 1) do |i|
-    word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), i)
+    size = VarnamLibrary.varray_length(words_ptr.get_pointer(0))
+    word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), 0)
     vword = VarnamLibrary::Word.new(word_ptr)
     word = VarnamWord.new(vword[:text], vword[:confidence])
-    puts "  " + word.text
+    print "  " + word.text
   end
+  
+  puts "\n"
 end
 
 def reverse_transliterate
