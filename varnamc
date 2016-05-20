@@ -1004,12 +1004,21 @@ def transliterate
       puts error_message
       exit(1)
     end
-
     size = VarnamLibrary.varray_length(words_ptr.get_pointer(0))
-    word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), 0)
-    vword = VarnamLibrary::Word.new(word_ptr)
-    word = VarnamWord.new(vword[:text], vword[:confidence])
-    print "  " + word.text
+
+    if sentence.size  != 1
+      word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), 0)
+      vword = VarnamLibrary::Word.new(word_ptr)
+      word = VarnamWord.new(vword[:text], vword[:confidence])
+      print "  " + word.text
+    else 
+      0.upto(size - 1) do |i|
+        word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), i)
+        vword = VarnamLibrary::Word.new(word_ptr)
+        word = VarnamWord.new(vword[:text], vword[:confidence])
+        puts "  " + word.text
+      end
+    end
   end
   
   puts "\n"
