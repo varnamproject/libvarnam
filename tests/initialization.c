@@ -148,6 +148,28 @@ START_TEST (initialize_using_lang_code)
 }
 END_TEST
 
+START_TEST (initialize_using_lang_code_custom_symbols_dir)
+{
+  int rc;
+  char *errMsg = NULL;
+  varnam *handle;
+	int exitcode;
+
+	// Copy a sample vst file to the temp
+  exitcode = system ("cp ../schemes/ml.vst /tmp");
+
+	varnam_set_symbols_dir("/tmp");
+
+  rc = varnam_init_from_id ("ml", &handle, &errMsg);
+  if (errMsg != NULL) {
+    printf ("init_from_lang failed: %s\n", errMsg);
+  }
+  assert_success (rc);
+  ck_assert_str_eq ("/tmp/ml.vst", varnam_get_scheme_file (handle));
+  varnam_destroy (handle);
+}
+END_TEST
+
 START_TEST (initialize_using_invalid_lang_code)
 {
   int rc;
@@ -239,6 +261,7 @@ TCase* get_initialization_tests()
     tcase_add_test (tcase, enable_suggestions);
     tcase_add_test (tcase, normal_init);
     tcase_add_test (tcase, initialize_using_lang_code);
+    tcase_add_test (tcase, initialize_using_lang_code_custom_symbols_dir);
     tcase_add_test (tcase, initialize_using_invalid_lang_code);
     tcase_add_test (tcase, initialize_on_writeprotected_location);
     tcase_add_test (tcase, initialize_on_incorrect_location);
