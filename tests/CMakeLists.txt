@@ -14,6 +14,7 @@ FIND_PACKAGE(PkgConfig)
 PKG_CHECK_MODULES(CHECK REQUIRED check)
 
 include_directories(${CHECK_INCLUDE_DIRS})
+link_directories(${CHECK_LIBRARY_DIRS})
 
 file(REMOVE_RECURSE output)
 file(MAKE_DIRECTORY output)
