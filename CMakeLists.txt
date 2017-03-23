@@ -28,8 +28,10 @@ set(VARNAM_VERSION_PATCH 6)
 option(EMBED_SQLITE "Embed Sqlite or use the shared library available in the system?" ON)
 option(DISABLE_WITHOUT_ROW_ID_OPTIMIZATION "Disable this specific optimization as the SQLite version don't have it" OFF)
 option(BUILD_TESTS "Build tests?" OFF)
+option(RUN_TESTS "Run tests?" ON)
 option(BUILD_EXAMPLES "Build examples?" OFF)
 option(BUILD_TOOLS "Build tools?" OFF)
+option(BUILD_VST "Compile VST files?" ON)
 
 set(CMAKE_C_FLAGS "-Wall -ansi -pedantic -Wno-long-long -Wconversion -Wformat=2 -Wshadow -Wcast-qual -Wwrite-strings -fPIC")
 set(CMAKE_C_FLAGS_DEBUG "-g")
@@ -43,7 +45,7 @@ endif ()
 
 if (DISABLE_WITHOUT_ROW_ID_OPTIMIZATION)
 	# Added to support older SQLIte versions which don't have WIthout row id support
-	# eg: Debian wheezy still uses 3.7.13. This support was added in 3.8.2. 
+	# eg: Debian wheezy still uses 3.7.13. This support was added in 3.8.2.
 	# This is required only when EMBED_SQLITE=false
 	add_definitions(-DVARNAM_DISABLE_WITHOUT_ROW_ID_OPTIMIZATION)
 endif()
@@ -146,19 +148,23 @@ SET_TARGET_PROPERTIES(${VARNAM_LIBRARY_NAME} PROPERTIES
                                              VERSION ${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}
                                              SOVERSION ${VARNAM_VERSION_MAJOR})
 
+
 # a custom target to compile all scheme files
 # this is just a highlevel target and there are individual targets which depends on this
-add_custom_target (vst)
+if (BUILD_VST)
+	add_custom_target (vst)
+	# Each scheme will have a target to compile
+	# vst will have a dependency to all these targets so that running vst will compile all the scheme files
+	foreach(scheme ${SUPPORTED_SCHEMES})
+  	add_custom_target (${scheme}.vst COMMAND ./varnamc --compile schemes/${scheme})
+  	add_dependencies (vst "${scheme}.vst")
+  	install (FILES schemes/${scheme}.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
+	endforeach()
+endif (BUILD_VST)
 
-# Each scheme will have a target to compile
-# vst will have a dependency to all these targets so that running vst will compile all the scheme files
-foreach(scheme ${SUPPORTED_SCHEMES})
-  add_custom_target (${scheme}.vst COMMAND ./varnamc --compile schemes/${scheme})
-  add_dependencies (vst "${scheme}.vst")
-  install (FILES schemes/${scheme}.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
-endforeach()
-
-add_custom_target (test command cd tests && ./runtests)
+if (RUN_TESTS)
+	add_custom_target (test command cd tests && ./runtests)
+endif (RUN_TESTS)
 
 # Makes the distro
 add_custom_target (distro COMMAND ./makedistro.sh "${VARNAM_VERSION_MAJOR}.${VARNAM_VERSION_MINOR}.${VARNAM_VERSION_PATCH}")
