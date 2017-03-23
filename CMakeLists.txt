@@ -51,9 +51,9 @@ if (DISABLE_WITHOUT_ROW_ID_OPTIMIZATION)
 endif()
 
 IF(MSVC)
-        set(CMAKE_C_FLAGS "/Wall /wd\"4255;4100\"")
-        # We don't want to use MSVC's more secure versions of functions. So suppressing the warnings
-        add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
+	set(CMAKE_C_FLAGS "/Wall /wd4255 /wd4100")
+  # We don't want to use MSVC's more secure versions of functions. So suppressing the warnings
+  add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
 ENDIF()
 
 if (RECORD_EXEC_TIME)
