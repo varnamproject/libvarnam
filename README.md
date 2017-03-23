@@ -16,6 +16,14 @@ sudo make install
 
 This will install `libvarnam` shared libraries and `varnamc` command line utility. `varnamc` can be used to quickly try out varnam.
 
+### Installation on Windows
+
+In Windows, you can compile `libvarnam` using Visual Studio. Use the following `cmake` command to generate the project files.
+
+```shell
+cmake -DBUILD_TESTS=false -DBUILD_VST=false -DRUN_TESTS=false .
+```
+
 Usage
 =====
 
