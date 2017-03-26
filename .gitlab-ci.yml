@@ -1,0 +1,16 @@
+image: ruby:2.4
+
+stages:
+  - test
+
+before_script:
+  - apt-get update -y
+  - apt-get install cmake -y
+  - apt-get install check -y
+
+test:
+  stage: test
+  script:
+    - cmake .
+    - make
+    - make test
