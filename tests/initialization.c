@@ -85,11 +85,36 @@ START_TEST (enable_suggestions)
     rc = varnam_init(filename, &handle, &msg);
     assert_success (rc);
 
-    rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "output/00-suggestions");
+    rc = varnam_config (handle, VARNAM_CONFIG_ENABLE_SUGGESTIONS, "output/00-suggestions.vst");
     assert_success (rc);
 
     varnam_destroy (handle);
     free (filename);
+}
+END_TEST
+
+START_TEST (file_exists)
+{
+    int rc;
+    char *msg, *filename;
+    varnam *handle;
+
+    filename = get_unique_filename();
+
+    rc = varnam_init(filename, &handle, &msg);
+    assert_success(rc);
+
+    rc = is_file_exists(filename);
+    assert_success(rc);
+
+    rc = is_file_exists("output/doesnotexist");
+    assert_success(!rc);
+
+    rc = is_file_exists("output");
+    assert_success(!rc);    
+
+    free(msg);
+    free(filename);
 }
 END_TEST
 
@@ -259,6 +284,7 @@ TCase* get_initialization_tests()
     tcase_add_test (tcase, get_corpus_details);
     tcase_add_test (tcase, set_scheme_details);
     tcase_add_test (tcase, enable_suggestions);
+    tcase_add_test (tcase, file_exists);
     tcase_add_test (tcase, normal_init);
     tcase_add_test (tcase, initialize_using_lang_code);
     tcase_add_test (tcase, initialize_using_lang_code_custom_symbols_dir);

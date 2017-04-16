@@ -838,6 +838,12 @@ enable_suggestions(varnam *handle, const char *file)
         return VARNAM_ERROR;
     }
 
+    if(is_file_exists(file) == 1)
+    {
+        set_last_error(handle,"can't open %s. File does not exist",file);
+        return VARNAM_MISUSE;
+    }
+
     rc = vwt_ensure_schema_exists (handle);
     if (rc != VARNAM_SUCCESS) {
       return rc;
