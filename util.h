@@ -139,6 +139,9 @@ VARNAM_EXPORT int utf8_length(const char *string);
 int
 utf8_ends_with(const char *buffer, const char *tocheck);
 
+char*
+utf8_ends_char(const char *buffer);
+
 typedef struct strbuf {
     char *buffer;          /* null terminated buffer */
     size_t length;         /* length of the string in bytes excluding null terminator */

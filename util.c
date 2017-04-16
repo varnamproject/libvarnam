@@ -91,6 +91,20 @@ utf8_ends_with(const char *buffer, const char *tocheck)
   return (strcmp(buf, tocheck) == 0);
 }
 
+char*
+utf8_ends_char(const char *buffer)
+{
+  int length = strlen(buffer);
+  char *ending = buffer + length;
+
+  while(*ending == '\0' || (*ending & 0xc0) == 0x80)
+     {
+      printf("Sangathi kalakki\n");
+      ending--;
+    }
+  return ending;
+ }
+
 /* return true if string1 starts with string2 */
 int
 startswith(const char *string1, const char *string2)
