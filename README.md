@@ -63,6 +63,18 @@ varnamc  -s ml --learn-from .
 
 This will take some time depends on how much words you are loading.
 
+There is a `--import-learnings-from` option to import files which already has the learnt paramaeter. Importing these files don't take too much time as the word corpus.
+
+Here is an example of loading the Malayalam file :
+
+```bash
+mkdir words
+cd words
+wget https://download.savannah.gnu.org/releases/varnamproject/words/ml.full.tar.gz
+tar -xvf ml.full.tar.gz
+varnamc -s ml --import-learnings-from .
+```
+
 What next?
 ==========
 
