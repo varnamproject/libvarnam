@@ -63,6 +63,8 @@ varnamc  -s ml --learn-from .
 
 This will take some time depends on how much words you are loading.
 
+[Here are some more word corpus](http://mirror.rackdc.com/savannah/varnamproject/words/)
+
 What next?
 ==========
 
