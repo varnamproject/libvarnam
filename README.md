@@ -65,6 +65,8 @@ This will take some time depends on how much words you are loading.
 
 [Here are some more word corpus](http://mirror.rackdc.com/savannah/varnamproject/words/)
 
+There is a `--import-learnings-from` option to import files which already has the learnt paramaeter. Importing these files don't take too much time as the word corpus.
+
 What next?
 ==========
 
