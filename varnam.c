@@ -315,15 +315,21 @@ find_learnings_file_path (const char *langCode)
     strbuf_addf (path, "%s\\varnam\\suggestions\\", tmp);
   }
 #else
-  tmp = getenv ("XDG_DATA_HOME");
+  tmp = getenv ("VARNAM_SUGGESTIONS_DIR");
   if (tmp == NULL) {
-    tmp = getenv ("HOME");
-    if (tmp != NULL) {
-      strbuf_addf (path, "%s/.local/share/varnam/suggestions/", tmp);
-    }
+      tmp = getenv ("XDG_DATA_HOME");
+      if (tmp == NULL) {
+        tmp = getenv ("HOME");
+        if (tmp != NULL) {
+          strbuf_addf (path, "%s/.local/share/varnam/suggestions/", tmp);
+        }
+      }
+      else {
+        strbuf_addf (path, "%s/varnam/suggestions/", tmp);
+      }
   }
   else {
-    strbuf_addf (path, "%s/varnam/suggestions/", tmp);
+    strbuf_addf (path, "%s/", tmp);
   }
 #endif
 
