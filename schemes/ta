@@ -31,7 +31,7 @@ vowels "a" => "அ",
 	   ["q"] => "ஃ"
 
 consonants ["ka", "qa", "ga", ["ha"]] => "க",
-           ["nga"] =>  "ங#{$virama}க",
+           ["nga"] =>  "ங",
            ["sa", "cha"] => "ச",
            ["ja", "za"]  => "ஜ",
            ["NJa", ["nja", "ncha"]] => "ஞ",
