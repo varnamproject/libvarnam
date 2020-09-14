@@ -39,6 +39,7 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
            ["Na"] => "ண",
            ["tha", "dha", ["ta","da"]] => "த",
            ["nna",["Na"]] => "ன",
+           ["na"] => "ந",
            ["pa", "ba", ["pha", "bha"]] => "ப",
            ["ma"] => "ம",
            ["ya"] => "ய",
@@ -54,13 +55,10 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
 		      ["ha"] => "ஹ",
 		      ["fa"] => "ஃப"
 
-
 consonants ["kk*"] => ["க#{$virama}க#{$virama}*1"],
 			[["nga"]] =>  "ங#{$virama}க"
 
 infer_dead_consonants false
-
-consonants   ["na"] => "ந"
 
 generate_cv
 
