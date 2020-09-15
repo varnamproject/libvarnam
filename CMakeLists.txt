@@ -157,7 +157,7 @@ if (BUILD_VST)
 	# Each scheme will have a target to compile
 	# vst will have a dependency to all these targets so that running vst will compile all the scheme files
 	foreach(scheme ${SUPPORTED_SCHEMES})
-  	add_custom_target (${scheme}.vst COMMAND ./varnamc --compile schemes/${scheme})
+  	add_custom_target (${scheme}.vst COMMAND ./varnamc.rb --compile schemes/${scheme})
   	add_dependencies (vst "${scheme}.vst")
   	install (FILES schemes/${scheme}.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 	endforeach()

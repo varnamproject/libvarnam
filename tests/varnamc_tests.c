@@ -12,7 +12,7 @@
 START_TEST (learn_failures_file_should_not_be_created_always)
 {
     int exitcode;
-    exitcode = system ("../varnamc -s ml -t varnam -d output/");
+    exitcode = system ("../varnamc.rb -s ml -t varnam -d output/");
     ck_assert_int_eq (0, exitcode);
     ck_assert_int_eq (0, file_exist ("output/varnamc-learn-failures.txt"));
     ck_assert_int_eq (0, file_exist ("output/varnamc-train-failures.txt"));
@@ -27,7 +27,7 @@ START_TEST (learn_failures_file_should_be_created_upon_failures)
 
     filename = create_text_file ("not-valid-indic-word");
     command = strbuf_init (20);
-    strbuf_addf (command, "../varnamc -s ml --learn-from %s -d output/", filename);
+    strbuf_addf (command, "../varnamc.rb -s ml --learn-from %s -d output/", filename);
     exitcode = system (strbuf_to_s (command));
     ck_assert_int_eq (0, exitcode);
     ck_assert_int_eq (1, file_exist ("output/varnamc-learn-failures.txt"));
@@ -50,7 +50,7 @@ START_TEST (training_failures_file_should_be_created_upon_failures)
 
     filename = create_text_file ("not-valid-indic-word");
     command = strbuf_init (20);
-    strbuf_addf (command, "../varnamc -s ml --train-from %s -d output/", filename);
+    strbuf_addf (command, "../varnamc.rb -s ml --train-from %s -d output/", filename);
     exitcode = system (strbuf_to_s (command));
     ck_assert_int_eq (0, exitcode);
     ck_assert_int_eq (1, file_exist ("output/varnamc-train-failures.txt"));
