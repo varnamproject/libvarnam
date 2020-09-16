@@ -6,13 +6,13 @@
 static char doc[] = "an Indic language transliteration library";
 static char args_doc[] = "";
 static struct argp_option options[] = { 
-    { "symbols", 's', "VALUE", 0, "Sets the symbols file"},
-    { "transliterate", 't', "TEXT", 0, "Transliterate the given text"},
-    { "reverse-transliterate", 'r', "TEXT", 0, "Reverse transliterate the given text"},
-    { "learn", 'n', "TEXT", 0, "Learn the given text"},
-    { "train", 'a', "PATTERN=WORD", 0, "Train the given text"},
-    { "version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
-    { 0 } 
+    {"symbols", 's', "VALUE", 0, "Sets the symbols file"},
+    {"transliterate", 't', "TEXT", 0, "Transliterate the given text"},
+    {"reverse-transliterate", 'r', "TEXT", 0, "Reverse transliterate the given text"},
+    {"learn", 'n', "TEXT", 0, "Learn the given text"},
+    {"train", 'a', "PATTERN=WORD", 0, "Train the given text"},
+    {"version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
+    {0} 
 };
 
 struct arguments {
@@ -27,15 +27,29 @@ struct arguments {
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   struct arguments *arguments = state->input;
   switch (key) {
-    case 's': arguments->symbols = arg; break;
-    case 't': arguments->transliterate = arg; break;
-    case 'r': arguments->reverse_transliterate = arg; break;
-    case 'n': arguments->learn = arg; break;
-    case 'a': arguments->train = arg; break;
-    case 'v': arguments->version = true; break;
-    case ARGP_KEY_ARG: return 0;
-    default: ARGP_ERR_UNKNOWN;
-  }   
+  case 's':
+    arguments->symbols = arg;
+    break;
+  case 't':
+    arguments->transliterate = arg;
+    break;
+  case 'r':
+    arguments->reverse_transliterate = arg;
+    break;
+  case 'n':
+    arguments->learn = arg;
+    break;
+  case 'a':
+    arguments->train = arg;
+    break;
+  case 'v':
+    arguments->version = true;
+    break;
+  case ARGP_KEY_ARG:
+    return 0;
+  default:
+    ARGP_ERR_UNKNOWN;
+  }
   return 0;
 }
 
@@ -80,7 +94,8 @@ void ensure_single_word(char *text)
  *  set to NULL since it's valueless.
  *  Modifies str so make a copy if this is a problem
  */
-int split( char * str, char delim, char ***array ) {
+int split( char * str, char delim, char ***array )
+{
   char *p;
   char **res;
   int count=0;
@@ -120,10 +135,10 @@ void print_transliteration_output(varray *words)
 {
     int i;
     vword *word;
-    for (i = 0; i < varray_length (words); i++)
+    for (i = 0; i < varray_length(words); i++)
     {
-        word = varray_get (words, i);
-        printf ("  %s. Confidence %d\n", word->text, word->confidence);
+        word = varray_get(words, i);
+        printf ("%s. Confidence %d\n", word->text, word->confidence);
     }
 }
 
