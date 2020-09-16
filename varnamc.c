@@ -200,14 +200,10 @@ int train(varnam *handle, char *pattern, char *word)
 
 int main(int argc, char *argv[])
 {
-  struct arguments arguments;
+  struct arguments arguments = {NULL};
   int rc;
   varnam *handle;
   char *msg;
-
-  arguments.symbols = NULL;
-  arguments.text = NULL;
-  arguments.learn = NULL;
 
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
