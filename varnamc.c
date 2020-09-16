@@ -8,6 +8,7 @@ static char args_doc[] = "";
 static struct argp_option options[] = { 
     {"symbols", 's', "VALUE", 0, "Sets the symbols file"},
     {"transliterate", 't', "TEXT", 0, "Transliterate the given text"},
+    {"info", 'i', "", OPTION_ARG_OPTIONAL, "Detailed transliteration output. Use with -t"},
     {"reverse-transliterate", 'r', "TEXT", 0, "Reverse transliterate the given text"},
     {"learn", 'n', "TEXT", 0, "Learn the given text"},
     {"train", 'a', "PATTERN=WORD", 0, "Train the given text"},
@@ -18,6 +19,7 @@ static struct argp_option options[] = {
 struct arguments {
   char *symbols;
   char *transliterate;
+  bool info;
   char *reverse_transliterate;
   char *learn;
   char *train;
@@ -32,6 +34,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     break;
   case 't':
     arguments->transliterate = arg;
+    break;
+  case 'i':
+    arguments->info = true;
     break;
   case 'r':
     arguments->reverse_transliterate = arg;
@@ -131,21 +136,28 @@ int split( char * str, char delim, char ***array )
  * -----
  */
 
-void print_transliteration_output(varray *words)
+void print_transliteration_output(varray *words, bool info)
 {
     int i;
     vword *word;
     for (i = 0; i < varray_length(words); i++)
     {
+        if (i != 0)
+          printf("\n");
+
         word = varray_get(words, i);
-        printf ("%s. Confidence %d\n", word->text, word->confidence);
+        if (info) {
+          printf ("%s. Confidence %d", word->text, word->confidence);
+        } else {
+          printf ("%s", word->text);
+        }
     }
 }
 
 /**
  * Transliterate a word
  */
-void transliterate(varnam *handle, char *text)
+void transliterate(varnam *handle, char *text, bool info)
 {
   int rc;
   varray *words;
@@ -159,7 +171,7 @@ void transliterate(varnam *handle, char *text)
 		varnam_destroy(handle);
 		exit(1);
 	}
-	print_transliteration_output (words);
+	print_transliteration_output (words, info);
   exit(0);
 }
 
@@ -270,7 +282,7 @@ int main(int argc, char *argv[])
 
   if (arguments.transliterate != NULL)
   {
-    transliterate(handle, arguments.transliterate);
+    transliterate(handle, arguments.transliterate, arguments.info);
   } else if (arguments.reverse_transliterate != NULL)
   {
     reverse_transliterate(handle, arguments.reverse_transliterate);
