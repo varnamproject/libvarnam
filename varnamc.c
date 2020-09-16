@@ -10,6 +10,7 @@ static struct argp_option options[] = {
     { "text", 't', "TEXT", 0, "Transliterate the given text"},
     { "learn", 'n', "TEXT", 0, "Learn the given text"},
     { "train", 'a', "PATTERN=WORD", 0, "Train the given text"},
+    { "version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
     { 0 } 
 };
 
@@ -18,6 +19,7 @@ struct arguments {
   char *text;
   char *learn;
   char *train;
+  bool *version;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
@@ -27,8 +29,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     case 't': arguments->text = arg; break;
     case 'n': arguments->learn = arg; break;
     case 'a': arguments->train = arg; break;
+    case 'v': arguments->version = true; break;
     case ARGP_KEY_ARG: return 0;
-    default: return ARGP_ERR_UNKNOWN;
+    default: ARGP_ERR_UNKNOWN;
   }   
   return 0;
 }
@@ -207,9 +210,14 @@ int main(int argc, char *argv[])
 
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-  if (arguments.symbols == NULL) {
+  if (arguments.version)
+  {
+    printf("libvarnam version %s", varnam_version());
+    exit(0);
+  } else if (arguments.symbols == NULL)
+  {
     printf("varnamc : Can't load symbols file. Use --symbols option to specify the symbols file");
-    return 0;
+    exit(0);
   }
 
 	/* Initialization */
@@ -219,7 +227,7 @@ int main(int argc, char *argv[])
   {
 		printf("Initialization failed. Reason - %s", msg);
 		free (msg);
-		return 1;
+		exit(1);
 	}
 
   if (arguments.text != NULL)
