@@ -7,7 +7,7 @@ static char doc[] = "an Indic language transliteration library";
 static char args_doc[] = "";
 static struct argp_option options[] = { 
     { "symbols", 's', "VALUE", 0, "Sets the symbols file"},
-    { "text", 't', "TEXT", 0, "Transliterate the given text"},
+    { "transliterate", 't', "TEXT", 0, "Transliterate the given text"},
     { "learn", 'n', "TEXT", 0, "Learn the given text"},
     { "train", 'a', "PATTERN=WORD", 0, "Train the given text"},
     { "version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
@@ -16,17 +16,17 @@ static struct argp_option options[] = {
 
 struct arguments {
   char *symbols;
-  char *text;
+  char *transliterate;
   char *learn;
   char *train;
-  bool *version;
+  bool version;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   struct arguments *arguments = state->input;
   switch (key) {
     case 's': arguments->symbols = arg; break;
-    case 't': arguments->text = arg; break;
+    case 't': arguments->transliterate = arg; break;
     case 'n': arguments->learn = arg; break;
     case 'a': arguments->train = arg; break;
     case 'v': arguments->version = true; break;
@@ -230,9 +230,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-  if (arguments.text != NULL)
+  if (arguments.transliterate != NULL)
   {
-    transliterate(handle, arguments.text);
+    transliterate(handle, arguments.transliterate);
   } else if (arguments.learn != NULL)
   {
     learn(handle, arguments.learn);
