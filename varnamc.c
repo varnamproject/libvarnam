@@ -8,6 +8,7 @@ static char args_doc[] = "";
 static struct argp_option options[] = { 
     { "symbols", 's', "VALUE", 0, "Sets the symbols file"},
     { "transliterate", 't', "TEXT", 0, "Transliterate the given text"},
+    { "reverse-transliterate", 'r', "TEXT", 0, "Reverse transliterate the given text"},
     { "learn", 'n', "TEXT", 0, "Learn the given text"},
     { "train", 'a', "PATTERN=WORD", 0, "Train the given text"},
     { "version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
@@ -17,6 +18,7 @@ static struct argp_option options[] = {
 struct arguments {
   char *symbols;
   char *transliterate;
+  char *reverse_transliterate;
   char *learn;
   char *train;
   bool version;
@@ -27,6 +29,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   switch (key) {
     case 's': arguments->symbols = arg; break;
     case 't': arguments->transliterate = arg; break;
+    case 'r': arguments->reverse_transliterate = arg; break;
     case 'n': arguments->learn = arg; break;
     case 'a': arguments->train = arg; break;
     case 'v': arguments->version = true; break;
@@ -113,8 +116,7 @@ int split( char * str, char delim, char ***array ) {
  * -----
  */
 
-static void
-print_transliteration_output(const char *pattern, varray *words)
+void print_transliteration_output(varray *words)
 {
     int i;
     vword *word;
@@ -128,7 +130,7 @@ print_transliteration_output(const char *pattern, varray *words)
 /**
  * Transliterate a word
  */
-int transliterate(varnam *handle, char *text)
+void transliterate(varnam *handle, char *text)
 {
   int rc;
   varray *words;
@@ -142,14 +144,35 @@ int transliterate(varnam *handle, char *text)
 		varnam_destroy(handle);
 		exit(1);
 	}
-	print_transliteration_output ("malayalam", words);
+	print_transliteration_output (words);
+  exit(0);
+}
+
+/**
+ * Reverse transliterate a word
+ */
+void reverse_transliterate(varnam *handle, char *text)
+{
+  int rc;
+  char *output;
+
+  ensure_single_word(text);
+
+  rc = varnam_reverse_transliterate (handle, text, &output);
+	if (rc != VARNAM_SUCCESS)
+	{
+		printf("%s", varnam_get_last_error(handle));
+		varnam_destroy(handle);
+		exit(1);
+	}
+	printf("%s", output);
   exit(0);
 }
 
 /**
  * Learn a word
  */
-int learn(varnam *handle, char *word)
+void learn(varnam *handle, char *word)
 {
   int rc;
   ensure_single_word(word);
@@ -233,6 +256,9 @@ int main(int argc, char *argv[])
   if (arguments.transliterate != NULL)
   {
     transliterate(handle, arguments.transliterate);
+  } else if (arguments.reverse_transliterate != NULL)
+  {
+    reverse_transliterate(handle, arguments.reverse_transliterate);
   } else if (arguments.learn != NULL)
   {
     learn(handle, arguments.learn);
