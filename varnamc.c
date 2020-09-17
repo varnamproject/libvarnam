@@ -13,6 +13,7 @@ static struct argp_option options[] = {
     {"learn", 'n', "TEXT", 0, "Learn the given text"},
     {"learn-from", 'f', "FILE", 0, "Reads from the specified file"},
     {"train", 'a', "PATTERN=WORD", 0, "Train the given text"},
+    {"import-learnings-from", 'i', "FILE", 0, "Import learned data from the specified file"},
     {"version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
     {0} 
 };
@@ -25,6 +26,7 @@ struct arguments {
   char *learn;
   char *learn_from;
   char *train;
+  char *import_learnings_from;
   bool version;
 };
 
@@ -51,6 +53,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     break;
   case 'a':
     arguments->train = arg;
+    break;
+  case 'i':
+    arguments->import_learnings_from = arg;
     break;
   case 'v':
     arguments->version = true;
@@ -290,6 +295,27 @@ int train(varnam *handle, char *pattern, char *word)
   exit(0);
 }
 
+/**
+ * Import learnings from a file
+ */
+void import_learnings_from(varnam *handle, char *file_path)
+{
+  int rc;
+
+  printf("Importing: %s\n", file_path);
+
+  rc = varnam_import_learnings_from_file(handle, file_path);
+  if (rc != VARNAM_SUCCESS)
+	{
+		const char *error_message = varnam_get_last_error(handle);
+		printf("%s", error_message);
+    exit(1);
+	}
+
+  printf("Done");
+  exit(0);
+}
+
 int main(int argc, char *argv[])
 {
   struct arguments arguments = {NULL};
@@ -343,6 +369,9 @@ int main(int argc, char *argv[])
     {
       printf("varnamc : Incorrect arguments");
     }
+  } else if (arguments.import_learnings_from != NULL)
+  {
+    import_learnings_from(handle, arguments.import_learnings_from);
   }
 
   /* 0 means program executed successfully */
