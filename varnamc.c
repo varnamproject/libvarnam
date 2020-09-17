@@ -8,7 +8,7 @@ static char args_doc[] = "";
 static struct argp_option options[] = { 
     {"symbols", 's', "VALUE", 0, "Sets the symbols file"},
     {"transliterate", 't', "TEXT", 0, "Transliterate the given text"},
-    {"info", 'i', "", OPTION_ARG_OPTIONAL, "Detailed transliteration output. Use with --transliterate"},
+    {"details", 'd', "", OPTION_ARG_OPTIONAL, "Detailed transliteration output. Use with --transliterate"},
     {"reverse-transliterate", 'r', "TEXT", 0, "Reverse transliterate the given text"},
     {"learn", 'n', "TEXT", 0, "Learn the given text"},
     {"learn-from", 'f', "FILE", 0, "Reads from the specified file"},
@@ -20,7 +20,7 @@ static struct argp_option options[] = {
 struct arguments {
   char *symbols;
   char *transliterate;
-  bool info;
+  bool details;
   char *reverse_transliterate;
   char *learn;
   char *learn_from;
@@ -37,8 +37,8 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   case 't':
     arguments->transliterate = arg;
     break;
-  case 'i':
-    arguments->info = true;
+  case 'd':
+    arguments->details = true;
     break;
   case 'r':
     arguments->reverse_transliterate = arg;
@@ -141,7 +141,7 @@ int split( char * str, char delim, char ***array )
  * -----
  */
 
-void print_transliteration_output(varray *words, bool info)
+void print_transliteration_output(varray *words, bool details)
 {
     int i;
     vword *word;
@@ -151,7 +151,7 @@ void print_transliteration_output(varray *words, bool info)
           printf("\n");
 
         word = varray_get(words, i);
-        if (info) {
+        if (details) {
           printf ("%s. Confidence %d", word->text, word->confidence);
         } else {
           printf ("%s", word->text);
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 
   if (arguments.transliterate != NULL)
   {
-    transliterate(handle, arguments.transliterate, arguments.info);
+    transliterate(handle, arguments.transliterate, arguments.details);
   } else if (arguments.reverse_transliterate != NULL)
   {
     reverse_transliterate(handle, arguments.reverse_transliterate);
