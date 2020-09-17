@@ -8,9 +8,10 @@ static char args_doc[] = "";
 static struct argp_option options[] = { 
     {"symbols", 's', "VALUE", 0, "Sets the symbols file"},
     {"transliterate", 't', "TEXT", 0, "Transliterate the given text"},
-    {"info", 'i', "", OPTION_ARG_OPTIONAL, "Detailed transliteration output. Use with -t"},
+    {"info", 'i', "", OPTION_ARG_OPTIONAL, "Detailed transliteration output. Use with --transliterate"},
     {"reverse-transliterate", 'r', "TEXT", 0, "Reverse transliterate the given text"},
     {"learn", 'n', "TEXT", 0, "Learn the given text"},
+    {"learn-from", 'f', "FILE", 0, "Reads from the specified file"},
     {"train", 'a', "PATTERN=WORD", 0, "Train the given text"},
     {"version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
     {0} 
@@ -22,6 +23,7 @@ struct arguments {
   bool info;
   char *reverse_transliterate;
   char *learn;
+  char *learn_from;
   char *train;
   bool version;
 };
@@ -43,6 +45,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     break;
   case 'n':
     arguments->learn = arg;
+    break;
+  case 'f':
+    arguments->learn_from = arg;
     break;
   case 'a':
     arguments->train = arg;
@@ -215,6 +220,40 @@ void learn(varnam *handle, char *word)
   exit(0);
 }
 
+int learn_counter = 0;
+int learn_passed_counter = 0;
+int learn_failed_counter = 0;
+void learn_callback(varnam *handle, const char *word, int status, void *data)
+{
+  if (status == VARNAM_SUCCESS)
+  {
+    learn_passed_counter++;
+  } else
+  {
+    printf("Failed to learn %s : %s\n", word, varnam_get_last_error(handle));
+    learn_failed_counter++;
+  }
+  learn_counter++;
+}
+
+/**
+ * Learn words from a file
+ */
+void learn_from(varnam *handle, char *file_path)
+{
+  int rc;
+
+  rc = varnam_learn_from_file (handle, file_path, NULL, learn_callback, NULL);
+	if (rc != VARNAM_SUCCESS)
+	{
+		printf("%s", varnam_get_last_error(handle));
+		varnam_destroy(handle);
+		exit(1);
+	}
+  printf("Processed %d word(s). %d word(s) passed. %d word(s) failed.", learn_counter, learn_passed_counter, learn_failed_counter);
+  exit(0);
+}
+
 /**
  * Train a word
  */
@@ -289,6 +328,9 @@ int main(int argc, char *argv[])
   } else if (arguments.learn != NULL)
   {
     learn(handle, arguments.learn);
+  } else if (arguments.learn_from != NULL)
+  {
+    learn_from(handle, arguments.learn_from);
   } else if (arguments.train != NULL)
   {
     char **tokens;
