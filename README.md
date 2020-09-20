@@ -132,6 +132,10 @@ Performs tokenization on the *input*. Varnam uses a greedy tokenizer which proce
 
 Generated tokens is assembled and varnam computes all possibilities of these tokens. Assume the input is *malayalam*, varnam generates tokens like, *മ, ല, യാ, ളം ([ma], [la], [ya], [lam])* and many others. Once these tokens are generated, they are combined and tested against the learning model to get rid of garbage values and come up with most used words. Words are sorted according to the frequency value and returned to the caller function.
 
+### Renderer
+
+All of the processing is varnam is mostly language agnostic. It should work fine for all Indian languages. However, sometimes language specific fixes might be required. Varnam handles this using *Renderers*. Any language can register renderers and varnam will invoke the renderers just before rendering the final output. This can have language specific rules which can't be generalized otherwise.
+
 ## Learning
 
 ```
