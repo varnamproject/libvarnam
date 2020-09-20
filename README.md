@@ -110,6 +110,14 @@ make vst
 
 can be used to compile all scheme files present in the *schemes* directory.
 
+#### Symbol table lookup
+
+Varnam can be initialized with just the ISO language code. When this happens, varnam will scan the following directories and tries to find a matching symbol table file. If one is found, it will be loaded and used for all operations.
+
+* "/usr/local/share/varnam/vst"
+* "/usr/share/varnam/vst"
+* "schemes"
+
 ## Transliteration
 
 ```
@@ -145,6 +153,12 @@ When the same word/pattern combination is learned, varnam computes frequency at 
 Learning can be initiated by calling Varnam APIs directly or using *varnamc*.
 
 Input tools like ibus-engine will automatically learn the words that you are typing.
+
+Learned data is kept in one of the following locations:
+
+* APPDATA\varnam\suggestions (Windows)
+* XDG_DATA_HOME/varnam/suggestions
+* HOME/.local/share/varnam/suggestions
 
 
 Mozilla Public License
