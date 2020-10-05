@@ -215,7 +215,7 @@ static const char* symbolsFileSearchPath[] = {
 };
 
 const char*
-find_symbols_file_directory()
+varnam_find_symbols_file_directory()
 {
   int i;
 
@@ -235,7 +235,7 @@ static strbuf*
 find_symbols_file_path (const char *langCode)
 {
   strbuf *path;
-	const char* dir = find_symbols_file_directory();
+	const char* dir = varnam_find_symbols_file_directory();
 	if (dir == NULL) {
 		return NULL;
 	}
@@ -522,7 +522,7 @@ varnam_get_all_handles()
 	int rc;
 	char *msg;
 
-	const char* symbolsFileDir = find_symbols_file_directory();
+	const char* symbolsFileDir = varnam_find_symbols_file_directory();
 	if (symbolsFileDir == NULL)
 		return NULL;
 
