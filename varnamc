@@ -346,8 +346,8 @@ def do_action
   end
 
   initialize_varnam_handle
-  if $options[:action] == 'transliterate'
-    transliterate
+  if $options[:action] == 'transliterate' 
+        transliterate
   end
   if $options[:action] == 'reverse-transliterate'
     reverse_transliterate
@@ -978,46 +978,48 @@ def start_compilation
   exit(returncode)
 end
 
-def ensure_single_word(text)
-  if text.split(' ').length > 1
-    puts "varnamc : Expected a single word."
-    exit(1)
-  end
-end
-
 def transliterate
   if $options[:text_to_transliterate].nil?
     puts "Nothing to transliterate"
     exit 1
   end
-  totl = $options[:text_to_transliterate]
-  ensure_single_word totl
-
+  sentence_to_tl = $options[:text_to_transliterate]
+  sentence_to_tl = sentence_to_tl.split(' ')
   if $options[:indic_digits]
-      configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
-                                               Varnam::VARNAM_CONFIG_USE_INDIC_DIGITS, :string, "1")
-      if configured != 0
-          error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-          error error_message
-          exit(1)
+    configured = VarnamLibrary.varnam_config($varnam_handle.get_pointer(0),
+                                             Varnam::VARNAM_CONFIG_USE_INDIC_DIGITS, :string, "1")
+    if configured != 0
+      error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+      error error_message
+      exit(1)
+    end
+  end
+
+  sentence_to_tl.each do |totl|
+    words_ptr = FFI::MemoryPointer.new :pointer
+    done = VarnamLibrary.varnam_transliterate($varnam_handle.get_pointer(0), totl, words_ptr);
+    if done != 0
+      error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+      puts error_message
+      exit(1)
+    end
+    size = VarnamLibrary.varray_length(words_ptr.get_pointer(0))
+
+    if sentence_to_tl.size  != 1
+      word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), 0)
+      vword = VarnamLibrary::Word.new(word_ptr)
+      word = VarnamWord.new(vword[:text], vword[:confidence])
+      print " " + word.text
+    else
+      0.upto(size - 1) do |i|
+        word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), i)
+        vword = VarnamLibrary::Word.new(word_ptr)
+        word = VarnamWord.new(vword[:text], vword[:confidence])
+        puts " " + word.text
       end
+    end
   end
-
-  words_ptr = FFI::MemoryPointer.new :pointer
-  done = VarnamLibrary.varnam_transliterate($varnam_handle.get_pointer(0), totl, words_ptr);
-  if done != 0
-    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-    puts error_message
-    exit(1)
-  end
-
-  size = VarnamLibrary.varray_length(words_ptr.get_pointer(0))
-  0.upto(size - 1) do |i|
-    word_ptr = VarnamLibrary.varray_get(words_ptr.get_pointer(0), i)
-    vword = VarnamLibrary::Word.new(word_ptr)
-    word = VarnamWord.new(vword[:text], vword[:confidence])
-    puts "  " + word.text
-  end
+  print "\n"
 end
 
 def reverse_transliterate
@@ -1025,20 +1027,23 @@ def reverse_transliterate
     puts "Nothing to reverse transliterate"
     exit 1
   end
-  tortl = $options[:text_to_reverse_transliterate]
-  ensure_single_word tortl
+  sentence_to_rtl = $options[:text_to_reverse_transliterate]
+  sentence_to_rtl = sentence_to_rtl.split(' ')
 
-  output_ptr = FFI::MemoryPointer.new(:pointer, 1)
-  done = VarnamLibrary.varnam_reverse_transliterate($varnam_handle.get_pointer(0), tortl, output_ptr);
-  if done != 0
-    error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
-    puts error_message
-    exit(1)
+  sentence_to_rtl.each do |tortl|
+    output_ptr = FFI::MemoryPointer.new(:pointer, 1)
+    done = VarnamLibrary.varnam_reverse_transliterate($varnam_handle.get_pointer(0), tortl, output_ptr);
+    if done != 0
+      error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+      puts error_message
+      exit(1)
+    end
+
+    ptr = output_ptr.read_pointer()
+    output = ptr.nil? ? "" : ptr.read_string
+    print " " + output
   end
-
-  ptr = output_ptr.read_pointer()
-  output = ptr.nil? ? "" : ptr.read_string
-  puts output
+  print "\n"
 end
 
 def learn_text
