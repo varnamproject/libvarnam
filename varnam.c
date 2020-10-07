@@ -217,15 +217,43 @@ static const char* symbolsFileSearchPath[] = {
 const char*
 varnam_find_symbols_file_directory()
 {
+  char *tmp;
+  strbuf *user_path;
   int i;
 
   if (varnam_symbols_dir != NULL && is_directory(strbuf_to_s (varnam_symbols_dir))) {
     return strbuf_to_s(varnam_symbols_dir);
   }
 
-  for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
-    if (is_directory (symbolsFileSearchPath[i]))
-      return symbolsFileSearchPath[i];
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
+  tmp = getenv ("APPDATA");
+  if (tmp != NULL) {
+    strbuf_addf (user_path, "%s\\varnam\\vst\\", tmp);
+    if (!is_directory (strbuf_to_s (user_path))) {
+      strbuf_clear (user_path);
+    }
+  }
+#else
+  tmp = getenv ("XDG_DATA_HOME");
+  if (tmp == NULL) {
+    tmp = getenv ("HOME");
+    if (tmp != NULL) {
+      strbuf_addf (user_path, "%s/.local/share/varnam/vst/", tmp);
+    }
+  }
+  else {
+    strbuf_addf (user_path, "%s/varnam/vst/", tmp);
+  }
+#endif
+
+  if (!strbuf_is_blank (user_path)) {
+    return strbuf_to_s(user_path);
+  }
+  else {
+    for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
+      if (is_directory (symbolsFileSearchPath[i]))
+        return symbolsFileSearchPath[i];
+    }
   }
 
   return NULL;
