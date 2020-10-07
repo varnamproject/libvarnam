@@ -225,13 +225,12 @@ varnam_find_symbols_file_directory()
     return strbuf_to_s(varnam_symbols_dir);
   }
 
+  user_path = strbuf_init (20);
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
   tmp = getenv ("APPDATA");
   if (tmp != NULL) {
     strbuf_addf (user_path, "%s\\varnam\\vst\\", tmp);
-    if (!is_directory (strbuf_to_s (user_path))) {
-      strbuf_clear (user_path);
-    }
   }
 #else
   tmp = getenv ("XDG_DATA_HOME");
@@ -247,13 +246,16 @@ varnam_find_symbols_file_directory()
 #endif
 
   if (!strbuf_is_blank (user_path)) {
-    return strbuf_to_s(user_path);
-  }
-  else {
-    for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
-      if (is_directory (symbolsFileSearchPath[i]))
-        return symbolsFileSearchPath[i];
+    if (is_path_exists (strbuf_to_s (user_path))) {
+      if (is_directory (strbuf_to_s (user_path))) {
+        return strbuf_to_s (user_path);
+      }
     }
+  }
+
+  for (i = 0; i < ARRAY_SIZE (symbolsFileSearchPath); i++) {
+    if (is_directory (symbolsFileSearchPath[i]))
+      return symbolsFileSearchPath[i];
   }
 
   return NULL;
