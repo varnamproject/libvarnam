@@ -201,9 +201,13 @@ add_custom_target(uninstall
 
 
 IF(MSVC)
+  SET(NO_PTHREAD_DL TRUE)
+ENDIF()
+
+IF(NO_PTHREAD_DL)
   target_link_libraries(${VARNAM_LIBRARY_NAME} ${SQLITE3_LIBRARIES})
 else()
-        # sqlite requires pthread and dl
-        target_link_libraries(${VARNAM_LIBRARY_NAME} pthread dl ${SQLITE3_LIBRARIES})
+  # sqlite requires pthread and dl
+  target_link_libraries(${VARNAM_LIBRARY_NAME} pthread dl ${SQLITE3_LIBRARIES})
 ENDIF()
 
