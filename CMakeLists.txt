@@ -190,6 +190,7 @@ INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnamstatic.pc DESTINATION ${VARNAM_LIB_INS
 INSTALL ( FILES varnamruby.rb DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL_PROGRAMS(/bin FILES varnamc)
 INSTALL ( FILES varnamc.1 DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1)
+INSTALL_PROGRAMS(/bin FILES varnamc.rb)
 
 # uninstall target
 configure_file(
