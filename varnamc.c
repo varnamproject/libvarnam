@@ -14,6 +14,7 @@ static struct argp_option options[] = {
     {"learn-from", 'f', "FILE", 0, "Reads from the specified file"},
     {"train", 'a', "PATTERN=WORD", 0, "Train the given text"},
     {"import-learnings-from", 'i', "FILE", 0, "Import learned data from the specified file"},
+    {"export-full", 'e', "FILE", 0, "Export words and patterns to the specified directory"},
     {"version", 'v', "", OPTION_ARG_OPTIONAL, "Display version"},
     {0} 
 };
@@ -27,6 +28,7 @@ struct arguments {
   char *learn_from;
   char *train;
   char *import_learnings_from;
+  char *export_full;
   bool version;
 };
 
@@ -56,6 +58,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     break;
   case 'i':
     arguments->import_learnings_from = arg;
+    break;
+  case 'e':
+    arguments->export_full = arg;
     break;
   case 'v':
     arguments->version = true;
@@ -316,6 +321,38 @@ void import_learnings_from(varnam *handle, char *file_path)
   exit(0);
 }
 
+void export_callback(int total_words, int total_processed, const char* current_word)
+{
+  float progress = (float) total_processed / total_words * 100;
+  printf("\rExporting %d%%", (int) progress);
+}
+
+/**
+ * Export words & patterns to a directory
+ */
+void export_full(varnam *handle, char *dir_path)
+{
+  int rc;
+
+  if (!is_directory(dir_path)) {
+    printf("varnamc : Output directory not found");
+    exit(1);
+  }
+
+  printf("Exporting words from '%s' to '%s'\n", varnam_get_suggestions_file(handle), dir_path);
+
+  rc = varnam_export_words(handle, 30000, dir_path, VARNAM_EXPORT_FULL, export_callback);
+  if (rc != VARNAM_SUCCESS)
+	{
+		const char *error_message = varnam_get_last_error(handle);
+		printf("Export failed. %s\n", error_message);
+    exit(1);
+	}
+
+  printf("\nExported words to %s", dir_path);
+  exit(0);
+}
+
 int main(int argc, char *argv[])
 {
   struct arguments arguments = {NULL};
@@ -372,6 +409,9 @@ int main(int argc, char *argv[])
   } else if (arguments.import_learnings_from != NULL)
   {
     import_learnings_from(handle, arguments.import_learnings_from);
+  } else if (arguments.export_full != NULL)
+  {
+    export_full(handle, arguments.export_full);
   }
 
   /* 0 means program executed successfully */
