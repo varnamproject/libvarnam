@@ -56,7 +56,7 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
 		      ["fa"] => "ஃப"
 
 consonants ["kk*"] => ["க#{$virama}க#{$virama}*1"],
-			[["nga"]] =>  "ங#{$virama}க"
+			[["nga", "nka"]] =>  "ங#{$virama}க"
 
 infer_dead_consonants false
 
