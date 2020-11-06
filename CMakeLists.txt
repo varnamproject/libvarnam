@@ -209,7 +209,10 @@ else()
         target_link_libraries(${VARNAM_LIBRARY_NAME} pthread dl ${SQLITE3_LIBRARIES})
 ENDIF()
 
-FILE(GLOB_RECURSE SOURCES varnamc.c)
-ADD_EXECUTABLE(${VARNAM_BINARY_NAME} ${SOURCES})
-
-target_link_libraries(${VARNAM_BINARY_NAME} ${VARNAM_LIBRARY_NAME})
+# argp doesn't by default exist for windows
+# TODO make varnamc work on windows too
+IF(!MSVC)
+  FILE(GLOB_RECURSE SOURCES varnamc.c)
+  ADD_EXECUTABLE(${VARNAM_BINARY_NAME} ${SOURCES})
+  target_link_libraries(${VARNAM_BINARY_NAME} ${VARNAM_LIBRARY_NAME})
+ENDIF()
