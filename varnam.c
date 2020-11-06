@@ -283,9 +283,6 @@ find_learnings_file_path (const char *langCode)
   tmp = getenv ("APPDATA");
   if (tmp != NULL) {
     strbuf_addf (path, "%s\\varnam\\suggestions\\", tmp);
-    if (!is_directory (strbuf_to_s (path))) {
-      strbuf_clear (path);
-    }
   }
 #else
   tmp = getenv ("XDG_DATA_HOME");
@@ -298,22 +295,22 @@ find_learnings_file_path (const char *langCode)
   else {
     strbuf_addf (path, "%s/varnam/suggestions/", tmp);
   }
+#endif
 
   if (!strbuf_is_blank (path)) {
     if (is_path_exists (strbuf_to_s (path))) {
-        if (!is_directory (strbuf_to_s (path))) {
-            /* Suggestions will be configured in the current directory */
-           strbuf_clear (path);
-        }
+      if (!is_directory (strbuf_to_s (path))) {
+        /* Suggestions will be configured in the current directory */
+        strbuf_clear (path);
+      }
     }
     else {
-        if (!make_directory (strbuf_to_s (path))) {
-            /* Suggestions will be configured in the current directory */
-            strbuf_clear (path);
-        }
+      if (!make_directory (strbuf_to_s (path))) {
+        /* Suggestions will be configured in the current directory */
+        strbuf_clear (path);
+      }
     }
   }
-#endif
   
   strbuf_addf (path, "%s.vst.learnings", langCode);
   return path;
