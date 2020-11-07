@@ -432,8 +432,10 @@ VARNAM_EXPORT extern int varnam_export_words(
  * VARNAM_ARGS_ERROR - When incorrect arguments are specified
  * VARNAM_ERROR      - Any other errors
  **/
-int
-varnam_import_learnings_from_file(varnam *handle, const char *filepath);
+VARNAM_EXPORT extern int varnam_import_learnings_from_file(
+    varnam *handle,
+    const char *filepath
+    );
 
 /**
  * Detects the language for the supplied word. Current implementation works only for devanagari based scripts.
