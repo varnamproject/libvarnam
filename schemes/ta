@@ -45,7 +45,7 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
            ["ya"] => "ய",
            ["ra"] => "ர",
 		      ["va", "wa"] => "வ",
-           ["Ra", "RRa", ["ra", "tra", "dra"]] => "ற",
+           ["Ra", "RRa", ["ra"]] => "ற",
 		      "la" => "ல",
 		      ["La", ["lla", "la"]] => "ள",
 		      ["zha",["la"]] => "ழ",
@@ -57,6 +57,7 @@ consonants ["ka", "qa", "ga", ["ha"]] => "க",
 
 consonants ["kk*"] => ["க#{$virama}க#{$virama}*1"],
 			[["nga", "nka"]] =>  "ங#{$virama}க"
+			["tr*", "dr*"] => ["ற#{$virama}ற#{$virama}*1"]
 
 infer_dead_consonants false
 
