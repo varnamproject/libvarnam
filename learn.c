@@ -730,6 +730,14 @@ import_words (varnam* handle, const char* filepath)
 				goto cleanup;
 			}
 
+			/** -1 indicates that the word is already in database */
+			if (wordId == -1) {
+				rc = vwt_get_word_id (handle, wordString, &wordId);
+				if (rc != VARNAM_SUCCESS) {
+					goto cleanup;
+				}
+			}
+
 			patterns = json_object_get_array (word, "patterns");
 			if (patterns != NULL) {
 				for (j = 0; j < json_array_get_count(patterns); j++) {
