@@ -19,6 +19,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cma
 
 set(VARNAM_LIBRARY_NAME "varnam")
 set(VARNAM_LIBRARY_NAME_STATIC "varnamstatic")
+set(VARNAM_BINARY_NAME "varnamc")
 set(DEPS_LIBRARY_NAME "deps")
 
 set(VARNAM_VERSION_MAJOR 3)
@@ -156,7 +157,7 @@ if (BUILD_VST)
 	# Each scheme will have a target to compile
 	# vst will have a dependency to all these targets so that running vst will compile all the scheme files
 	foreach(scheme ${SUPPORTED_SCHEMES})
-  	add_custom_target (${scheme}.vst COMMAND ./varnamc --compile schemes/${scheme})
+  	add_custom_target (${scheme}.vst COMMAND ./varnamc.rb --compile schemes/${scheme})
   	add_dependencies (vst "${scheme}.vst")
   	install (FILES schemes/${scheme}.vst DESTINATION ${CMAKE_INSTALL_PREFIX}/share/varnam/vst OPTIONAL)
 	endforeach()
@@ -189,6 +190,7 @@ INSTALL ( FILES ${CMAKE_BINARY_DIR}/varnamstatic.pc DESTINATION ${VARNAM_LIB_INS
 INSTALL ( FILES varnamruby.rb DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 INSTALL_PROGRAMS(/bin FILES varnamc)
 INSTALL ( FILES varnamc.1 DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1)
+INSTALL_PROGRAMS(/bin FILES varnamc.rb)
 
 # uninstall target
 configure_file(
@@ -211,3 +213,10 @@ else()
   target_link_libraries(${VARNAM_LIBRARY_NAME} pthread dl ${SQLITE3_LIBRARIES})
 ENDIF()
 
+# argp doesn't by default exist for windows
+# TODO make varnamc work on windows too
+IF(!MSVC)
+  FILE(GLOB_RECURSE SOURCES varnamc.c)
+  ADD_EXECUTABLE(${VARNAM_BINARY_NAME} ${SOURCES})
+  target_link_libraries(${VARNAM_BINARY_NAME} ${VARNAM_LIBRARY_NAME})
+ENDIF()
