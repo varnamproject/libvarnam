@@ -217,13 +217,19 @@ static const char* symbolsFileSearchPath[] = {
 const char*
 varnam_find_symbols_file_directory()
 {
-  char *tmp;
-  strbuf *user_path;
-  int i;
-
   if (varnam_symbols_dir != NULL && is_directory(strbuf_to_s (varnam_symbols_dir))) {
     return strbuf_to_s(varnam_symbols_dir);
   }
+
+  char *env_symbols_dir = getenv("VARNAM_SYMBOLS_DIR");
+
+  if (env_symbols_dir != NULL) {
+    return env_symbols_dir;
+  }
+
+  char *tmp;
+  strbuf *user_path;
+  int i;
 
   user_path = strbuf_init (20);
 
@@ -304,6 +310,12 @@ make_directory (const char *dirName)
 static strbuf*
 find_learnings_file_path (const char *langCode)
 {
+  char *env_symbols_dir = getenv("VARNAM_SUGGESTIONS_DIR");
+
+  if (env_symbols_dir != NULL) {
+    return env_symbols_dir;
+  }
+
   char *tmp;
   strbuf *path;
 
@@ -315,21 +327,15 @@ find_learnings_file_path (const char *langCode)
     strbuf_addf (path, "%s\\varnam\\suggestions\\", tmp);
   }
 #else
-  tmp = getenv ("VARNAM_SUGGESTIONS_DIR");
+  tmp = getenv ("XDG_DATA_HOME");
   if (tmp == NULL) {
-      tmp = getenv ("XDG_DATA_HOME");
-      if (tmp == NULL) {
-        tmp = getenv ("HOME");
-        if (tmp != NULL) {
-          strbuf_addf (path, "%s/.local/share/varnam/suggestions/", tmp);
-        }
-      }
-      else {
-        strbuf_addf (path, "%s/varnam/suggestions/", tmp);
-      }
+    tmp = getenv ("HOME");
+    if (tmp != NULL) {
+      strbuf_addf (path, "%s/.local/share/varnam/suggestions/", tmp);
+    }
   }
   else {
-    strbuf_addf (path, "%s/", tmp);
+    strbuf_addf (path, "%s/varnam/suggestions/", tmp);
   }
 #endif
 
@@ -347,7 +353,7 @@ find_learnings_file_path (const char *langCode)
       }
     }
   }
-  
+
   strbuf_addf (path, "%s.vst.learnings", langCode);
   return path;
 }
