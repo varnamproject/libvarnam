@@ -310,10 +310,10 @@ make_directory (const char *dirName)
 static strbuf*
 find_learnings_file_path (const char *langCode)
 {
-  char *env_symbols_dir = getenv("VARNAM_SUGGESTIONS_DIR");
+  char *env_suggestions_dir = getenv("VARNAM_SUGGESTIONS_DIR");
 
-  if (env_symbols_dir != NULL) {
-    return env_symbols_dir;
+  if (env_suggestions_dir != NULL) {
+    return env_suggestions_dir;
   }
 
   char *tmp;
