@@ -105,6 +105,11 @@ optparse = OptionParser.new do |opts|
     $options[:verbose] = true
   end
 
+  $options[:debug] = false
+  opts.on('-z', '--debug', 'Enable debugging') do
+    $options[:debug] = true
+  end
+
   opts.on('-t', '--transliterate TEXT', 'Transliterate the given text') do |text|
     set_action('transliterate')
     $options[:text_to_transliterate] = text
@@ -311,6 +316,16 @@ def initialize_varnam_handle
     msg = ptr.nil? ? "" : ptr.read_string
     puts "Varnam initialization failed #{msg}"
     exit(1)
+  end
+
+  if ($options[:debug])
+    puts "Turning debug on"
+    done = VarnamLibrary.varnam_enable_logging($varnam_handle.get_pointer(0), Varnam::VARNAM_LOG_DEBUG, DebugCallback);
+    if done != 0
+      error_message = VarnamLibrary.varnam_get_last_error($varnam_handle.get_pointer(0))
+      puts "Unable to turn debugging on. #{error_message}"
+      exit(1)
+    end
   end
 
 end
@@ -1086,6 +1101,10 @@ ExportCallback = FFI::Function.new(:void, [:int, :int, :string]) do |total_words
     percentage = (total_processed.to_f / total_words) * 100
     print "\rExporting #{percentage.to_int}%"
     $stdout.flush
+end
+
+DebugCallback = FFI::Function.new(:void, [:string]) do |message|
+  puts message
 end
 
 def learn_from_file
