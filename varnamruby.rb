@@ -67,6 +67,7 @@ module VarnamLibrary
   attach_function :varnam_import_learnings_from_file, [:pointer, :string, :pointer], :int
   attach_function :varnam_create_stemrule, [:pointer, :string, :string], :int
   attach_function :varnam_create_stem_exception, [:pointer, :string, :string], :int
+  attach_function :varnam_enable_logging, [:pointer, :int, :pointer], :int
 end
 
 VarnamToken = Struct.new(:type, :pattern, :value1, :value2, :value3, :tag, :match_type, :priority, :accept_condition, :flags)
@@ -117,6 +118,9 @@ module Varnam
 
   VARNAM_EXPORT_WORDS = 0
   VARNAM_EXPORT_FULL = 1
+
+  VARNAM_LOG_DEFAULT = 1
+  VARNAM_LOG_DEBUG = 2
   
   # Language codes
   LANG_CODES = {VARNAM_LANG_CODE_UNKNOWN => 'Unknown',
