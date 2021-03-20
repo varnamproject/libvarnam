@@ -155,7 +155,7 @@ START_TEST (initialize_using_lang_code_custom_symbols_dir)
   varnam *handle;
 	int exitcode;
 
-	// Copy a sample vst file to the temp
+	/* Copy a sample vst file to the temp */
   exitcode = system ("cp ../schemes/ml.vst /tmp");
 
 	varnam_set_symbols_dir("/tmp");

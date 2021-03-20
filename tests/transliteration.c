@@ -114,6 +114,24 @@ START_TEST (indic_digit_rendering)
 }
 END_TEST
 
+START_TEST (no_chil_combos)
+{
+    int rc;
+    vword* word;
+    varray *words;
+
+    /* If learnings has the word മലയാളം which ends with an anusvaram or chil, the output becomes incorrect when combination is added to it 
+     * Like മലയാളംോ
+     * https://github.com/varnamproject/libvarnam/issues/166 */
+
+    rc = varnam_transliterate (varnam_instance, "malayalamO", &words);
+    assert_success (rc);
+    ck_assert_int_eq (varray_length (words), 2);
+    word = varray_get (words, 0);
+    ck_assert_str_eq (word->text, "മലയാളമോ");
+}
+END_TEST
+
 TCase* get_transliteration_tests()
 {
     TCase* tcase = tcase_create("transliteration");
@@ -123,5 +141,6 @@ TCase* get_transliteration_tests()
     tcase_add_test (tcase, dependent_vowel_rendering);
     tcase_add_test (tcase, cancellation_character_should_force_independent_vowel_form);
     tcase_add_test (tcase, indic_digit_rendering);
+    tcase_add_test (tcase, no_chil_combos);
     return tcase;
 }

@@ -448,6 +448,26 @@ print_tokens_array(varray *tokens)
 
 }
 
+/* Replaces last chil letter token with its root consonant.
+ * ൽ with ല */
+varray*
+replace_last_chil(varray *tokens)
+{
+    varray *tmp;
+    vtoken *last_token;
+
+    tmp = varray_get (tokens, varray_length(tokens) - 1);
+    assert (tmp);
+    last_token = varray_get (tmp, varray_length(tmp) - 1);
+    assert (last_token);
+
+    if (strcmp(last_token->tag, "chill") == 0) {
+        strcpy(last_token->value1, last_token->value3);
+    }
+
+    return tokens;
+}
+
 /* This function learns all possibilities of writing the word and it's prefixes.
  * It finds cartesian product of the tokens passed in and process each product.
  * tokens will be a multidimensional array */
@@ -866,6 +886,16 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
 #endif
         rc = vst_tokenize (handle, strbuf_to_s(match), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, tokens);
         if (rc) return rc;
+
+        /**
+         * Suppose varnam learnings has the word `kilivaathil => കിളിവാതിൽ`.
+         * When Varanm finds this word, what it does is use the word plus tokenizes the rest of it. This gives chil combinations.
+         * Prevent this by replacing end chil with its root consonant.
+         * https://github.com/varnamproject/libvarnam/issues/166
+         */
+        if (strcmp(handle->internal->scheme_details->langCode, "ml") == 0) {
+            replace_last_chil(tokens);
+        }
 
         add_tokens (handle, tokens, result, first_match);
         varray_clear (tokens);
