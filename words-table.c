@@ -462,7 +462,7 @@ replace_last_chil(varray *tokens)
     assert (last_token);
 
     if (strcmp(last_token->tag, "chill") == 0) {
-        strcpy(last_token->value1, last_token->value2);
+        strcpy(last_token->value1, last_token->value3);
     }
 
     return tokens;
@@ -887,7 +887,10 @@ vwt_tokenize_pattern (varnam *handle, const char *pattern, varray *result)
         rc = vst_tokenize (handle, strbuf_to_s(match), VARNAM_TOKENIZER_VALUE, VARNAM_MATCH_EXACT, tokens);
         if (rc) return rc;
 
-        /* For Malayalam, words ending with chil need to be replaced for correct output
+        /**
+         * Suppose varnam learnings has the word `kilivaathil => കിളിവാതിൽ`.
+         * When Varanm finds this word, what it does is use the word plus tokenizes the rest of it. This gives chil combinations.
+         * Prevent this by replacing end chil with its root consonant.
          * https://github.com/varnamproject/libvarnam/issues/166
          */
         if (strcmp(handle->internal->scheme_details->langCode, "ml") == 0) {
