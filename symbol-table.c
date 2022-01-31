@@ -585,26 +585,6 @@ vst_get_all_tokens (varnam* handle, int token_type, varray *tokens)
     return VARNAM_SUCCESS;
 }
 
-static void
-remove_from_last(char *buffer, const char *toremove)
-{
-    size_t to_remove_len, buffer_len, newlen;
-    const char *buf;
-
-    if(!toremove) return;
-    to_remove_len = strlen(toremove);
-    buffer_len = strlen(buffer);
-
-    if(buffer_len < to_remove_len) return;
-
-    newlen = (buffer_len - to_remove_len);
-
-    buf = buffer + newlen;
-    if(strcmp(buf, toremove) == 0) {
-        buffer[newlen] = '\0';
-    }
-}
-
 int
 vst_add_metadata (varnam *handle, const char* key, const char* value)
 {
